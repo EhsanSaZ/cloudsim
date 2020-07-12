@@ -15,20 +15,9 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.cloudbus.cloudsim.Cloudlet;
-import org.cloudbus.cloudsim.CloudletSchedulerTimeShared;
-import org.cloudbus.cloudsim.Datacenter;
-import org.cloudbus.cloudsim.DatacenterBroker;
-import org.cloudbus.cloudsim.DatacenterCharacteristics;
-import org.cloudbus.cloudsim.Host;
-import org.cloudbus.cloudsim.Log;
-import org.cloudbus.cloudsim.Pe;
-import org.cloudbus.cloudsim.Storage;
-import org.cloudbus.cloudsim.UtilizationModel;
-import org.cloudbus.cloudsim.UtilizationModelFull;
-import org.cloudbus.cloudsim.Vm;
-import org.cloudbus.cloudsim.VmAllocationPolicySimple;
-import org.cloudbus.cloudsim.VmSchedulerTimeShared;
+import org.cloudbus.cloudsim.*;
+//import org.cloudbus.cloudsim.Datacenter;
+//import org.cloudbus.cloudsim.DatacenterBroker;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
@@ -42,6 +31,7 @@ public class CloudSimExample1 {
 	private static List<Cloudlet> cloudletList;
 	/** The vmlist. */
 	private static List<Vm> vmlist;
+	private static List<Vm> vmlist2;
 
 	/**
 	 * Creates main() to run this example.
@@ -82,10 +72,10 @@ public class CloudSimExample1 {
 			// Second step: Create Datacenters
 			// Datacenters are the resource providers in CloudSim. We need at
 			// list one of them to run a CloudSim simulation
-			Datacenter datacenter0 = createDatacenter("Datacenter_0");
+			NewDatacenter datacenter0 = createDatacenter("Datacenter_0");
 
 			// Third step: Create Broker
-			DatacenterBroker broker = createBroker();
+			NewDatacenterBroker broker = createBroker("broker1");
 			int brokerId = broker.getId();
 
 			// Fourth step: Create one virtual machine
@@ -101,14 +91,14 @@ public class CloudSimExample1 {
 			String vmm = "Xen"; // VMM name
 
 			// create VM
-			Vm vm = new Vm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared());
+//			Vm vm = new Vm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared());
+			Vm vm = new Vm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerSpaceShared());
 
 			// add the VM to the vmList
 			vmlist.add(vm);
 
 			// submit vm list to the broker
 			broker.submitVmList(vmlist);
-
 			// Fifth step: Create one Cloudlet
 			cloudletList = new ArrayList<Cloudlet>();
 
@@ -125,20 +115,51 @@ public class CloudSimExample1 {
                                         utilizationModel);
 			cloudlet.setUserId(brokerId);
 			cloudlet.setVmId(vmid);
-
 			// add the cloudlet to the list
 			cloudletList.add(cloudlet);
-
 			// submit cloudlet list to the broker
 			broker.submitCloudletList(cloudletList);
+
+			int vmid2 = 1;
+			vmlist2 = new ArrayList<Vm>();
+			Vm vm2 = new Vm(vmid2, brokerId, mips/2, pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared());
+			vmlist2.add(vm2);
+			broker.dvml = vmlist2;
+
+//			broker.submitVmList(vmlist2);
+//			broker.submitVMsInDataCenterDynamic(vmlist2);
+
+			int id2 = 1;
+			Cloudlet cloudlet2 =
+					new Cloudlet(id2, length, pesNumber, fileSize,
+							outputSize, utilizationModel, utilizationModel,
+							utilizationModel);
+
+			cloudlet2.setUserId(brokerId);
+			cloudlet2.setVmId(vmid);
+			List<Cloudlet> l = new ArrayList<Cloudlet>();
+			l.add(cloudlet2);
+			broker.submitCloudletList(l);
+
 
 			// Sixth step: Starts the simulation
 			CloudSim.startSimulation();
 
+//			CloudSim.pauseSimulation(200);
+
+//			CloudSim.resumeSimulation();
+
+//			CloudSim.pauseSimulation(200);
+//			Log.printLine("FUUUCK");
+//			new Thread().start();
+//			Thread.sleep(1000);
+//			CloudSim.resumeSimulation();
+
+			List<Cloudlet> newList = broker.getCloudletReceivedList();
 			CloudSim.stopSimulation();
 
 			//Final step: Print results when simulation is over
-			List<Cloudlet> newList = broker.getCloudletReceivedList();
+//			List<Cloudlet> newList = broker.getCloudletReceivedList();
 			printCloudletList(newList);
 
 			Log.printLine("CloudSimExample1 finished!");
@@ -155,7 +176,7 @@ public class CloudSimExample1 {
 	 *
 	 * @return the datacenter
 	 */
-	private static Datacenter createDatacenter(String name) {
+	private static NewDatacenter createDatacenter(String name) {
 
 		// Here are the steps needed to create a PowerDatacenter:
 		// 1. We need to create a list to store
@@ -166,7 +187,7 @@ public class CloudSimExample1 {
 		// In this example, it will have only one core.
 		List<Pe> peList = new ArrayList<Pe>();
 
-		int mips = 1000;
+		int mips = 2000;
 
 		// 3. Create PEs and add these into a list.
 		peList.add(new Pe(0, new PeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
@@ -210,9 +231,9 @@ public class CloudSimExample1 {
 				costPerStorage, costPerBw);
 
 		// 6. Finally, we need to create a PowerDatacenter object.
-		Datacenter datacenter = null;
+		NewDatacenter datacenter = null;
 		try {
-			datacenter = new Datacenter(name, characteristics, new VmAllocationPolicySimple(hostList), storageList, 0);
+			datacenter = new NewDatacenter(name, characteristics, new VmAllocationPolicySimple(hostList), storageList, 0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -228,10 +249,10 @@ public class CloudSimExample1 {
 	 *
 	 * @return the datacenter broker
 	 */
-	private static DatacenterBroker createBroker() {
-		DatacenterBroker broker = null;
+	private static NewDatacenterBroker createBroker(String name) {
+		NewDatacenterBroker broker = null;
 		try {
-			broker = new DatacenterBroker("Broker");
+			broker = new NewDatacenterBroker(name);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

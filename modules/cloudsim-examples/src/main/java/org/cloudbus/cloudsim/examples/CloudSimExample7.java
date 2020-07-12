@@ -137,6 +137,7 @@ public class CloudSimExample7 {
 				@Override
 				public void run() {
 					CloudSim.pauseSimulation(200);
+
 					while (true) {
 						if (CloudSim.isPaused()) {
 							break;
@@ -149,7 +150,7 @@ public class CloudSimExample7 {
 					}
 
 					Log.printLine("\n\n\n" + CloudSim.clock() + ": The simulation is paused for 5 sec \n\n");
-
+					Log.printLine(broker.getName());
 					try {
 						Thread.sleep(5000);
 					} catch (InterruptedException e) {
