@@ -36,6 +36,10 @@ public class ReplicaCatalog {
         fileName2File.put(fileName, file);
     }
 
+    public static void deleteFile(String fileName){
+        fileName2File.remove(fileName);
+    }
+
     public static boolean containsFile(String fileName) {
         return fileName2File.containsKey(fileName);
     }
@@ -52,5 +56,8 @@ public class ReplicaCatalog {
         if (!list.contains(storage)) {
             list.add(storage);
         }
+    }
+    public static void removeFileStorage(String file) {
+        dataReplicaCatalog.remove(file);
     }
 }

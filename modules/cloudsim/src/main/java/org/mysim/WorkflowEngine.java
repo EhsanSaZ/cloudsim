@@ -267,9 +267,35 @@ public class WorkflowEngine extends SimEntity {
         Workflow w = WorkflowList.getById(getWorkflowList(), task.getWorkflowID());
         if (w != null) {
             w.getExecutedTaskList().add(task);
-            deadlineDistributor.setWorkflow(w);
-            deadlineDistributor.updateSubDeadlines();
-            collectReadyTaskList(task, w);
+            w.getSubmittedTaskList().remove(task);
+            if (w.getTaskList().size() > 0){
+                deadlineDistributor.setWorkflow(w);
+                deadlineDistributor.updateSubDeadlines();
+                collectReadyTaskList(task, w);
+            } else if (w.getTaskList().size() == 0 && w.getSubmittedTaskList().size() == 0) {
+                // this w is done..
+                // delete all files from replica catalog
+                List<FileItem> allFileList = new ArrayList<>();
+                for (Task t : w.getExecutedTaskList()){
+                    for (FileItem file : t.getFileList()){
+                        ReplicaCatalog.deleteFile(file.getName());
+                        ReplicaCatalog.removeFileStorage(file.getName());
+//                        if (file.getType() == Parameters.FileType.INPUT && !allFileList.contains(file)) {
+//                            allFileList.add(file);
+//
+//                        }else if (file.getType() == Parameters.FileType.OUTPUT){
+//                            allFileList.add(file);
+//                        }
+                    }
+                }
+//                for (FileItem file: allFileList){
+////                    if (ReplicaCatalog.containsFile(file.getName())){
+//                        ReplicaCatalog.deleteFile(file.getName());
+//                        ReplicaCatalog.removeFileStorage(file.getName());
+////                    }
+//                }
+            }
+
         }
     }
 
