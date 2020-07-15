@@ -30,11 +30,13 @@ public class MySimTags {
     public static final int SUBMIT_NEXT_WORKFLOW = BASE + 7;
     public static final int SCHEDULING_READY_TQ = BASE + 8;
     public static final int CHECK_FINISHED_STATUS = BASE + 9;
+    public static final int VM_CREATE_DYNAMIC_ACK = BASE + 10;
+    public static final int CONTAINER_SUBMIT_DYNAMIC_ACK = BASE + 11;
+    public static final int CLOUDLET_SUBMIT_DYNAMIC = BASE + 12;
+    public static final int DO_MONITORING = BASE + 13;
+
 //    public static final int SUBMIT_VM = BASE + 9;
 //    public static final int SCHED_INTERVAL = BASE + 10;
-
-//    public static final int SUBMIT_NEXT_WORKFLOW = BASE + 11;
-//    public static final int SUBMIT_NEXT_WORKFLOW = BASE + 12;
 
 
     /**

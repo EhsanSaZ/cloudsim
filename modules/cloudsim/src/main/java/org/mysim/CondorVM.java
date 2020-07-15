@@ -1,17 +1,21 @@
 package org.mysim;
 
+import org.cloudbus.cloudsim.VmStateHistoryEntry;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerBwProvisioner;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerPe;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerRamProvisioner;
 import org.cloudbus.cloudsim.container.core.PowerContainerVm;
 import org.cloudbus.cloudsim.container.schedulers.ContainerScheduler;
 import org.mysim.utils.MySimTags;
+import org.mysim.utils.VmStateEntry;
 //import org.workflowsim.WorkflowSimTags;
 
+import java.util.LinkedList;
 import java.util.List;
 
 public class CondorVM extends PowerContainerVm {
     private int state;
+    private final List<VmStateEntry> busyStateHistory = new LinkedList<VmStateEntry>();
 
     private double costPerMem = 0.0;
     private double costPerBW = 0.0;
@@ -38,12 +42,28 @@ public class CondorVM extends PowerContainerVm {
         setCostPerBW(costPerBW);
     }
 
+    public void addBusyStateHistory( double time, int state){
+        VmStateEntry newState = new VmStateEntry(time, state);
+        if (!getBusyStateHistory().isEmpty()){
+            VmStateEntry previousState = getBusyStateHistory().get(getBusyStateHistory().size() - 1);
+            if (previousState.getTime() == time) {
+                getBusyStateHistory().set(getBusyStateHistory().size() - 1, newState);
+                return;
+            }
+        }
+        getBusyStateHistory().add(newState);
+    }
+
     public int getState() {
         return state;
     }
 
     public void setState(int state) {
         this.state = state;
+    }
+
+    public List<VmStateEntry> getBusyStateHistory() {
+        return busyStateHistory;
     }
 
     public double getCostPerMem() {

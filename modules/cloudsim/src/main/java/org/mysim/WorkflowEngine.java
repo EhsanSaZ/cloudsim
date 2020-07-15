@@ -67,6 +67,9 @@ public class WorkflowEngine extends SimEntity {
             case MySimTags.SUBMIT_NEXT_WORKFLOW:
                 processNextWorkflowSubmit(ev);
                 break;
+            case MySimTags.DO_MONITORING:
+                processMonitoringVms(ev);
+                break;
             case MySimTags.SCHEDULING_READY_TQ:
                 processPlanningReadyTaskList();
                 break;
@@ -83,10 +86,10 @@ public class WorkflowEngine extends SimEntity {
                 // and submit them through broker in datacenter
                 processContainerCreate(ev);
                 break;
-            case CloudSimTags.CLOUDLET_SUBMIT_ACK:
-                // on task submit ack we should log this... and any thing needed
-                processCloudletSubmitAck(ev);
-                break;
+//            case CloudSimTags.CLOUDLET_SUBMIT_ACK:
+//                // on task submit ack we should log this... and any thing needed
+//                processCloudletSubmitAck(ev);
+//                break;
             case CloudSimTags.CLOUDLET_RETURN:
                 // on task return ack we should log and collect all ready tasks for scheduling...
                 //
@@ -119,6 +122,15 @@ public class WorkflowEngine extends SimEntity {
             schedule(this.getId(), Parameters.CHECK_FINISHED_STATUS_DELAY, MySimTags.CHECK_FINISHED_STATUS, null);
         }
 
+    }
+
+    public void processMonitoringVms(SimEvent ev){
+
+        List <? extends ContainerVm> vmToDestroyList = new ArrayList<>();
+        // TODO EHSAN: calculate the list according to vm state history from broker crated vm list..
+        broker.destroyVms(vmToDestroyList);
+
+        schedule(this.getId(), Parameters.MONITORING_INTERVAL, MySimTags.DO_MONITORING,null);
     }
 
     public void processDatastaging(Workflow wf){
@@ -199,8 +211,7 @@ public class WorkflowEngine extends SimEntity {
                         list.add(c);
                     }
                 }
-                //TODO EHSAN : new functions in broker and check for list and pointers in case of modification of this list
-                //broker.submitContainerListDynamic(list);
+                broker.submitContainerListDynamic(list);
                 getNewRequiredContainersOnNewVms().removeAll( list);
                 getSubmittedNewRequiredContainers().addAll(list);
             }
@@ -249,8 +260,7 @@ public class WorkflowEngine extends SimEntity {
                 w.getSubmittedTaskList().add(t);
             }
         }
-        //TODO EHSAN : new functions in broker and check for list and pointers in case of modification of this list
-        //broker.submitTaskListDynamic(list);
+        broker.submitTaskListDynamic(list);
     }
     public void processCloudletSubmitAck(SimEvent ev) {
         // not implemented yet
@@ -378,17 +388,15 @@ public class WorkflowEngine extends SimEntity {
             // submit new containers on already running vms and submit new required vms..
 
             // first submit new containers on already running vms--> on receive container create ack submit tasks on these containers...
-            //TODO EHSAN : two new functions in broker and check for list and pointers in case of modification of this list
             if (getNewRequiredContainers().size() > 0){
-                //broker.submitContainerListDynamic(getNewRequiredContainers());
+                broker.submitContainerListDynamic(getNewRequiredContainers());
                 getSubmittedNewRequiredContainers().addAll(getNewRequiredContainers());
                 getNewRequiredContainers().clear();
 //        setNewRequiredContainers(new ArrayList<>());
             }
             if (getNewRequiredVms().size() > 0){
                 // second submit new vms --> on receive vm create ack submits new containers on new vms on these new vms...
-                //TODO EHSAN : two new functions in broker and check for list and pointers in case of modification of this list
-                //broker.submitVmsListDynamic(getNewRequiredVms());
+                broker.createVMsInDataCenterDynamic(getNewRequiredVms());
                 getSubmittedNewRequiredVms().addAll(getNewRequiredVms());
                 getNewRequiredVms().clear();
 //        setNewRequiredVms(new ArrayList<>());
@@ -411,6 +419,7 @@ public class WorkflowEngine extends SimEntity {
         Log.printConcatLine(getName(), " is starting...");
         schedule(this.getId(), 0, MySimTags.SUBMIT_NEXT_WORKFLOW, null);
         schedule(this.getId(), Parameters.R_T_Q_SCHEDULING_INTERVAL, MySimTags.SCHEDULING_READY_TQ, null);
+        schedule(this.getId(), Parameters.MONITORING_INTERVAL, MySimTags.DO_MONITORING,null);
     }
 
     @Override

@@ -60,6 +60,7 @@ public class Parameters {
     public static final int VM_SIZE = 2500;
 
     public static final int R_T_Q_SCHEDULING_INTERVAL = 100;
+    public static final int MONITORING_INTERVAL = 500;
     public static final int CHECK_FINISHED_STATUS_DELAY = 200;
 
 }
