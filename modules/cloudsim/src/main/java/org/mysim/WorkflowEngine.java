@@ -190,7 +190,7 @@ public class WorkflowEngine extends SimEntity {
             schedule(this.getId(), 0,CloudSimTags.END_OF_SIMULATION, null );
             // TODO EHSAN: do any extra needed action here..like signal to other entities...
         }else {
-            // TODO EHSAN: use an appropriate delay
+            // T ODO EHSAN: use an appropriate delay
             schedule(this.getId(), Parameters.CHECK_FINISHED_STATUS_DELAY, MySimTags.CHECK_FINISHED_STATUS, null);
         }
     }
@@ -383,7 +383,7 @@ public class WorkflowEngine extends SimEntity {
     public void processPlanningReadyTaskList() {
         if ( getReadyTaskList().size() > 0){
             MyPlanningAlgorithm planning_algorithm = (MyPlanningAlgorithm) getPlanner();
-            planning_algorithm.ScheduleTasks(getReadyTaskList(), broker.getVmsCreatedList(),
+            planning_algorithm.ScheduleTasks( broker, getReadyTaskList(),
                     getNewRequiredContainers(), getNewRequiredVms(), getNewRequiredContainersOnNewVms());
             // submit new containers on already running vms and submit new required vms..
 

@@ -154,7 +154,7 @@ public class WorkflowParser {
                             Log.printLine("Cannot find runtime for " + nodeName + ",set it to be 0");
                         }
 
-                        // TODO EHSAN: MEMORY IS IN BYTES..CONVERT IF NEEDED
+                        // T ODO EHSAN: MEMORY IS IN BYTES..CONVERT IF NEEDED
                         double peak_memory = 0;
                         if (node.getAttributeValue("peak_memory") != null) {
                             String node_peak_memory = node.getAttributeValue("peak_memory");
@@ -246,7 +246,7 @@ public class WorkflowParser {
                         Task task;
                         //In case of multiple workflow submission. Make sure the jobIdStartsFrom is consistent.
                         synchronized (this) {
-                            //TODO EHSAN: create task appropriate utilization models..
+                            //T ODO EHSAN: create task appropriate utilization models..
                             task = new Task(this.jobIdStartsFrom, wf.getWorkflowId(),length, peak_memory);
                             this.jobIdStartsFrom++;
                         }

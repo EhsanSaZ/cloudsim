@@ -300,12 +300,24 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 //        setVmsAcks(0);
      }
 
+     public void destroyContainer(Container container){
+        // must use this only when there is no task running on the container...
+         if(getContainersCreatedList().contains(container)){
+             getContainersCreatedList().remove(container);
+             getContainersToVmsMap().remove(container.getId());
+         }
+         int datacenterId = getVmsToDatacentersMap().get(container.getVm().getId());
+         schedule(datacenterId, CloudSim.getMinTimeBetweenEvents(), MySimTags.CONTAINER_DESTROY, container);
+         getContainerList().remove(container);
+
+     }
+
     public void destroyVms(List<? extends ContainerVm> list){
-        // T ODO EHSAN: this logic may be not true..
+        // use this only when there are no containers on the vm running any tasks
+        // T ODO EHSAN: this logic is not true..
         // weak logic for creation and process response of container create
         for(ContainerVm vm : list){
             int datacenterId = getVmsToDatacentersMap().get(vm.getId());
-
 //            List <Container> toRemove = new ArrayList<>();
 //            for (Container c: getContainersCreatedList()){
 //                if (c.getVm().getId()==vm.getId()){
@@ -320,17 +332,20 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
             // we should be aware for this for any logic.. below or up
             //actually there must be no container on this vm if we are going to destroy it
             // and we must to migrate those containers on this vm before destroying
-            for (Container c: vm.getContainerList()){
-                if(getContainersCreatedList().contains(c)){
+            if (vm.getContainerList().size() > 0) {
+                for (Container container: vm.getContainerList()){
+                    if(getContainersCreatedList().contains(container)){
 //                    toRemove.add(c);
-                    //remove all containers on this vm  from container created list and the map
-                    getContainersCreatedList().remove(c);
-                    getContainersToVmsMap().remove(c.getId());
+                        //remove all containers on this vm  from container created list and the map
+                        getContainersCreatedList().remove(container);
+                        getContainersToVmsMap().remove(container.getId());
+                    }
+                    schedule(datacenterId, CloudSim.getMinTimeBetweenEvents(), MySimTags.CONTAINER_DESTROY, container);
+                    getContainerList().remove(container);
                 }
-                getContainerList().remove(c);
             }
             //Destroy all containers on this vm
-            vm.containerDestroyAll();
+//            vm.containerDestroyAll();
 
             getVmsToDatacentersMap().remove(vm.getId());
             getVmsCreatedList().remove(vm);

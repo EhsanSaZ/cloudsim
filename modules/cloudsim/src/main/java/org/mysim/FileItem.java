@@ -68,4 +68,22 @@ public class FileItem {
         }
         return false;
     }
+
+    public boolean isRealOutputFile(List<FileItem> list){
+
+        if (this.getType() == Parameters.FileType.OUTPUT)//input file
+        {
+            for (FileItem another : list) {
+                if (another.getName().equals(this.getName())
+                        /**
+                         * if another file is output file
+                         */
+                        && another.getType() == Parameters.FileType.INPUT) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
 }

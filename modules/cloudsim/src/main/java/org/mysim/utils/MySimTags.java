@@ -34,6 +34,8 @@ public class MySimTags {
     public static final int CONTAINER_SUBMIT_DYNAMIC_ACK = BASE + 11;
     public static final int CLOUDLET_SUBMIT_DYNAMIC = BASE + 12;
     public static final int DO_MONITORING = BASE + 13;
+    public static final int CONTAINER_DESTROY = BASE + 14;
+    public static final int CONTAINER_DESTROY_ACK = BASE + 15;
 
 //    public static final int SUBMIT_VM = BASE + 9;
 //    public static final int SCHED_INTERVAL = BASE + 10;
