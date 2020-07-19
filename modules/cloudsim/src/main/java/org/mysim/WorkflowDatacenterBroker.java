@@ -9,6 +9,7 @@ import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEvent;
 ;
 import org.mysim.utils.MySimTags;
+import org.mysim.utils.Parameters;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,8 +45,10 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                 processCloudletReturn(ev);
                 break;
             case MySimTags.VM_CREATE_DYNAMIC_ACK:
+            case CloudSimTags.VM_CREATE_ACK:
                 processVmCreateDynamic(ev);
                 break;
+            case containerCloudSimTags.CONTAINER_CREATE_ACK:
             case MySimTags.CONTAINER_SUBMIT_DYNAMIC_ACK:
                 processContainerCreateDynamic(ev);
                 break;
@@ -58,16 +61,16 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 
             // it is probably not needed at all from here to.. new signals are used
             // VM Creation answer
-            case CloudSimTags.VM_CREATE_ACK:
-                processVmCreate(ev);
-                break;
+//            case CloudSimTags.VM_CREATE_ACK:
+//                processVmCreate(ev);
+//                break;
             // New VM Creation answer
             case containerCloudSimTags.VM_NEW_CREATE:
                 processNewVmCreate(ev);
                 break;
-            case containerCloudSimTags.CONTAINER_CREATE_ACK:
-                processContainerCreate(ev);
-                break;
+//            case containerCloudSimTags.CONTAINER_CREATE_ACK:
+//                processContainerCreate(ev);
+//                break;
             //..it is probably not needed at all to here.. new signals are used
             // if the simulation finishes
             case CloudSimTags.END_OF_SIMULATION:
@@ -234,9 +237,10 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 //                    if (ContainerParameters.getOverheadParams().getQueueDelay() != null) {
 //                        delay = ContainerParameters.getOverheadParams().getQueueDelay(cloudlet);
 //                    }
+//                    schedule(getVmsToDatacentersMap().get(cloudlet.getVmId()), CloudSim.getMinTimeBetweenEvents(),
+//                            MySimTags.CLOUDLET_SUBMIT_DYNAMIC, cloudlet);
                     schedule(getVmsToDatacentersMap().get(cloudlet.getVmId()), CloudSim.getMinTimeBetweenEvents(),
-                            MySimTags.CLOUDLET_SUBMIT_DYNAMIC, cloudlet);
-
+                            CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
                 }
             }
         }
@@ -256,7 +260,9 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
             }
         }
 
-        sendNow(getDatacenterIdsList().get(0), MySimTags.CONTAINER_SUBMIT_DYNAMIC_ACK, successfullySubmitted);
+//        sendNow(getDatacenterIdsList().get(0), MySimTags.CONTAINER_SUBMIT_DYNAMIC_ACK, successfullySubmitted);
+//        sendNow(getDatacenterIdsList().get(0), containerCloudSimTags.CONTAINER_SUBMIT, successfullySubmitted);
+        schedule(getDatacenterIdsList().get(0), Parameters.CONTAINER_PROVISIONING_DELAY, containerCloudSimTags.CONTAINER_SUBMIT, successfullySubmitted);
     }
      public void createVMsInDataCenterDynamic (List< ? extends ContainerVm> vmList){
          // T ODO EHSAN: double check logic
@@ -277,7 +283,9 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                      String nextDataCenterName = CloudSim.getEntityName(nextDataCenterId);
                      Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Create VM #" + vm.getId()
                              + " in " + nextDataCenterName + " DYNAMIC TOR");
-                     sendNow(nextDataCenterId, MySimTags.VM_CREATE_DYNAMIC_ACK, vm);
+//                     sendNow(nextDataCenterId, MySimTags.VM_CREATE_DYNAMIC_ACK, vm);
+//                     sendNow(nextDataCenterId, CloudSimTags.VM_CREATE_ACK, vm);
+                     schedule(nextDataCenterId, Parameters.VM_PROVISIONING_DELAY,CloudSimTags.VM_CREATE_ACK, vm);
                      requestedVms++;
                  }else{
                      List <Integer> requestedList = getVmToDatacenterRequestedIdsList().get(vm.getId());
@@ -288,7 +296,9 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                              String nextDataCenterName = CloudSim.getEntityName(nextDataCenterId);
                              Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Create VM #" + vm.getId()
                                      + " in " + nextDataCenterName + " DYNAMIC TOR");
-                             sendNow(nextDataCenterId, MySimTags.VM_CREATE_DYNAMIC_ACK, vm);
+//                             sendNow(nextDataCenterId, MySimTags.VM_CREATE_DYNAMIC_ACK, vm);
+//                             sendNow(nextDataCenterId, CloudSimTags.VM_CREATE_ACK, vm);
+                             schedule(nextDataCenterId, Parameters.VM_PROVISIONING_DELAY, CloudSimTags.VM_CREATE_ACK, vm);
                              requestedVms++;
                          }
                      }
@@ -307,7 +317,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
              getContainersToVmsMap().remove(container.getId());
          }
          int datacenterId = getVmsToDatacentersMap().get(container.getVm().getId());
-         schedule(datacenterId, CloudSim.getMinTimeBetweenEvents(), MySimTags.CONTAINER_DESTROY, container);
+         schedule(datacenterId, Parameters.CONTAINER_DESTROY_DELAY, MySimTags.CONTAINER_DESTROY, container);
          getContainerList().remove(container);
 
      }
@@ -340,7 +350,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                         getContainersCreatedList().remove(container);
                         getContainersToVmsMap().remove(container.getId());
                     }
-                    schedule(datacenterId, CloudSim.getMinTimeBetweenEvents(), MySimTags.CONTAINER_DESTROY, container);
+                    schedule(datacenterId, Parameters.CONTAINER_DESTROY_DELAY , MySimTags.CONTAINER_DESTROY, container);
                     getContainerList().remove(container);
                 }
             }
@@ -352,7 +362,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 
             setVmsDestroyed(getVmsDestroyed() +1);
 
-            schedule(datacenterId, CloudSim.getMinTimeBetweenEvents(), CloudSimTags.VM_DESTROY, vm);
+            schedule(datacenterId, Parameters.VM_DESTROY_DELAY, CloudSimTags.VM_DESTROY, vm);
         }
     }
 

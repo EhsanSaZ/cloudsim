@@ -254,12 +254,13 @@ public class WorkflowEngine extends SimEntity {
         for(Task t: getReadyTaskList()){
             if(t.getContainerId() == containerId && t.getVmId() == vmId){
                 list.add(t);
-                getReadyTaskList().remove(t);
+//                getReadyTaskList().remove(t);
                 Workflow w = WorkflowList.getById(getWorkflowList(), t.getWorkflowID());
                 assert w != null;
                 w.getSubmittedTaskList().add(t);
             }
         }
+        getReadyTaskList().removeAll(list);
         broker.submitTaskListDynamic(list);
     }
     public void processCloudletSubmitAck(SimEvent ev) {

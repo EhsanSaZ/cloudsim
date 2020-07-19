@@ -82,10 +82,18 @@ public class Parameters {
     public static final double COST_PER_STORAGE[] = new double[]{1, 2, 3, 4};
     public static final double COST_PER_BW[] = new double[]{1, 2, 3, 4};
 
-    public static final int VM_SIZE = 2500;
+    public static final int VM_SIZE = 2500;//MB
 
     public static final int R_T_Q_SCHEDULING_INTERVAL = 100;
     public static final int MONITORING_INTERVAL = 500;
     public static final int CHECK_FINISHED_STATUS_DELAY = 200;
+
+    public static final int CONTAINER_SIZE = 600;// MB
+
+    public static final double VM_PROVISIONING_DELAY = 100;
+    public static final double VM_DESTROY_DELAY = 0.01;
+    public static final double CONTAINER_PROVISIONING_DELAY = 10;
+    public static final double CONTAINER_DESTROY_DELAY = 0.01;
+
 
 }

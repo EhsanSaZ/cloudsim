@@ -73,7 +73,7 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
                 break;
 
             // New Cloudlet arrives
-            // TODO: remove new tag in broker.. old ones are ok..
+            // T ODO: remove new tag in broker.. old ones are ok..
             case  MySimTags.CLOUDLET_SUBMIT_DYNAMIC:
             case CloudSimTags.CLOUDLET_SUBMIT:
                 processCloudletSubmit(ev, false);
@@ -134,7 +134,7 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             case CloudSimTags.VM_CREATE:
                 processVmCreate(ev, false);
                 break;
-            // TODO: remove new tag in broker.. old ones are ok..
+            // T ODO: remove new tag in broker.. old ones are ok..
             case  MySimTags.VM_CREATE_DYNAMIC_ACK:
             case CloudSimTags.VM_CREATE_ACK:
                 processVmCreate(ev, true);
@@ -176,7 +176,7 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
                 updateCloudletProcessing();
                 checkCloudletCompletion();
                 break;
-
+            // T ODO: remove new tag in broker.. old ones are ok..
             case MySimTags.CONTAINER_SUBMIT_DYNAMIC_ACK:
             case containerCloudSimTags.CONTAINER_SUBMIT:
                 processContainerSubmit(ev, true);
@@ -306,6 +306,7 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             Log.printLine(getName() + ".processCloudletSubmit(): " + "Exception error.");
             e.printStackTrace();
         }
+        checkCloudletCompletion();
     }
     private void stageInFile2FileSystem(Task task){
         List<FileItem> fList = task.getFileList();
@@ -482,8 +483,8 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             } else {
                 data[2] = CloudSimTags.FALSE;
             }
-//            send(containerVm.getUserId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.VM_CREATE_ACK, data);
-            send(containerVm.getUserId(), CloudSim.getMinTimeBetweenEvents(), MySimTags.VM_CREATE_DYNAMIC_ACK, data);
+            send(containerVm.getUserId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.VM_CREATE_ACK, data);
+//            send(containerVm.getUserId(), CloudSim.getMinTimeBetweenEvents(), MySimTags.VM_CREATE_DYNAMIC_ACK, data);
         }
 
         if (result) {
@@ -498,6 +499,39 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
         }
     }
 
+    @Override
+    protected void updateCloudletProcessing() {
+        // if some time passed since last processing
+        // R: for term is to allow loop at simulation start. Otherwise, one initial
+        // simulation step is skipped and schedulers are not properly initialized
+        //this is a bug of CloudSim if the runtime is smaller than 0.1 (now is 0.01) it doesn't work at all
+        if (CloudSim.clock() < 0.111 || CloudSim.clock() > getLastProcessTime() + 0.01) {
+            List<? extends ContainerHost> list = getVmAllocationPolicy().getContainerHostList();
+            double smallerTime = Double.MAX_VALUE;
+            // for each host...
+            for (ContainerHost host : list) {
+                // inform VMs to update processing
+                double time = host.updateContainerVmsProcessing(CloudSim.clock());
+                // what time do we expect that the next cloudlet will finish?
+                if (time < smallerTime) {
+                    smallerTime = time;
+                }
+            }
+            // gurantees a minimal interval before scheduling the event
+            if (smallerTime < CloudSim.clock() + 0.11) {
+                smallerTime = CloudSim.clock() + 0.11;
+            }
+//            if (smallerTime < CloudSim.clock() + CloudSim.getMinTimeBetweenEvents() + 0.01) {
+//                smallerTime = CloudSim.clock() + CloudSim.getMinTimeBetweenEvents() + 0.01;
+//            }
+
+            if (smallerTime != Double.MAX_VALUE) {
+                schedule(getId(), (smallerTime - CloudSim.clock()), CloudSimTags.VM_DATACENTER_EVENT);
+            }
+            setLastProcessTime(CloudSim.clock());
+        }
+    }
+    
     private void updateTaskExecTime(Task task, Container container) {
         task.setTaskFinishTime(task.getExecStartTime() + task.getCloudletLength() / container.getMips());
     }
@@ -539,6 +573,69 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
         }
 
         getContainerVmList().remove(containerVm);
+    }
+
+    @Override
+    public void processContainerSubmit(SimEvent ev, boolean ack) {
+        List<Container> containerList = (List<Container>) ev.getData();
+        for (Container container : containerList) {
+            boolean result ;
+            if (container.getVm() != null){
+                result = getContainerAllocationPolicy().allocateVmForContainer(container, container.getVm());
+            }else {
+                result = false;
+            }
+            if (ack) {
+                int[] data = new int[3];
+                data[1] = container.getId();
+                if (result) {
+                    data[2] = CloudSimTags.TRUE;
+                } else {
+                    data[2] = CloudSimTags.FALSE;
+                }
+                if (result) {
+                    ContainerVm containerVm = getContainerAllocationPolicy().getContainerVm(container);
+                    if(containerVm.getId() == -1){
+                        Log.printConcatLine("The ContainerVM ID is not known (-1) !");
+                    }
+                    getContainerList().add(container);
+                    if (container.isBeingInstantiated()) {
+                        container.setBeingInstantiated(false);
+                    }
+
+                }else {
+                    data[0] = -1;
+                    //notAssigned.add(container);
+                    Log.printLine(String.format("Couldn't find a vm to host the container #%s", container.getId()));
+                }
+                send(ev.getSource(), CloudSim.getMinTimeBetweenEvents(), containerCloudSimTags.CONTAINER_CREATE_ACK, data);
+            }
+        }
+    }
+
+    /**
+     * Verifies if some cloudlet inside this PowerDatacenter already finished. If yes, send it to
+     * the User/Broker
+     *
+     * @pre $none
+     * @post $none
+     */
+    @Override
+    protected void checkCloudletCompletion() {
+        List<? extends ContainerHost> list = getVmAllocationPolicy().getContainerHostList();
+        for (ContainerHost host : list) {
+            for (ContainerVm vm : host.getVmList()) {
+                for (Container container : vm.getContainerList()) {
+                    while (container.getContainerCloudletScheduler().isFinishedCloudlets()) {
+                        Cloudlet cl = container.getContainerCloudletScheduler().getNextFinishedCloudlet();
+                        if (cl != null) {
+                            register(cl);
+                            sendNow(cl.getUserId(), CloudSimTags.CLOUDLET_RETURN, cl);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void register(Cloudlet cl) {
