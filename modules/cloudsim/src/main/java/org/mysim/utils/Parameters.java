@@ -1,5 +1,7 @@
 package org.mysim.utils;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
+
 import java.util.List;
 
 public class Parameters {
@@ -95,5 +97,6 @@ public class Parameters {
     public static final double CONTAINER_PROVISIONING_DELAY = 10;
     public static final double CONTAINER_DESTROY_DELAY = 0.01;
 
-
+    public static final NormalDistribution CPU_DEGRADATION = new NormalDistribution(12,10);
+    public static final NormalDistribution BW_DEGRADATION = new NormalDistribution(9.5,5);
 }

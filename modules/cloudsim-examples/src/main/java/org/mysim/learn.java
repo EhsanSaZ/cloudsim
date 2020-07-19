@@ -141,37 +141,41 @@ public class learn {
 //        }
 
 
-        int num_user = 1; // number of cloud users
-        Calendar calendar = Calendar.getInstance(); // Calendar whose fields have been initialized with the current date and time.
-        boolean trace_flag = false; // trace events
-        CloudSim.init(num_user, calendar, trace_flag);
-
-        ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.SHARED;
-        ReplicaCatalog.init(file_system);
-
-        Parameters.init("E:\\term12\\Dataset\\test workload");
-
-        List <Task> rady_list = new ArrayList<>();
-
-        WorkflowParser wp = new WorkflowParser(1);
-        WorkflowEngine we = new WorkflowEngine("workflow_engine");
-        we.setWorkflowParser(wp);
-
-        if(wp.hasNextWorkflow()){
-            Workflow wf = wp.get_next_workflow();
-
-            List <Task> list = wf.getTaskList();
-//            Task t1 = list.get(0);
-            for (ContainerCloudlet c: wf.getTaskList()){
-                Task t = (Task) c;
-                t.setSubDeadline(500);
-                c.setVmId(1);
-            }
-
-            System.out.println(wf.getTaskList().size());
-
+//        int num_user = 1; // number of cloud users
+//        Calendar calendar = Calendar.getInstance(); // Calendar whose fields have been initialized with the current date and time.
+//        boolean trace_flag = false; // trace events
+//        CloudSim.init(num_user, calendar, trace_flag);
+//
+//        ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.SHARED;
+//        ReplicaCatalog.init(file_system);
+//
+//        Parameters.init("E:\\term12\\Dataset\\test workload");
+//
+//        List <Task> rady_list = new ArrayList<>();
+//
+//        WorkflowParser wp = new WorkflowParser(1);
+//        WorkflowEngine we = new WorkflowEngine("workflow_engine");
+//        we.setWorkflowParser(wp);
+//
+//        if(wp.hasNextWorkflow()){
+//            Workflow wf = wp.get_next_workflow();
+//
+//            List <Task> list = wf.getTaskList();
+////            Task t1 = list.get(0);
+//            for (ContainerCloudlet c: wf.getTaskList()){
+//                Task t = (Task) c;
+//                t.setSubDeadline(500);
+//                c.setVmId(1);
+//            }
+//
+//            System.out.println(wf.getTaskList().size());
+//
+//        }
+        for ( int i = 1; i<10; i++){
+            double value = Parameters.CPU_DEGRADATION.sample();
+            System.out.println((long)value);
+            System.out.println(value);
         }
-
     }
 
 }

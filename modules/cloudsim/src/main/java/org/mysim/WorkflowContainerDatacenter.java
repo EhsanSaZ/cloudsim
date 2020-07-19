@@ -274,7 +274,23 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             double totalTransterTime = input_fileTransferTime + output_fileTransferTime;
 
             ContainerCloudletScheduler scheduler = container.getContainerCloudletScheduler();
-            //  TODO Ehsan: consider input output transfer time for task finish time.
+
+            // increase task size to simulate cpu degradation..
+            double cpuDegradation =  Parameters.CPU_DEGRADATION.sample();
+            if (cpuDegradation > 0 && cpuDegradation < 24 ){
+                task.setCloudletLength((long) (task.getCloudletLength() * 100 / (100- cpuDegradation)));
+            } else if (cpuDegradation > 0){
+                task.setCloudletLength((long) (task.getCloudletLength() * 1.32));// 100/76
+            }
+
+            // increase total transfer time to simulate BW degradation
+            long bwDegradation = (long) Parameters.BW_DEGRADATION.sample();
+            if (bwDegradation > 0 && bwDegradation < 19 ){
+                totalTransterTime = totalTransterTime * 100 /(100 - bwDegradation) ;
+            } else if (bwDegradation > 19){
+                totalTransterTime = totalTransterTime * 1.23 ; // 100/81
+            }
+            //  T ODO Ehsan: consider input output transfer time for task finish time.
 
             double estimatedFinishTime = scheduler.cloudletSubmit(task, totalTransterTime);
 //            updateTaskExecTime(job, container);
@@ -531,7 +547,7 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             setLastProcessTime(CloudSim.clock());
         }
     }
-    
+
     private void updateTaskExecTime(Task task, Container container) {
         task.setTaskFinishTime(task.getExecStartTime() + task.getCloudletLength() / container.getMips());
     }
