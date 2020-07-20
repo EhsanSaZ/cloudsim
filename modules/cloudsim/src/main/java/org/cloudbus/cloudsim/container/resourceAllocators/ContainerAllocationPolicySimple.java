@@ -98,7 +98,7 @@ public class ContainerAllocationPolicySimple extends ContainerAllocationPolicy {
 			getContainerVmTable().put(container.getUid(), containerVm);
 
 			int requiredPes = container.getNumberOfPes();
-			int idx = getContainerVmList().indexOf(container);
+			int idx = getContainerVmList().indexOf(containerVm);
 			getUsedPes().put(container.getUid(), requiredPes);
 			getFreePes().set(idx, getFreePes().get(idx) - requiredPes);
 
