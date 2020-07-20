@@ -12,6 +12,7 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEvent;
 
+import org.cloudbus.cloudsim.util.MathUtil;
 import org.mysim.utils.MySimTags;
 import org.mysim.utils.Parameters;
 import org.mysim.utils.ReplicaCatalog;
@@ -253,6 +254,15 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
                     break;
             }
 
+            // set total mips of container and vm for this task...
+            task.setAllocatedContainerRam(container.getRam());
+//            task.setAllocatedContainerTotalMips(container.getCurrentRequestedTotalMips());
+//            task.setAllocatedContainerTotalMips(container.getMips() * container.getNumberOfPes());
+            task.setAllocatedContainerTotalMips(MathUtil.sum(vm.getContainerScheduler().getAllocatedMipsForContainer(container)));
+            task.setAllocatedVmRam(vm.getRam());
+//            task.setAllocatedVmTotalMips(vm.getMips());
+            task.setAllocatedVmTotalMips(vm.getTotalMips());
+
             /**
              * Stage-in file && Shared based on the file.system
              */
@@ -272,7 +282,6 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
                 output_fileTransferTime = processDataStageOutForComputeJob(task.getFileList(), task);
             }
             double totalTransterTime = input_fileTransferTime + output_fileTransferTime;
-
             ContainerCloudletScheduler scheduler = container.getContainerCloudletScheduler();
 
             // increase task size to simulate cpu degradation..
@@ -485,7 +494,7 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
 
     @Override
     protected void processVmCreate(SimEvent ev, boolean ack) {
-        ContainerVm containerVm = (ContainerVm) ev.getData();
+        CondorVM containerVm = (CondorVM) ev.getData();
 
         boolean result = getVmAllocationPolicy().allocateHostForVm(containerVm);
 
@@ -505,7 +514,7 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
 
         if (result) {
             getContainerVmList().add(containerVm);
-
+            containerVm.setLeaseTime(CloudSim.clock());
             if (containerVm.isBeingInstantiated()) {
                 containerVm.setBeingInstantiated(false);
             }
@@ -570,7 +579,7 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
 
     @Override
     protected void processVmDestroy(SimEvent ev, boolean ack) {
-        ContainerVm containerVm = (ContainerVm) ev.getData();
+        CondorVM containerVm = (CondorVM) ev.getData();
         // for destroying a vm , first we must remove all containers on it, or migrate them here we remove..
         for( Container container: containerVm.getContainerList()){
             getContainerAllocationPolicy().deallocateVmForContainer(container);
@@ -587,7 +596,7 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
 
             sendNow(containerVm.getUserId(), CloudSimTags.VM_DESTROY_ACK, data);
         }
-
+        containerVm.setReleaseTime(CloudSim.clock());
         getContainerVmList().remove(containerVm);
     }
 

@@ -22,6 +22,9 @@ public class CondorVM extends PowerContainerVm {
     private double costPerStorage = 0.0;
     private double cost = 0.0;
 
+    private double leaseTime = -1;
+    private double releaseTime = -1;
+
     public CondorVM(final int id, final int userId, final double mips, final float ram, final long bw, final long size, final String vmm,
                     final ContainerScheduler containerScheduler, final ContainerRamProvisioner containerRamProvisioner, final ContainerBwProvisioner containerBwProvisioner,
                     List<? extends ContainerPe> peList, final double schedulingInterval) {
@@ -96,5 +99,21 @@ public class CondorVM extends PowerContainerVm {
 
     public void setCost(double cost) {
         this.cost = cost;
+    }
+
+    public double getLeaseTime() {
+        return leaseTime;
+    }
+
+    public double getReleaseTime() {
+        return releaseTime;
+    }
+
+    public void setLeaseTime(double leaseTime) {
+        this.leaseTime = leaseTime;
+    }
+
+    public void setReleaseTime(double releaseTime) {
+        this.releaseTime = releaseTime;
     }
 }

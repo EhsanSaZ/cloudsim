@@ -20,12 +20,14 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 
     protected Map<Integer,List<Integer>> vmToDatacenterRequestedIdsList;
     private int workflowEngineId;
+    protected List<? extends ContainerVm> vmsDestroyedList;
 
     public WorkflowDatacenterBroker(String name, double overBookingfactor, int workflowEngineId) throws Exception {
         super(name, overBookingfactor);
         setVmToDatacenterRequestedIdsList(new HashMap<Integer, List<Integer>>());
         setWorkflowEngineId(workflowEngineId);
         setVmsAcks(0);
+        setVmsDestroyedList(new ArrayList<>());
     }
 
     @Override
@@ -220,7 +222,15 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
     }
 
     @Override
-    public void shutdownEntity() { Log.printConcatLine(getName(), " is shutting down..."); }
+    public void shutdownEntity() {
+        for (ContainerVm vm : getVmsCreatedList()){
+            CondorVM castedVm = (CondorVM) vm;
+            if (castedVm.getReleaseTime() == -1){
+                castedVm.setReleaseTime(CloudSim.clock());
+            }
+        }
+        Log.printConcatLine(getName(), " is shutting down...");
+    }
 
     public void submitTaskListDynamic(List<? extends ContainerCloudlet> taskList){
         // T ODO EHSAN: double check logic
@@ -359,7 +369,8 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 
             getVmsToDatacentersMap().remove(vm.getId());
             getVmsCreatedList().remove(vm);
-
+            getVmList().remove(vm);
+            getVmsDestroyedList().add(vm);
             setVmsDestroyed(getVmsDestroyed() +1);
 
             schedule(datacenterId, Parameters.VM_DESTROY_DELAY, CloudSimTags.VM_DESTROY, vm);
@@ -381,5 +392,14 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 
     public void setWorkflowEngineId(int workflowEngineId) {
         this.workflowEngineId = workflowEngineId;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends ContainerVm> List<T> getVmsDestroyedList() {
+        return (List<T>) vmsDestroyedList;
+    }
+
+    protected <T extends ContainerVm> void setVmsDestroyedList(List<T> vmsDestroyedList) {
+        this.vmsDestroyedList = vmsDestroyedList;
     }
 }

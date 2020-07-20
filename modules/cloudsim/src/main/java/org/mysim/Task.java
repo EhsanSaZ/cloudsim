@@ -4,6 +4,7 @@ import org.cloudbus.cloudsim.Consts;
 import org.cloudbus.cloudsim.UtilizationModel;
 import org.cloudbus.cloudsim.UtilizationModelFull;
 import org.cloudbus.cloudsim.container.core.ContainerCloudlet;
+import org.mysim.utils.Parameters;
 
 
 import java.util.ArrayList;
@@ -44,6 +45,12 @@ public class Task extends ContainerCloudlet {
 
     private double rank;
 
+    private double allocatedVmTotalMips;
+    private double allocatedVmRam;
+
+    private double allocatedContainerTotalMips;
+    private double allocatedContainerRam;
+
     public Task(final int taskId, int workflowId, final long taskLength, double peak_memory) {
         /**
          * We do not use cloudletFileSize and cloudletOutputSize here. We have
@@ -63,6 +70,10 @@ public class Task extends ContainerCloudlet {
         this.subBudget = -1;
         this.taskExecutionCost = -1;
         this.workflowID = workflowId;
+        this.allocatedVmTotalMips = -1;
+        this.allocatedVmRam = -1;
+        this.allocatedContainerTotalMips = -1;
+        this.allocatedContainerRam = -1;
 
     }
     public Task(final int taskId,int workflowId, final long taskLength, double peak_memory, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
@@ -78,6 +89,10 @@ public class Task extends ContainerCloudlet {
         this.subBudget = -1;
         this.taskExecutionCost = -1;
         this.workflowID = workflowId;
+        this.allocatedVmTotalMips = -1;
+        this.allocatedVmRam = -1;
+        this.allocatedContainerTotalMips = -1;
+        this.allocatedContainerRam = -1;
     }
 
     public Task(final int taskId,int workflowId, final long taskLength, double peak_memory, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
@@ -94,6 +109,10 @@ public class Task extends ContainerCloudlet {
         this.subBudget = -1;
         this.taskExecutionCost = -1;
         this.workflowID = workflowId;
+        this.allocatedVmTotalMips = -1;
+        this.allocatedVmRam = -1;
+        this.allocatedContainerTotalMips = -1;
+        this.allocatedContainerRam = -1;
     }
 
     public Task(final int taskId, int workflowId, final long taskLength, double peak_memory, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
@@ -110,6 +129,10 @@ public class Task extends ContainerCloudlet {
         this.subBudget = -1;
         this.taskExecutionCost = -1;
         this.workflowID = workflowId;
+        this.allocatedVmTotalMips = -1;
+        this.allocatedVmRam = -1;
+        this.allocatedContainerTotalMips = -1;
+        this.allocatedContainerRam = -1;
     }
 
     public Task(final int taskId,int workflowId, final long taskLength, double peak_memory, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
@@ -126,6 +149,10 @@ public class Task extends ContainerCloudlet {
         this.subBudget = -1;
         this.taskExecutionCost = -1;
         this.workflowID = workflowId;
+        this.allocatedVmTotalMips = -1;
+        this.allocatedVmRam = -1;
+        this.allocatedContainerTotalMips = -1;
+        this.allocatedContainerRam = -1;
     }
 
 
@@ -212,14 +239,17 @@ public class Task extends ContainerCloudlet {
     @Override
     public double getProcessingCost() {
         // cloudlet cost: execution cost...
-        double cost = getCostPerSec() * getActualCPUTime();
+        double relativeCostRate = getCostPerSec() * (Parameters.CPU_COST_FACTOR * getAllocatedContainerTotalMips() / getAllocatedVmTotalMips() +
+                                                    (1 - Parameters.CPU_COST_FACTOR) * getAllocatedContainerRam() / getAllocatedVmRam());
+
+        double cost = relativeCostRate * Math.ceil( getActualCPUTime() / Parameters.BILLING_PERIOD);;
 
         // ...plus input data transfer cost...
-        long fileSize = 0;
-        for (FileItem file : getFileList()) {
-            fileSize += file.getSize() / Consts.MILLION;
-        }
-        cost += costPerBw * fileSize;
+//        long fileSize = 0;
+//        for (FileItem file : getFileList()) {
+//            fileSize += file.getSize() / Consts.MILLION;
+//        }
+//        cost += costPerBw * fileSize;
         return cost;
     }
 
@@ -270,4 +300,20 @@ public class Task extends ContainerCloudlet {
     public void setRank(double rank) {
         this.rank = rank;
     }
+
+    public double getAllocatedVmTotalMips() { return allocatedVmTotalMips; }
+
+    public void setAllocatedVmTotalMips(double allocatedVmTotalMips) { this.allocatedVmTotalMips = allocatedVmTotalMips; }
+
+    public double getAllocatedVmRam() { return allocatedVmRam; }
+
+    public void setAllocatedVmRam(double allocatedVmRam) { this.allocatedVmRam = allocatedVmRam; }
+
+    public double getAllocatedContainerTotalMips() { return allocatedContainerTotalMips; }
+
+    public void setAllocatedContainerTotalMips(double allocatedContainerTotalMips) { this.allocatedContainerTotalMips = allocatedContainerTotalMips; }
+
+    public double getAllocatedContainerRam() { return allocatedContainerRam; }
+
+    public void setAllocatedContainerRam(double allocatedContainerRam) { this.allocatedContainerRam = allocatedContainerRam; }
 }

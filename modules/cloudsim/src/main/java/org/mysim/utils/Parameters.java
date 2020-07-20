@@ -99,4 +99,7 @@ public class Parameters {
 
     public static final NormalDistribution CPU_DEGRADATION = new NormalDistribution(12,10);
     public static final NormalDistribution BW_DEGRADATION = new NormalDistribution(9.5,5);
+
+    public static final int BILLING_PERIOD = 60;
+    public static final double CPU_COST_FACTOR = 0.5;
 }
