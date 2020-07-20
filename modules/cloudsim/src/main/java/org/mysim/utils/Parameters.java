@@ -78,7 +78,7 @@ public class Parameters {
     public static final double[] VM_MIPS = new double[]{1000, 1000, 1000, 1000};
     public static final int[] VM_PES = new int[]{1, 2, 4, 8};
     public static final float[] VM_RAM = new float[]{(float) 1024, (float) 2048, (float) 4096, (float) 8192};//**MB*
-    public static final int VM_BW = 100000;// BYTE OR BIT OR MB...
+    public static final int VM_BW = 100000;// Mb/s...
     public static final double COST[] = new double[]{3, 6, 9, 12};
     public static final double COST_PER_MEM[] = new double[]{1, 2, 3, 4};
     public static final double COST_PER_STORAGE[] = new double[]{1, 2, 3, 4};

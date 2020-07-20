@@ -239,8 +239,9 @@ public class Task extends ContainerCloudlet {
     @Override
     public double getProcessingCost() {
         // cloudlet cost: execution cost...
-        double relativeCostRate = getCostPerSec() * (Parameters.CPU_COST_FACTOR * getAllocatedContainerTotalMips() / getAllocatedVmTotalMips() +
-                                                    (1 - Parameters.CPU_COST_FACTOR) * getAllocatedContainerRam() / getAllocatedVmRam());
+        double relativeCostRate = getCostPerSec() * (Parameters.CPU_COST_FACTOR * (getAllocatedContainerTotalMips() / getAllocatedVmTotalMips()) +
+                                                    (1 - Parameters.CPU_COST_FACTOR) * (getAllocatedContainerRam() / getAllocatedVmRam())
+                                                    );
 
         double cost = relativeCostRate * Math.ceil( getActualCPUTime() / Parameters.BILLING_PERIOD);;
 

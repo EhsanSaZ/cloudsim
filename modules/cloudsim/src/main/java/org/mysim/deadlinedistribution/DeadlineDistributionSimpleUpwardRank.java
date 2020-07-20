@@ -97,7 +97,7 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
         for (Task t : wf.getTaskList()) {
             Map<Integer, Double> exeTimeMap = new HashMap<>();
             for (int i = 0; i < Parameters.VM_TYPES_NUMBERS; i++) {
-                exeTimeMap.put(i, t.getCloudletTotalLength() / Parameters.VM_MIPS[i] * Parameters.VM_PES[i]);
+                exeTimeMap.put(i, t.getCloudletTotalLength() / (Parameters.VM_MIPS[i] * Parameters.VM_PES[i]));
             }
             taskExecutionTimes.put(t, exeTimeMap);
         }

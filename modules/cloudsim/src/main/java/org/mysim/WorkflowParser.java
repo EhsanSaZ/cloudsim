@@ -297,7 +297,7 @@ public class WorkflowParser {
             }
 
 //            wf.setTaskList(taskList);
-            //TODO EHSAN: add deadline and budget to a workflow
+            //T ODO EHSAN: add deadline and budget to a workflow
 //            wf.setDeadline();
 //            wf.setBudget();
 //            this.workflowList.add(wf);

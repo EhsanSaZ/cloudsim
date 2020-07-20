@@ -275,9 +275,12 @@ public class WorkflowEngine extends SimEntity {
         // collect all ready among the child of this returened task...??
         ContainerCloudlet cloudlet = (ContainerCloudlet) ev.getData();
         Task task = (Task) cloudlet;
+        task.setTaskExecutionCost(task.getProcessingCost());
+        task.setTaskExecutionTime(task.getActualCPUTime());
         Workflow w = WorkflowList.getById(getWorkflowList(), task.getWorkflowID());
         if (w != null) {
             w.getExecutedTaskList().add(task);
+            w.setTotalCost(w.getTotalCost() + task.getTaskExecutionCost());
             w.getSubmittedTaskList().remove(task);
             if (w.getTaskList().size() > 0){
                 deadlineDistributor.setWorkflow(w);
