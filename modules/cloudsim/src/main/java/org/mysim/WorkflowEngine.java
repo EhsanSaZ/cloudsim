@@ -128,6 +128,10 @@ public class WorkflowEngine extends SimEntity {
 
         List <? extends ContainerVm> vmToDestroyList = new ArrayList<>();
         // TODO EHSAN: calculate the list according to vm state history from broker crated vm list..
+        // TODO EHSAN: remove this vm as a storage in replica
+        for(ContainerVm vm: vmToDestroyList){
+            ReplicaCatalog.removeStorageFromStorageList(Integer.toString(vm.getId()));
+        }
         broker.destroyVms(vmToDestroyList);
 
         schedule(this.getId(), Parameters.MONITORING_INTERVAL, MySimTags.DO_MONITORING,null);

@@ -1,5 +1,6 @@
 package org.mysim.utils;
 
+import com.sun.xml.internal.ws.api.ha.StickyFeature;
 import org.mysim.FileItem;
 
 import java.util.ArrayList;
@@ -57,6 +58,21 @@ public class ReplicaCatalog {
             list.add(storage);
         }
     }
+
+    public static void removeStorageFromStorageList(String storage){
+//        List<String> fileToRemove = new ArrayList<>();
+        for (String file:dataReplicaCatalog.keySet()){
+            List<String> list = getStorageList(file);
+            list.remove(storage);
+//            if (list.size() == 0) {
+//                fileToRemove.add(file);
+//            }
+        }
+//        for ( String file: fileToRemove){
+//            dataReplicaCatalog.remove(file);
+//        }
+    }
+
     public static void removeFileStorage(String file) {
         dataReplicaCatalog.remove(file);
     }

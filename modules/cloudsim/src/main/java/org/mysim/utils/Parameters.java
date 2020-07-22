@@ -102,4 +102,6 @@ public class Parameters {
 
     public static final int BILLING_PERIOD = 60;
     public static final double CPU_COST_FACTOR = 0.5;
+    public static final double ALPHA_DEADLINE_FACTOR = 0.5;
+    public static final double BETA_BUDGET_FACTOR = 0.5;
 }

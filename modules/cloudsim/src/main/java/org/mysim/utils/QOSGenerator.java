@@ -55,12 +55,14 @@ public class QOSGenerator {
         double minMakeSpan = estimateMinMakeSpan();
         double maxMakeSpan = estimateMaxMakeSpan();
 
-        return minMakeSpan + (maxMakeSpan - minMakeSpan) * uniformDistribution.sample();
+//        return minMakeSpan + (maxMakeSpan - minMakeSpan) * uniformDistribution.sample();
+        return minMakeSpan + (maxMakeSpan - minMakeSpan) * Parameters.ALPHA_DEADLINE_FACTOR;
     }
     public double generateBudget(){
         double minCost = estimateMinCost();
         double maxCost = estimateMaxCost();
-        return minCost + (maxCost - minCost) * uniformDistribution.sample();
+//        return minCost + (maxCost - minCost) * uniformDistribution.sample();
+        return minCost + (maxCost - minCost) * Parameters.BETA_BUDGET_FACTOR;
     }
 
     private double estimateMinMakeSpan(){
