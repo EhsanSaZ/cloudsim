@@ -1,5 +1,6 @@
 package org.mysim;
 
+import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.container.core.Container;
 import org.cloudbus.cloudsim.container.core.ContainerCloudlet;
@@ -46,6 +47,8 @@ public class WorkflowEngine extends SimEntity {
     protected List<? extends Container> newRequiredContainersOnNewVms;
     protected List<? extends Container> submittedNewRequiredContainersOnNewVms;
 
+    private PoissonDistribution poissonDistribution;
+
     public WorkflowEngine(String name) {
         super(name);
         setReadyTaskList(new ArrayList<>());
@@ -59,6 +62,8 @@ public class WorkflowEngine extends SimEntity {
 
         setNewRequiredContainersOnNewVms(new ArrayList<>());
         setSubmittedNewRequiredContainersOnNewVms(new ArrayList<>());
+
+        poissonDistribution = new PoissonDistribution( 60/Parameters.ARRIVAL_RATE);
     }
 
     @Override
@@ -116,8 +121,8 @@ public class WorkflowEngine extends SimEntity {
         collectReadyTaskList();
 
         if (workflowParser.hasNextWorkflow()) {
-            // TODO EHSAN: use a delay with a poisson distribution
-            schedule(this.getId(), 500, MySimTags.SUBMIT_NEXT_WORKFLOW, null);
+            // T ODO EHSAN: use a delay with a poisson distribution
+            schedule(this.getId(), poissonDistribution.sample(), MySimTags.SUBMIT_NEXT_WORKFLOW, null);
         }else {
             schedule(this.getId(), Parameters.CHECK_FINISHED_STATUS_DELAY, MySimTags.CHECK_FINISHED_STATUS, null);
         }
@@ -128,7 +133,7 @@ public class WorkflowEngine extends SimEntity {
 
         List <? extends ContainerVm> vmToDestroyList = new ArrayList<>();
         // TODO EHSAN: calculate the list according to vm state history from broker crated vm list..
-        // TODO EHSAN: remove this vm as a storage in replica
+        // T ODO EHSAN: remove this vm as a storage in replica
         for(ContainerVm vm: vmToDestroyList){
             ReplicaCatalog.removeStorageFromStorageList(Integer.toString(vm.getId()));
         }
@@ -425,7 +430,7 @@ public class WorkflowEngine extends SimEntity {
     @Override
     public void startEntity() {
         Log.printConcatLine(getName(), " is starting...");
-        schedule(this.getId(), 0, MySimTags.SUBMIT_NEXT_WORKFLOW, null);
+        schedule(this.getId(),  poissonDistribution.sample(), MySimTags.SUBMIT_NEXT_WORKFLOW, null);
         schedule(this.getId(), Parameters.R_T_Q_SCHEDULING_INTERVAL, MySimTags.SCHEDULING_READY_TQ, null);
         schedule(this.getId(), Parameters.MONITORING_INTERVAL, MySimTags.DO_MONITORING,null);
     }

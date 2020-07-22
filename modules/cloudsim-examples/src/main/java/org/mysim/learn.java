@@ -1,5 +1,6 @@
 package org.mysim;
 
+import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.container.core.ContainerCloudlet;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -205,31 +206,36 @@ public class learn {
 //            System.out.println(wf.getTaskList().size());
 //        }
 
-        int num_user = 1; // number of cloud users
-        Calendar calendar = Calendar.getInstance(); // Calendar whose fields have been initialized with the current date and time.
-        boolean trace_flag = false; // trace events
-        CloudSim.init(num_user, calendar, trace_flag);
+//        int num_user = 1; // number of cloud users
+//        Calendar calendar = Calendar.getInstance(); // Calendar whose fields have been initialized with the current date and time.
+//        boolean trace_flag = false; // trace events
+//        CloudSim.init(num_user, calendar, trace_flag);
+//
+//        ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.SHARED;
+//        ReplicaCatalog.init(file_system);
+//
+//        Parameters.init("E:\\term12\\Dataset\\test workload");
+//
+//        WorkflowParser wp = new WorkflowParser(1);
+//        WorkflowEngine we = new WorkflowEngine("workflow_engine");
+//        we.setWorkflowParser(wp);
+//        QOSGenerator qosGenerator = new QOSGenerator();
+//
+//        if(wp.hasNextWorkflow()){
+//            Workflow wf = wp.get_next_workflow();
+//            qosGenerator.setWorkflow(wf);
+//            qosGenerator.run();
+//
+//            qosGenerator.finish();
+//
+//            System.out.println(wf.getTaskList().size());
+//        }
 
-        ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.SHARED;
-        ReplicaCatalog.init(file_system);
+        PoissonDistribution poissonDistribution = new PoissonDistribution( 60/Parameters.ARRIVAL_RATE);
 
-        Parameters.init("E:\\term12\\Dataset\\test workload");
-
-        WorkflowParser wp = new WorkflowParser(1);
-        WorkflowEngine we = new WorkflowEngine("workflow_engine");
-        we.setWorkflowParser(wp);
-        QOSGenerator qosGenerator = new QOSGenerator();
-
-        if(wp.hasNextWorkflow()){
-            Workflow wf = wp.get_next_workflow();
-            qosGenerator.setWorkflow(wf);
-            qosGenerator.run();
-
-            qosGenerator.finish();
-
-            System.out.println(wf.getTaskList().size());
+        for (int i=0;i<50; i++){
+            System.out.println(poissonDistribution.sample());
         }
-
     }
 
 }

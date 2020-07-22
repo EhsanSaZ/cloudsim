@@ -104,4 +104,5 @@ public class Parameters {
     public static final double CPU_COST_FACTOR = 0.5;
     public static final double ALPHA_DEADLINE_FACTOR = 0.5;
     public static final double BETA_BUDGET_FACTOR = 0.5;
+    public static final double ARRIVAL_RATE = 4;// workflow per minute
 }
