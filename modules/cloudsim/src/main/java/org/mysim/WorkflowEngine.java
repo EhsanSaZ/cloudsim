@@ -36,22 +36,24 @@ public class WorkflowEngine extends SimEntity {
     private WorkflowDatacenterBroker broker;
 
     private List<Workflow> workflowList;
-    private List<Task> readyTaskList;
+    protected List<Task> readyTaskList;
+    protected List<Task> scheduledTaskList;
 
     protected List<? extends Container> newRequiredContainers;
     protected List<? extends Container> submittedNewRequiredContainers;
 
-    private List<? extends ContainerVm> newRequiredVms;
-    private List<? extends ContainerVm> submittedNewRequiredVms;
+    protected List<? extends ContainerVm> newRequiredVms;
+    protected List<? extends ContainerVm> submittedNewRequiredVms;
 
     protected List<? extends Container> newRequiredContainersOnNewVms;
     protected List<? extends Container> submittedNewRequiredContainersOnNewVms;
 
-    private PoissonDistribution poissonDistribution;
+    private final PoissonDistribution poissonDistribution;
 
     public WorkflowEngine(String name) {
         super(name);
         setReadyTaskList(new ArrayList<>());
+        setScheduledTaskList(new ArrayList<>());
         setWorkflowList(new ArrayList<>());
 
         setNewRequiredContainers(new ArrayList<>());
@@ -197,7 +199,7 @@ public class WorkflowEngine extends SimEntity {
         }
         if (flag){
             schedule(this.getId(), 0,CloudSimTags.END_OF_SIMULATION, null );
-            // TODO EHSAN: do any extra needed action here..like signal to other entities...
+            // T ODO EHSAN: do any extra needed action here..like signal to other entities...
         }else {
             // T ODO EHSAN: use an appropriate delay
             schedule(this.getId(), Parameters.CHECK_FINISHED_STATUS_DELAY, MySimTags.CHECK_FINISHED_STATUS, null);
@@ -260,7 +262,7 @@ public class WorkflowEngine extends SimEntity {
 
     public void submitTasksOnContainer(int containerId, int vmId){
         List <Task> list = new ArrayList<>();
-        for(Task t: getReadyTaskList()){
+        for(Task t: getScheduledTaskList()){
             if(t.getContainerId() == containerId && t.getVmId() == vmId){
                 list.add(t);
 //                getReadyTaskList().remove(t);
@@ -269,7 +271,7 @@ public class WorkflowEngine extends SimEntity {
                 w.getSubmittedTaskList().add(t);
             }
         }
-        getReadyTaskList().removeAll(list);
+        getScheduledTaskList().removeAll(list);
         broker.submitTaskListDynamic(list);
     }
     public void processCloudletSubmitAck(SimEvent ev) {
@@ -396,9 +398,22 @@ public class WorkflowEngine extends SimEntity {
     public void processPlanningReadyTaskList() {
         if ( getReadyTaskList().size() > 0){
             MyPlanningAlgorithm planning_algorithm = (MyPlanningAlgorithm) getPlanner();
-            planning_algorithm.ScheduleTasks( broker, getReadyTaskList(),
+            planning_algorithm.ScheduleTasks( broker, getReadyTaskList(), getScheduledTaskList(),
                     getNewRequiredContainers(), getNewRequiredVms(), getNewRequiredContainersOnNewVms());
             // submit new containers on already running vms and submit new required vms..
+            // submit tasks on running containers
+            if (planning_algorithm.getScheduledTasksOnRunningContainers().size() >0){
+                for(Task task : planning_algorithm.getScheduledTasksOnRunningContainers()){
+                    if (task.getVmId() != -1 && task.getContainerId()!= -1){
+                        Workflow w = WorkflowList.getById(getWorkflowList(), task.getWorkflowID());
+                        assert w != null;
+                        w.getSubmittedTaskList().add(task);
+                    }
+                }
+                getScheduledTaskList().removeAll(planning_algorithm.getScheduledTasksOnRunningContainers());
+                broker.submitTaskListDynamic(planning_algorithm.getScheduledTasksOnRunningContainers());
+                planning_algorithm.clear();
+            }
 
             // first submit new containers on already running vms--> on receive container create ack submit tasks on these containers...
             if (getNewRequiredContainers().size() > 0){
@@ -523,4 +538,7 @@ public class WorkflowEngine extends SimEntity {
         this.submittedNewRequiredContainersOnNewVms = submittedNewRequiredContainersOnNewVms;
     }
 
+    public List<Task> getScheduledTaskList() { return scheduledTaskList; }
+
+    public void setScheduledTaskList(List<Task> scheduledTaskList) { this.scheduledTaskList = scheduledTaskList; }
 }
