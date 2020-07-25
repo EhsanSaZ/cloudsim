@@ -1,6 +1,5 @@
 package org.mysim;
 
-import org.cloudbus.cloudsim.VmStateHistoryEntry;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerBwProvisioner;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerPe;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerRamProvisioner;
@@ -25,12 +24,17 @@ public class CondorVM extends PowerContainerVm {
     private double leaseTime = -1;
     private double releaseTime = -1;
 
+    private int availablePeNumbersForSchedule;
+    private double availableRamForSchedule;
+
     public CondorVM(final int id, final int userId, final double mips, final float ram, final long bw, final long size, final String vmm,
                     final ContainerScheduler containerScheduler, final ContainerRamProvisioner containerRamProvisioner, final ContainerBwProvisioner containerBwProvisioner,
                     List<? extends ContainerPe> peList, final double schedulingInterval) {
         super(id, userId, mips, ram, bw, size, vmm, containerScheduler, containerRamProvisioner, containerBwProvisioner,
                 peList, schedulingInterval);
         setState(MySimTags.VM_STATUS_IDLE);
+        setAvailablePeNumbersForSchedule(peList.size());
+        setAvailableRamForSchedule(ram);
     }
 
     public CondorVM(final int id, final int userId, final double mips, final float ram, final long bw, final long size, final String vmm,
@@ -43,6 +47,8 @@ public class CondorVM extends PowerContainerVm {
         setCostPerMem(costPerMem);
         setCostPerStorage(costPerStorage);
         setCostPerBW(costPerBW);
+        setAvailablePeNumbersForSchedule(peList.size());
+        setAvailableRamForSchedule(ram);
     }
 
     public void addBusyStateHistory( double time, int state){
@@ -56,7 +62,14 @@ public class CondorVM extends PowerContainerVm {
         }
         getBusyStateHistory().add(newState);
     }
-
+    public boolean isSuitableForTask(Task task){
+        //TODO EHSAN: Implement this
+//        ContainerSchedulerTimeShared scheduler = (ContainerSchedulerTimeShared) getContainerScheduler();
+//        scheduler.getPesInUse();
+//        if ( task.getNumberOfPes() > (getPeList().size() - scheduler.getPesInUse()) || )
+        return false;
+    }
+    //----------------setter and getter
     public int getState() {
         return state;
     }
@@ -115,5 +128,21 @@ public class CondorVM extends PowerContainerVm {
 
     public void setReleaseTime(double releaseTime) {
         this.releaseTime = releaseTime;
+    }
+
+    public int getAvailablePeNumbersForSchedule() {
+        return availablePeNumbersForSchedule;
+    }
+
+    public void setAvailablePeNumbersForSchedule(int availablePeNumbersForSchedule) {
+        this.availablePeNumbersForSchedule = availablePeNumbersForSchedule;
+    }
+
+    public double getAvailableRamForSchedule() {
+        return availableRamForSchedule;
+    }
+
+    public void setAvailableRamForSchedule(double availableRamForSchedule) {
+        this.availableRamForSchedule = availableRamForSchedule;
     }
 }

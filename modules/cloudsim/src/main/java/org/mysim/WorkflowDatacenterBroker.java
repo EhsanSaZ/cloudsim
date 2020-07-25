@@ -324,7 +324,14 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
         // must use this only when there is no task running on the container...
          if(getContainersCreatedList().contains(container)){
              getContainersCreatedList().remove(container);
-             getContainersToVmsMap().remove(container.getId());
+
+            int vmId = getContainersToVmsMap().remove(container.getId());
+            ContainerVm vm = ContainerVmList.getById(getVmsCreatedList(), vmId);
+            CondorVM castedVm = (CondorVM) vm;
+            assert castedVm != null;
+            castedVm.setAvailableRamForSchedule(castedVm.getAvailableRamForSchedule() + container.getRam());
+            castedVm.setAvailablePeNumbersForSchedule(castedVm.getNumberOfPes() + container.getNumberOfPes());
+
          }
          int datacenterId = getVmsToDatacentersMap().get(container.getVm().getId());
          schedule(datacenterId, Parameters.CONTAINER_DESTROY_DELAY, MySimTags.CONTAINER_DESTROY, container);

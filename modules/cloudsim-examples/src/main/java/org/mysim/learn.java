@@ -2,8 +2,15 @@ package org.mysim;
 
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.cloudbus.cloudsim.Cloudlet;
+import org.cloudbus.cloudsim.container.containerProvisioners.ContainerBwProvisionerSimple;
+import org.cloudbus.cloudsim.container.containerProvisioners.ContainerRamProvisionerSimple;
 import org.cloudbus.cloudsim.container.core.ContainerCloudlet;
+import org.cloudbus.cloudsim.container.core.ContainerVm;
+import org.cloudbus.cloudsim.container.core.PowerContainerVm;
+import org.cloudbus.cloudsim.container.schedulers.ContainerSchedulerTimeSharedOverSubscription;
+import org.cloudbus.cloudsim.container.utils.IDs;
 import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.examples.container.ConstantsExamples;
 import org.mysim.deadlinedistribution.DeadlineDistributionSimpleUpwardRank;
 import org.mysim.utils.Parameters;
 import org.mysim.utils.QOSGenerator;
@@ -240,37 +247,36 @@ public class learn {
 //        }
 
 
-        int num_user = 1; // number of cloud users
-        Calendar calendar = Calendar.getInstance(); // Calendar whose fields have been initialized with the current date and time.
-        boolean trace_flag = false; // trace events
-        CloudSim.init(num_user, calendar, trace_flag);
-
-        ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.SHARED;
-        ReplicaCatalog.init(file_system);
-
-        Parameters.init("E:\\term12\\Dataset\\test workload");
-
-        WorkflowParser wp = new WorkflowParser(1);
-        WorkflowEngine we = new WorkflowEngine("workflow_engine");
-        we.setWorkflowParser(wp);
-        QOSGenerator qosGenerator = new QOSGenerator();
-
-        if(wp.hasNextWorkflow()){
-            Workflow wf = wp.get_next_workflow();
-            qosGenerator.setWorkflow(wf);
-            qosGenerator.run();
-            qosGenerator.finish();
-            DeadlineDistributionSimpleUpwardRank deadline_strategy = new DeadlineDistributionSimpleUpwardRank();
-            deadline_strategy.setWorkflow(wf);
-            deadline_strategy.run();
-
-            System.out.println(wf.getTaskList().size());
-
-            Comparator<Task> compareBySubDeadline = (t1, t2) -> Double.compare(t1.getSubDeadline(), t2.getSubDeadline());
-            wf.getTaskList().sort(compareBySubDeadline);
-
-            System.out.println(wf.getTaskList().size());
-        }
-
+//        int num_user = 1; // number of cloud users
+//        Calendar calendar = Calendar.getInstance(); // Calendar whose fields have been initialized with the current date and time.
+//        boolean trace_flag = false; // trace events
+//        CloudSim.init(num_user, calendar, trace_flag);
+//
+//        ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.SHARED;
+//        ReplicaCatalog.init(file_system);
+//
+//        Parameters.init("E:\\term12\\Dataset\\test workload");
+//
+//        WorkflowParser wp = new WorkflowParser(1);
+//        WorkflowEngine we = new WorkflowEngine("workflow_engine");
+//        we.setWorkflowParser(wp);
+//        QOSGenerator qosGenerator = new QOSGenerator();
+//
+//        if(wp.hasNextWorkflow()){
+//            Workflow wf = wp.get_next_workflow();
+//            qosGenerator.setWorkflow(wf);
+//            qosGenerator.run();
+//            qosGenerator.finish();
+//            DeadlineDistributionSimpleUpwardRank deadline_strategy = new DeadlineDistributionSimpleUpwardRank();
+//            deadline_strategy.setWorkflow(wf);
+//            deadline_strategy.run();
+//
+//            System.out.println(wf.getTaskList().size());
+//
+//            Comparator<Task> compareBySubDeadline = (t1, t2) -> Double.compare(t1.getSubDeadline(), t2.getSubDeadline());
+//            wf.getTaskList().sort(compareBySubDeadline);
+//
+//            System.out.println(wf.getTaskList().size());
+//        }
     }
 }

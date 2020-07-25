@@ -158,6 +158,8 @@ public class ContainerSchedulerTimeShared extends ContainerScheduler {
     public void deallocatePesForContainer(Container container) {
 //        Log.printLine("containerSchedulerTimeShared: deallocatePesForContainer.....");
         getMipsMapRequested().remove(container.getUid());
+        // T ODO EHSAN: just release for this container...and other capacities 0 is bug??
+//        setPesInUse(getPesInUse() + container.getNumberOfPes());
         setPesInUse(0);
         getMipsMap().clear();
         setAvailableMips(ContainerPeList.getTotalMips(getPeList()));
@@ -202,7 +204,7 @@ public class ContainerSchedulerTimeShared extends ContainerScheduler {
      *
      * @return the pes in use
      */
-    protected int getPesInUse() {
+    public int getPesInUse() {
         return pesInUse;
     }
 

@@ -4,6 +4,7 @@ import org.cloudbus.cloudsim.Consts;
 import org.cloudbus.cloudsim.UtilizationModel;
 import org.cloudbus.cloudsim.UtilizationModelFull;
 import org.cloudbus.cloudsim.container.core.ContainerCloudlet;
+import org.cloudbus.cloudsim.container.core.ContainerVm;
 import org.mysim.utils.Parameters;
 
 
@@ -243,7 +244,7 @@ public class Task extends ContainerCloudlet {
                                                     (1 - Parameters.CPU_COST_FACTOR) * (getAllocatedContainerRam() / getAllocatedVmRam())
                                                     );
 
-        double cost = relativeCostRate * Math.ceil( getActualCPUTime() / Parameters.BILLING_PERIOD);;
+        double cost = relativeCostRate * Math.ceil( getActualCPUTime() / Parameters.BILLING_PERIOD);
 
         // ...plus input data transfer cost...
 //        long fileSize = 0;
@@ -252,6 +253,30 @@ public class Task extends ContainerCloudlet {
 //        }
 //        cost += costPerBw * fileSize;
         return cost;
+    }
+
+    public double getTransferTime(int bw){
+        double transferTime = 0.0;
+        for (FileItem file: getFileList()){
+            if (file.isRealInputFile(getFileList()) || file.isRealOutputFile(getFileList())){
+                transferTime += file.getSize()  * 8 / (double) Consts.MILLION / bw;
+            }
+        }
+        return transferTime;
+    }
+
+    public double estimateTaskCost (ContainerVm vm){
+        CondorVM castedVm = (CondorVM) vm;
+
+        double relativeCostRate = castedVm.getCost() * ( Parameters.CPU_COST_FACTOR * ((double)getNumberOfPes() / vm.getPeList().size()) +
+                ( 1 - Parameters.CPU_COST_FACTOR) * (getMemory()/ castedVm.getRam())
+        );
+        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * getNumberOfPes()) )+ getTransferTime(Parameters.VM_BW);
+        return relativeCostRate * Math.ceil( executionTime / Parameters.BILLING_PERIOD);
+    }
+
+    public boolean isVmAffordable(ContainerVm vm){
+        return (estimateTaskCost(vm) < getSubBudget());
     }
 
     public double getSubDeadline() {

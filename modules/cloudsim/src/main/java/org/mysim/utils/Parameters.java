@@ -35,7 +35,6 @@ public class Parameters {
         }
     }
 
-
     // TODO EHSAN: SCALE OF MEMORY AND RUNTIME NEEDED TO BE CHECKED
     private static double runtime_scale = 1.0;
     private static double peakMemory_Scale = 1.0;
@@ -48,6 +47,8 @@ public class Parameters {
 
     public static String SOURCE = "source";
 
+    public static int BI_FACTOR = 1;
+    public static int C_FACTOR = 2;
 
     public static void init(String workflowsPath) {
         workflowsDirectory = workflowsPath;
@@ -86,11 +87,18 @@ public class Parameters {
 
     public static final int VM_SIZE = 2500;//MB
 
+    public static final double[] CONTAINER_MIPS = new double[]{1000, 1000, 1000, 1000};
+    public static final int[] CONTAINER_PES = new int[]{1, 1, 1};
+    public static final double[] CONTAINER_RAM = new double[]{128, 256, 512};
+    public static final double CONTAINER_BW = 1;
+    public static final double CONTAINER_SCHEDULING_INTERVAL = 300.0D;
+
+    public static final int CONTAINER_SIZE = 600;// MB
+
     public static final int R_T_Q_SCHEDULING_INTERVAL = 100;
     public static final int MONITORING_INTERVAL = 500;
     public static final int CHECK_FINISHED_STATUS_DELAY = 200;
 
-    public static final int CONTAINER_SIZE = 600;// MB
 
     public static final double VM_PROVISIONING_DELAY = 100;
     public static final double VM_DESTROY_DELAY = 0.01;

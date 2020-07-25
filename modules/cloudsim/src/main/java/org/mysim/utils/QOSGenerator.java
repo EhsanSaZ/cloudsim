@@ -95,6 +95,7 @@ public class QOSGenerator {
     private double estimateMaxCost(){
         double maxCost = 0.0;
         // TODO EHSAN: or do it in a simple way
+        // T ODO EHSAN: use newcostmodel...
         for(Task task: taskMINExecutionTimes.keySet()){
             maxCost +=Parameters.COST[Parameters.VM_TYPES_NUMBERS-1] *
                     Math.ceil((taskMINExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
@@ -116,6 +117,7 @@ public class QOSGenerator {
     private double estimateMinCost(){
         double minCost = 0.0;
         // TODO EHSAN: or do it in a simple way
+        // T ODO EHSAN: use newcostmodel...
         for(Task task: taskMAXExecutionTimes.keySet()){
             minCost +=Parameters.COST[0] * Math.ceil((taskMAXExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
         }
