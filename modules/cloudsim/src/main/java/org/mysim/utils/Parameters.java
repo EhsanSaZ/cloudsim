@@ -1,6 +1,7 @@
 package org.mysim.utils;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.cloudbus.cloudsim.Consts;
 
 import java.util.List;
 
@@ -38,6 +39,7 @@ public class Parameters {
     // TODO EHSAN: SCALE OF MEMORY AND RUNTIME NEEDED TO BE CHECKED
     private static double runtime_scale = 1.0;
     private static double peakMemory_Scale = 1.0;
+    private static double minPeakMemory = 10.0  * Consts.MILLION ;// in Byte
     /**
      * The default cost model is based on datacenter, similar to CloudSim
      */
@@ -69,6 +71,10 @@ public class Parameters {
         return peakMemory_Scale;
     }
     public static void setPeakMemory_Scale(double peakMemory_Scale) { Parameters.peakMemory_Scale = peakMemory_Scale; }
+
+    public static double getMinPeakMemory() { return minPeakMemory; }
+
+    public static void setMinPeakMemory(double minPeakMemory) { Parameters.minPeakMemory = minPeakMemory; }
 
     public static CostModel getCostModel(){ return costModel; }
     public static void setCostModel(CostModel model){

@@ -38,7 +38,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 
         readyTasks.sort(compareBySubDeadline);
         List<Task> waitQueue = new ArrayList<>();
-        List<Task> toremove = new ArrayList<>();
+        List<Task> toRemove = new ArrayList<>();
         List<Container> idleRunningContainerList = new ArrayList<>();
 
         for (Container container: broker.getContainersCreatedList()){
@@ -49,11 +49,10 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
         // Try to schedule tasks in ready Queue on already running resources (by broker)
         for (Task task: readyTasks){
             int requiredPesNumber = calculateRequiredPesNumber(task);
+            task.setNumberOfPes(requiredPesNumber);
             int requiredMemory = (int)Math.ceil(task.getMemory());
 
-            task.setNumberOfPes(requiredPesNumber);
-            int vmId = -1;
-
+            ContainerVm provisionedVm = null;
             // Get all Vms that has at list t'(Core num, mem demand) available resources
             List <ContainerVm> AllVm= new ArrayList<>();
             for (ContainerVm vm:broker.getVmsCreatedList()){
@@ -99,60 +98,27 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     if (affordableVms_withInputData.size() >0){
                         // sort affordable vms with input data base on Bi factor
                         List<BiFactorRank> vmRankedList = sortOnFactorForTask(affordableVms_withInputData, task, Parameters.BI_FACTOR);
-                        // TODO EHSAN: it may have some bugs in casting.. need check
-                        // 1- update scheduled capacity of vm--
-                        // 2- create a new container to deploy on this vm--
-                        // 3- add container to newRequiredContainers--
-                        // 4- add task to scheduled task--
-                        // 5- and add to remove list inorder to remove from ready tasks at the end...--
-                        CondorVM vm = (CondorVM) vmRankedList.get(0).vm;
-                        vm.setAvailablePeNumbersForSchedule(vm.getAvailablePeNumbersForSchedule() - requiredPesNumber);
-                        vm.setAvailableRamForSchedule(vm.getAvailableRamForSchedule() - requiredMemory);
-
-                        Container newContainer = new Container(IDs.pollId(Container.class),
-                                broker.getId(),Parameters.CONTAINER_MIPS[0],
-                                requiredPesNumber, requiredMemory, (long)Parameters.CONTAINER_BW, Parameters.CONTAINER_SIZE,
-                                "Xen",new ContainerCloudletSchedulerSpaceShared(),Parameters.CONTAINER_SCHEDULING_INTERVAL);
-                        newContainer.setVm(vm);
-                        task.setVmId(vm.getId());
-                        task.setContainerId(newContainer.getId());
-
-                        newRequiredContainers.add(newContainer);
-                        scheduledTasks.add(task);
-                        toremove.add(task);
-                        continue;
+                        provisionedVm =  vmRankedList.get(0).vm;
                     }
 
                     // when it is not possible to run on a new container on affordable vm with input data
                     // look for a container with 0 workload
                     // choose one of them that is appropriate to use for running task
-                    int index = scheduleOnRunningContainers(idleRunningContainerList, task, requiredPesNumber, requiredMemory);
-                    if (index != -1){
-                        scheduledTasks.add(task);
-                        toremove.add(task);
-                        idleRunningContainerList.remove(index);
-                        continue;
+                    if (provisionedVm == null){
+                        int index = scheduleOnRunningContainers(idleRunningContainerList, task, requiredPesNumber, requiredMemory);
+                        if (index != -1){
+                            scheduledTasks.add(task);
+                            toRemove.add(task);
+                            idleRunningContainerList.remove(index);
+                            continue;
+                        }
                     }
-
                     // when it is <<not>> possible to run the task on a idle running container
                     // deploy a new container on any remaining affordable vms
-                    List<BiFactorRank> vmNoInputDataRankedList = sortOnFactorForTask(affordableVms_NoInputData, task,Parameters.BI_FACTOR);
-                    CondorVM vm = (CondorVM) vmNoInputDataRankedList.get(0).vm;
-                    vm.setAvailablePeNumbersForSchedule(vm.getAvailablePeNumbersForSchedule() - requiredPesNumber);
-                    vm.setAvailableRamForSchedule(vm.getAvailableRamForSchedule() - requiredMemory);
-                    Container newContainer = new Container(IDs.pollId(Container.class),
-                            broker.getId(),Parameters.CONTAINER_MIPS[0],
-                            requiredPesNumber, requiredMemory, (long)Parameters.CONTAINER_BW, Parameters.CONTAINER_SIZE,
-                            "Xen",new ContainerCloudletSchedulerSpaceShared(),Parameters.CONTAINER_SCHEDULING_INTERVAL);
-                    newContainer.setVm(vm);
-                    task.setVmId(vm.getId());
-                    task.setContainerId(newContainer.getId());
-
-                    newRequiredContainers.add(newContainer);
-                    scheduledTasks.add(task);
-                    toremove.add(task);
-
-                    //
+                    if (provisionedVm == null){
+                        List<BiFactorRank> vmNoInputDataRankedList = sortOnFactorForTask(affordableVms_NoInputData, task,Parameters.BI_FACTOR);
+                        provisionedVm =  vmNoInputDataRankedList.get(0).vm;
+                    }
                 }else{
                     // when it is not possible to run on a new container on non-affordable vm with input data
                     // look for a container with 0 workload
@@ -160,7 +126,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     int index = scheduleOnRunningContainers(idleRunningContainerList, task, requiredPesNumber, requiredMemory);
                     if (index != -1){
                         scheduledTasks.add(task);
-                        toremove.add(task);
+                        toRemove.add(task);
                         idleRunningContainerList.remove(index);
                         continue;
                     }
@@ -179,7 +145,16 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                         // deploy a new container on any remaining non-affordable vms
                         vmRankedList = sortOnFactorForTask(non_affordableVms_NoInputData, task, Parameters.C_FACTOR);
                     }
-                    CondorVM vm = (CondorVM) vmRankedList.get(0).vm;
+                    provisionedVm =  vmRankedList.get(0).vm;
+                }
+                if (provisionedVm != null){
+                    // TODO EHSAN: it may have some bugs in casting.. need check
+                    // 1- update scheduled capacity of vm--
+                    // 2- create a new container to deploy on this vm--
+                    // 3- add container to newRequiredContainers--
+                    // 4- add task to scheduled task--
+                    // 5- and add to remove list inorder to remove from ready tasks at the end...--
+                    CondorVM vm = (CondorVM) provisionedVm;
                     vm.setAvailablePeNumbersForSchedule(vm.getAvailablePeNumbersForSchedule() - requiredPesNumber);
                     vm.setAvailableRamForSchedule(vm.getAvailableRamForSchedule() - requiredMemory);
 
@@ -193,12 +168,8 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 
                     newRequiredContainers.add(newContainer);
                     scheduledTasks.add(task);
-                    toremove.add(task);
+                    toRemove.add(task);
                 }
-
-//                if (vmId != -1){
-//
-//                }
 
             }else{ // AllVm.size() == 0
                 // when there is no running vm with required free resources at all
@@ -209,7 +180,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                 int index = scheduleOnRunningContainers(idleRunningContainerList, task, requiredPesNumber, requiredMemory);
                 if (index != -1){
                     scheduledTasks.add(task);
-                    toremove.add(task);
+                    toRemove.add(task);
                     idleRunningContainerList.remove(index);
                     continue;
                 }
@@ -219,7 +190,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                 double remainingTimeToDeadline = task.getSubDeadline() - (CloudSim.clock() + Parameters.R_T_Q_SCHEDULING_INTERVAL);
                 double minExecutionTime = task.getCloudletLength() / ( Parameters.VM_MIPS[0] * Parameters.VM_PES[Parameters.VM_TYPES_NUMBERS-1] );
                 double maxExecutionTime = task.getCloudletLength() / ( Parameters.VM_MIPS[0] * Parameters.VM_PES[0] );
-                if (!(minExecutionTime + task.getTransferTime(Parameters.VM_BW) < remainingTimeToDeadline)) {
+                if ((minExecutionTime + task.getTransferTime(Parameters.VM_BW) > remainingTimeToDeadline)) {
                     // it is not possible to delay the task so put it on wait queue
                     // if the condition is false it means that delay is possible
                     // so do nothing and let task remains in ready task queue for next interval
@@ -235,10 +206,12 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
             broker.destroyContainer(container);
         }
         idleRunningContainerList.clear();
-        readyTasks.removeAll(toremove);
+        readyTasks.removeAll(toRemove);
         // start packing tasks in Wait Queue
+        //TODO EHSAN: packing phase
 
-
+        // remove all scheduled tasks from ready task list
+        readyTasks.removeAll(toRemove);
     }
 
     public List<ContainerVm> getVmsWithInputData( List<ContainerVm> vmList, Task task){
@@ -311,8 +284,10 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
         for (ContainerVm vm: vmList){
             double C_factor = (task.getSubBudget() - costMap.get(vm.getId())) / (task.getSubBudget() - minCost);
             if (factorType == 1){
-                // TODO EHSAN: implement this
-                double U_factor = Math.sqrt(0);
+                int availablePeAfterSchedule = ((CondorVM) vm).getAvailablePeNumbersForSchedule() - task.getNumberOfPes();
+                double availableMemAfterSchedule = ((CondorVM) vm).getAvailableRamForSchedule() - (int)Math.ceil(task.getMemory());
+//                double U_factor = Math.sqrt(Math.pow((1 - (availablePeAfterSchedule / vm.getPeList().size())), 2) + Math.pow((1-(availableMemAfterSchedule / vm.getRam())), 2));
+                double U_factor = Math.hypot( 1 - ((double)availablePeAfterSchedule / vm.getPeList().size()), 1-(availableMemAfterSchedule / vm.getRam()));
                 vmRankedList.add( new BiFactorRank(vm, C_factor + U_factor));
             }
             vmRankedList.add( new BiFactorRank(vm, C_factor));

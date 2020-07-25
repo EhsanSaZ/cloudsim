@@ -1,6 +1,7 @@
 package org.mysim;
 
 
+import org.cloudbus.cloudsim.Consts;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.jdom2.Document;
@@ -159,8 +160,8 @@ public class WorkflowParser {
                         if (node.getAttributeValue("peak_memory") != null) {
                             String node_peak_memory = node.getAttributeValue("peak_memory");
                             peak_memory = Double.parseDouble(node_peak_memory);
-                            if (peak_memory < 100) {
-                                peak_memory = 100;
+                            if (peak_memory < Parameters.getMinPeakMemory()) {
+                                peak_memory =  Parameters.getMinPeakMemory();
                             }
 
                         } else {
@@ -168,7 +169,8 @@ public class WorkflowParser {
                         }
 
                         length *= Parameters.getRuntimeScale();
-                        peak_memory *= Parameters.getPeakMemoryScale();
+                        peak_memory *= Parameters.getPeakMemoryScale();// memory is in Byte
+                        peak_memory = Math.ceil(peak_memory / Consts.MILLION); // convert memory to MB
 
                         List<Element> fileList = node.getChildren();
                         List<FileItem> mFileList = new ArrayList<>();
