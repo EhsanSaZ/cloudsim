@@ -292,8 +292,7 @@ public class ContainerCloudSimExample1 {
             ArrayList<ContainerPe> peList = new ArrayList<ContainerPe>();
             int vmType = i / (int) Math.ceil((double) containerVmsNumber / 4.0D);
             for (int j = 0; j < ConstantsExamples.VM_PES[vmType]; ++j) {
-                peList.add(new ContainerPe(j,
-                        new CotainerPeProvisionerSimple((double) ConstantsExamples.VM_MIPS[vmType])));
+                peList.add(new ContainerPe(j, new CotainerPeProvisionerSimple((double) ConstantsExamples.VM_MIPS[vmType])));
             }
             containerVms.add(new PowerContainerVm(IDs.pollId(ContainerVm.class), brokerId,
                     (double) ConstantsExamples.VM_MIPS[vmType], (float) ConstantsExamples.VM_RAM[vmType],

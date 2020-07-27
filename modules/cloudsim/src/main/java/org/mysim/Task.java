@@ -274,6 +274,14 @@ public class Task extends ContainerCloudlet {
         double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * getNumberOfPes()) )+ getTransferTime(Parameters.VM_BW);
         return relativeCostRate * Math.ceil( executionTime / Parameters.BILLING_PERIOD);
     }
+    public double estimateTaskCostForVmType(int vmType){
+
+        double relativeCostRate =  Parameters.COST[vmType] * ( Parameters.CPU_COST_FACTOR * ((double)getNumberOfPes() / Parameters.VM_PES[vmType]) +
+                ( 1 - Parameters.CPU_COST_FACTOR) * (getMemory()/ Parameters.VM_RAM[vmType])
+        );
+        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * getNumberOfPes()) )+ getTransferTime(Parameters.VM_BW);
+        return relativeCostRate * Math.ceil( executionTime / Parameters.BILLING_PERIOD);
+    }
 
     public boolean isVmAffordable(ContainerVm vm){
         return (estimateTaskCost(vm) < getSubBudget());

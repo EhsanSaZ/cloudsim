@@ -1,7 +1,12 @@
 package org.mysim.planning;
 
+import org.cloudbus.cloudsim.container.containerProvisioners.ContainerBwProvisionerSimple;
+import org.cloudbus.cloudsim.container.containerProvisioners.ContainerPe;
+import org.cloudbus.cloudsim.container.containerProvisioners.ContainerRamProvisionerSimple;
+import org.cloudbus.cloudsim.container.containerProvisioners.CotainerPeProvisionerSimple;
 import org.cloudbus.cloudsim.container.core.Container;
 import org.cloudbus.cloudsim.container.core.ContainerVm;
+import org.cloudbus.cloudsim.container.schedulers.ContainerSchedulerTimeSharedOverSubscription;
 import org.cloudbus.cloudsim.container.utils.IDs;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.mysim.CondorVM;
@@ -13,6 +18,7 @@ import org.mysim.utils.Parameters;
 import org.mysim.utils.ReplicaCatalog;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 
@@ -25,6 +31,15 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
     //    };
     Comparator<Task> compareBySubDeadline = (t1, t2) -> Double.compare(t1.getSubDeadline(), t2.getSubDeadline());
 
+    Comparator<Task> compareByDepth = (t1, t2) -> Double.compare(t1.getDepth(), t2.getDepth());
+
+    Comparator<Entry<String, Double>> valueComparator = new Comparator<Entry<String,Double>>() {
+
+        @Override
+        public int compare(Entry<String, Double> e1, Entry<String, Double> e2) {
+            return e1.getValue().compareTo( e2.getValue()); }
+    };
+
     public MyPlanningAlgorithm(){
         setScheduledTasksOnRunningContainers(new ArrayList<>());
     }
@@ -33,8 +48,8 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                               List<Task> readyTasks,
                               List<Task> scheduledTasks,
                               List<Container> newRequiredContainers,
-                              List<? extends ContainerVm> newRequiredVms,
-                              List<? extends Container> newRequiredContainersOnNewVms) {
+                              List<ContainerVm> newRequiredVms,
+                              List<Container> newRequiredContainersOnNewVms) {
 
         readyTasks.sort(compareBySubDeadline);
         List<Task> waitQueue = new ArrayList<>();
@@ -161,7 +176,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     Container newContainer = new Container(IDs.pollId(Container.class),
                             broker.getId(),Parameters.CONTAINER_MIPS[0],
                             requiredPesNumber, requiredMemory, (long)Parameters.CONTAINER_BW, Parameters.CONTAINER_SIZE,
-                            "Xen",new ContainerCloudletSchedulerSpaceShared(),Parameters.CONTAINER_SCHEDULING_INTERVAL);
+                            "Xen",new ContainerCloudletSchedulerSpaceShared(),Parameters.CONTAINER_VM_SCHEDULING_INTERVAL);
                     newContainer.setVm(vm);
                     task.setVmId(vm.getId());
                     task.setContainerId(newContainer.getId());
@@ -190,11 +205,13 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                 double remainingTimeToDeadline = task.getSubDeadline() - (CloudSim.clock() + Parameters.R_T_Q_SCHEDULING_INTERVAL);
                 double minExecutionTime = task.getCloudletLength() / ( Parameters.VM_MIPS[0] * Parameters.VM_PES[Parameters.VM_TYPES_NUMBERS-1] );
                 double maxExecutionTime = task.getCloudletLength() / ( Parameters.VM_MIPS[0] * Parameters.VM_PES[0] );
-                if ((minExecutionTime + task.getTransferTime(Parameters.VM_BW) > remainingTimeToDeadline)) {
+                if ((maxExecutionTime + task.getTransferTime(Parameters.VM_BW) > remainingTimeToDeadline)) {
                     // it is not possible to delay the task so put it on wait queue
                     // if the condition is false it means that delay is possible
                     // so do nothing and let task remains in ready task queue for next interval
                     waitQueue.add(task);
+                }else{
+                    task.setSubDeadline(remainingTimeToDeadline);
                 }
 //                waitQueue.add(task);
 //                continue;
@@ -206,9 +223,134 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
             broker.destroyContainer(container);
         }
         idleRunningContainerList.clear();
-        readyTasks.removeAll(toRemove);
-        // start packing tasks in Wait Queue
-        //TODO EHSAN: packing phase
+//        readyTasks.removeAll(toRemove);
+        // -------------------------------------------------- start packing tasks in Wait Queue --------------------------------------------------
+
+        //cluster waiting tasks base on workflow and depth(level)
+        Map <String, List<Task>> taskCluster = new HashMap<>();
+        Map <String, Double> clustersMinDeadline = new HashMap<>();
+        for (Task task: waitQueue){
+            String key = task.getWorkflowID() + "-"+ task.getDepth();
+            if (!taskCluster.containsKey(key)){
+                taskCluster.put(key, new ArrayList<>());
+                clustersMinDeadline.put(key, Double.MAX_VALUE);
+            }
+            taskCluster.get(key).add(task);
+            if (task.getSubDeadline() < clustersMinDeadline.get(key)){
+                clustersMinDeadline.put(key, task.getSubDeadline());
+            }
+        }
+
+        //cluster waiting tasks base on workflow
+//        Map <Integer, List<Task>> taskCluster = new HashMap<>();
+//        for (Task task: waitQueue){
+//            if (!taskCluster.containsKey(task.getWorkflowID())){
+//                taskCluster.put(task.getWorkflowID(), new ArrayList<>());
+//            }
+//            taskCluster.get(task.getWorkflowID()).add(task);
+//        }
+//
+//        for ( List<Task> tasksList: taskCluster.values()){
+//                tasksList.sort(compareByDepth);
+//
+//        }
+
+
+
+        // sort clustersMinDeadline map base on value deadline
+        Set<Entry<String, Double>> entries = clustersMinDeadline.entrySet();
+        List<Entry<String, Double>> listOfEntries = new ArrayList<Entry<String, Double>>(entries);
+        listOfEntries.sort(valueComparator);
+
+        // now tasks are grouped base on their workflow and level
+        // the groups are sorted and accessed according to min deadline among each
+        for(Entry<String, Double> entry : listOfEntries){
+            List<Task> tasksList = taskCluster.get(entry.getKey());
+            // maybe this is not needed TODO
+            //tasksList.sort(compareByDepth);
+            for(Task task: tasksList){
+                int requiredMemory = (int)Math.ceil(task.getMemory());
+//                ContainerVm provisionedVm = null;
+                boolean notScheduled = true;
+                for (ContainerVm vm :newRequiredVms){
+                    CondorVM castedVm = (CondorVM) vm;
+                    assert castedVm != null;
+                    if (castedVm.getAvailablePeNumbersForSchedule() >= task.getNumberOfPes() && castedVm.getAvailableRamForSchedule() >= requiredMemory && task.isVmAffordable(vm)){
+                        //create a new container for running on this vm
+                        castedVm.setAvailablePeNumbersForSchedule(castedVm.getAvailablePeNumbersForSchedule() - task.getNumberOfPes());
+                        castedVm.setAvailableRamForSchedule(castedVm.getAvailableRamForSchedule() - requiredMemory);
+
+                        Container newContainer = new Container(IDs.pollId(Container.class),
+                                broker.getId(),Parameters.CONTAINER_MIPS[0],
+                                task.getNumberOfPes(), requiredMemory, (long)Parameters.CONTAINER_BW, Parameters.CONTAINER_SIZE,
+                                "Xen",new ContainerCloudletSchedulerSpaceShared(),Parameters.CONTAINER_VM_SCHEDULING_INTERVAL);
+                        newContainer.setVm(vm);
+                        task.setVmId(vm.getId());
+                        task.setContainerId(newContainer.getId());
+
+                        newRequiredContainersOnNewVms.add(newContainer);
+                        scheduledTasks.add(task);
+                        toRemove.add(task);
+                        notScheduled = false;
+                        break;
+                    }
+                }
+                if (notScheduled){
+                    List <Integer> appropriateVmsType = new ArrayList<>();
+                    for (int i = 0; i < Parameters.VM_TYPES_NUMBERS; i++){
+                        // check if type i is ok or not..
+                        if (Parameters.VM_PES[i] >= task.getNumberOfPes() && Parameters.VM_RAM[i] >= requiredMemory){
+                            appropriateVmsType.add(i);
+                        }
+                    }
+                    //by default : if there is no vm type that have at least minimum number of task demand resources
+                    // run task on fastest vm
+                    // 1- create a new vm with max power
+                    // 2- create a new container with max power
+                    // schedule task
+                    int VmType = Parameters.VM_TYPES_NUMBERS - 1;
+                    if (appropriateVmsType.size() > 0){
+                        // calculate Bi facotr for all types and deploy on the best one
+                        List<BiFactorRankVmType> vmTypesRankList = sortOnFactorForTaskVmTypes(appropriateVmsType, task, Parameters.BI_FACTOR);
+                        VmType = vmTypesRankList.get(0).vmType;
+                    }else{
+                        task.setNumberOfPes(Math.min(task.getNumberOfPes(), Parameters.VM_PES[VmType]));
+                        task.setMemory(Math.min(requiredMemory, Parameters.VM_RAM[VmType]));
+                    }
+
+                    ArrayList<ContainerPe> peList = new ArrayList<ContainerPe>();
+                    for (int j = 0; j < Parameters.VM_PES[VmType]; ++j){
+                        peList.add(new ContainerPe(j, new CotainerPeProvisionerSimple((double) Parameters.VM_MIPS[VmType])));
+                    }
+                    CondorVM newVm = new CondorVM(IDs.pollId(ContainerVm.class), broker.getId(), Parameters.VM_MIPS[VmType],
+                            Parameters.VM_RAM[VmType], Parameters.VM_BW, Parameters.VM_SIZE, "Xen",
+                            new ContainerSchedulerTimeSharedOverSubscription(peList),
+                            new ContainerRamProvisionerSimple(Parameters.VM_RAM[VmType]),
+                            new ContainerBwProvisionerSimple(Parameters.VM_BW),
+                            peList, Parameters.CONTAINER_VM_SCHEDULING_INTERVAL);
+
+                    newVm.setAvailablePeNumbersForSchedule(newVm.getAvailablePeNumbersForSchedule() - task.getNumberOfPes());
+                    newVm.setAvailableRamForSchedule(newVm.getAvailableRamForSchedule() - requiredMemory);
+
+                    Container newContainer = new Container(IDs.pollId(Container.class), broker.getId(), Parameters.CONTAINER_MIPS[0],
+                            task.getNumberOfPes(), (int)Math.min(requiredMemory, Parameters.VM_RAM[VmType]),
+                            (long)Parameters.CONTAINER_BW, Parameters.CONTAINER_SIZE, "Xen",
+                            new ContainerCloudletSchedulerSpaceShared(),
+                            Parameters.CONTAINER_VM_SCHEDULING_INTERVAL);
+
+                    newContainer.setVm(newVm);
+
+                    task.setVmId(newVm.getId());
+                    task.setContainerId(newContainer.getId());
+
+                    newRequiredVms.add(newVm);
+                    newRequiredContainersOnNewVms.add(newContainer);
+                    scheduledTasks.add(task);
+                    toRemove.add(task);
+
+                }
+            }
+        }
 
         // remove all scheduled tasks from ready task list
         readyTasks.removeAll(toRemove);
@@ -233,7 +375,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
     public int scheduleOnRunningContainers( List <Container> containerList, Task task, int requiredPe, int requiredMem){
         int index = -1;
         for (Container container: containerList){
-            if (container.getNumberOfPes() > requiredPe && container.getRam() > requiredMem){
+            if (container.getNumberOfPes() >= requiredPe && container.getRam() >= requiredMem){
                 CondorVM castedVm =  (CondorVM) container.getVm();
                 // calculate cost of execution
                 double relativeCostRate = castedVm.getCost() * ( Parameters.CPU_COST_FACTOR * ((double)container.getNumberOfPes() / castedVm.getPeList().size()) +
@@ -270,6 +412,45 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
         }
     }
 
+    private class BiFactorRankVmType implements Comparable<BiFactorRankVmType>{
+        public int vmType;
+        public Double BiFactor;
+        public BiFactorRankVmType(int vmType, Double BiFactor) {
+            this.vmType = vmType;
+            this.BiFactor = BiFactor;
+        }
+
+        @Override
+        public int compareTo(BiFactorRankVmType o) {
+            return o.BiFactor.compareTo(BiFactor);
+        }
+    }
+
+    public List<BiFactorRankVmType> sortOnFactorForTaskVmTypes (List<Integer> vmTypesList, Task task, int factorType){
+        List<BiFactorRankVmType> vmTypesRankList = new ArrayList<>();
+
+        Map <Integer, Double> costMap = new HashMap<>();
+        double minCost = Double.MAX_VALUE;
+        for (int vmType: vmTypesList){
+            double cost = task.estimateTaskCostForVmType(vmType);
+            minCost = Math.min(cost, minCost);
+            costMap.put(vmType, task.estimateTaskCostForVmType(vmType));
+        }
+        for (int vmType: vmTypesList){
+            double C_factor =(task.getSubBudget() - costMap.get(vmType)) / (task.getSubBudget() - minCost);
+            double U_factor = 0.0;
+            if (factorType == Parameters.BI_FACTOR){
+                int availablePeAfterSchedule = Parameters.VM_PES[vmType] - task.getNumberOfPes();
+                double availableMemAfterSchedule = Parameters.VM_RAM[vmType] - (int)Math.ceil(task.getMemory());
+                U_factor = Math.hypot( 1 - ((double)availablePeAfterSchedule / Parameters.VM_PES[vmType]), 1-(availableMemAfterSchedule / Parameters.VM_RAM[vmType] ));
+            }
+            vmTypesRankList.add( new BiFactorRankVmType(vmType, C_factor + U_factor));
+        }
+        vmTypesRankList.sort(Collections.reverseOrder());
+
+        return vmTypesRankList;
+    }
+
     public List<BiFactorRank> sortOnFactorForTask(List< ? extends ContainerVm> vmList, Task task, int factorType){
         List<BiFactorRank> vmRankedList = new ArrayList<>();
 
@@ -283,14 +464,14 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 
         for (ContainerVm vm: vmList){
             double C_factor = (task.getSubBudget() - costMap.get(vm.getId())) / (task.getSubBudget() - minCost);
-            if (factorType == 1){
+            double U_factor = 0.0;
+            if (factorType == Parameters.BI_FACTOR){
                 int availablePeAfterSchedule = ((CondorVM) vm).getAvailablePeNumbersForSchedule() - task.getNumberOfPes();
                 double availableMemAfterSchedule = ((CondorVM) vm).getAvailableRamForSchedule() - (int)Math.ceil(task.getMemory());
 //                double U_factor = Math.sqrt(Math.pow((1 - (availablePeAfterSchedule / vm.getPeList().size())), 2) + Math.pow((1-(availableMemAfterSchedule / vm.getRam())), 2));
-                double U_factor = Math.hypot( 1 - ((double)availablePeAfterSchedule / vm.getPeList().size()), 1-(availableMemAfterSchedule / vm.getRam()));
-                vmRankedList.add( new BiFactorRank(vm, C_factor + U_factor));
+                U_factor = Math.hypot( 1 - ((double)availablePeAfterSchedule / vm.getPeList().size()), 1-(availableMemAfterSchedule / vm.getRam()));
             }
-            vmRankedList.add( new BiFactorRank(vm, C_factor));
+            vmRankedList.add( new BiFactorRank(vm, C_factor + U_factor));
         }
         // sort on descending order
 //        Collections.sort(vmRankedList, Collections.reverseOrder());
@@ -298,6 +479,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 
         return vmRankedList;
     }
+
     @Override
     public void run() {
 

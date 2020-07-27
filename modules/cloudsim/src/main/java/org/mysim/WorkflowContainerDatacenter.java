@@ -564,6 +564,12 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
     protected void processContainerDestroy(SimEvent ev, boolean ack){
         Container container = (Container) ev.getData();
         // TODO EHSAN: deallocate container for tasks on this container...
+
+        // release used resources for future scheduling
+        CondorVM castedVm = ( CondorVM) getContainerAllocationPolicy().getContainerVm(container);
+        castedVm.setAvailableRamForSchedule(castedVm.getAvailableRamForSchedule() + container.getRam());
+        castedVm.setAvailablePeNumbersForSchedule(castedVm.getNumberOfPes() + container.getNumberOfPes());
+
         getContainerAllocationPolicy().deallocateVmForContainer(container);
         if (ack) {
             int[] data = new int[3];

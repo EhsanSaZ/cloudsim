@@ -325,12 +325,13 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
          if(getContainersCreatedList().contains(container)){
              getContainersCreatedList().remove(container);
 
-            int vmId = getContainersToVmsMap().remove(container.getId());
-            ContainerVm vm = ContainerVmList.getById(getVmsCreatedList(), vmId);
-            CondorVM castedVm = (CondorVM) vm;
-            assert castedVm != null;
-            castedVm.setAvailableRamForSchedule(castedVm.getAvailableRamForSchedule() + container.getRam());
-            castedVm.setAvailablePeNumbersForSchedule(castedVm.getNumberOfPes() + container.getNumberOfPes());
+             // this is done in daca center on processContainerDestroy method
+//            int vmId = getContainersToVmsMap().remove(container.getId());
+//            ContainerVm vm = ContainerVmList.getById(getVmsCreatedList(), vmId);
+//            CondorVM castedVm = (CondorVM) vm;
+//            assert castedVm != null;
+//            castedVm.setAvailableRamForSchedule(castedVm.getAvailableRamForSchedule() + container.getRam());
+//            castedVm.setAvailablePeNumbersForSchedule(castedVm.getNumberOfPes() + container.getNumberOfPes());
 
          }
          int datacenterId = getVmsToDatacentersMap().get(container.getVm().getId());
