@@ -70,7 +70,7 @@ public class BudgetDistributionStrategySpareBudget extends BudgetDistributionStr
     }
 
     private double calculateTaskExecutionCostOnVmType(Task task, int vmTypeIndex){
-        //TODO EHSAN: this estimation must be implemented
+        //T ODO EHSAN: this estimation must be implemented
         double in_size = 0.0;
         double out_size = 0.0;
         for (FileItem file : task.getFileList()){

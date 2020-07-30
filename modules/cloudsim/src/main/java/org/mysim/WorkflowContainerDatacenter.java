@@ -303,7 +303,9 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
 
             double estimatedFinishTime = scheduler.cloudletSubmit(task, totalTransterTime);
 //            updateTaskExecTime(job, container);
-            task.setTaskFinishTime(task.getExecStartTime() + task.getCloudletLength() / container.getMips());
+            // T ODO EHSAN: this finish time is wrong... but this is not used..
+//            task.setTaskFinishTime(task.getExecStartTime() + task.getCloudletLength() / container.getMips());
+            task.setTaskFinishTime(task.getExecStartTime() + totalTransterTime + task.getCloudletLength() /  (container.getNumberOfPes() * container.getMips()));
 
             // if this cloudlet is in the exec queue
             if (estimatedFinishTime > 0.0 && !Double.isInfinite(estimatedFinishTime)) {

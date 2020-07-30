@@ -269,7 +269,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
         // the groups are sorted and accessed according to min deadline among each
         for(Entry<String, Double> entry : listOfEntries){
             List<Task> tasksList = taskCluster.get(entry.getKey());
-            // maybe this is not needed TODO
+            // maybe tasksList.sort(compareByDepth) is not needed TODO
             //tasksList.sort(compareByDepth);
             for(Task task: tasksList){
                 int requiredMemory = (int)Math.ceil(task.getMemory());
