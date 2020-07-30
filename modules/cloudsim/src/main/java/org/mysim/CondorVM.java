@@ -92,10 +92,10 @@ public class CondorVM extends PowerContainerVm {
 //        }
 //        getBusyStateHistory().add(newState);
     }
-    public boolean isSuitableForTask(Task task){
+    public boolean isSuitableForTask(int requiredPeNumbers, int requiredMemory){
         //T ODO EHSAN: Implement this
-        return getAvailablePeNumbersForSchedule() >= task.getNumberOfPes() &&
-                getAvailableRamForSchedule() >= (int) Math.ceil(task.getMemory());
+        return getAvailablePeNumbersForSchedule() >= requiredPeNumbers &&
+                getAvailableRamForSchedule() >= requiredMemory;
 //        ContainerSchedulerTimeShared scheduler = (ContainerSchedulerTimeShared) getContainerScheduler();
 //        scheduler.getPesInUse();
 //        if ( task.getNumberOfPes() > (getPeList().size() - scheduler.getPesInUse()) || )

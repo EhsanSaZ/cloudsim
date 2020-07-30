@@ -73,7 +73,10 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
             for (ContainerVm vm:broker.getVmsCreatedList()){
                 CondorVM castedVm = (CondorVM) vm;
                 assert castedVm != null;
-                if (castedVm.getAvailablePeNumbersForSchedule() >= requiredPesNumber && castedVm.getAvailableRamForSchedule() >= requiredMemory){
+//                if (castedVm.getAvailablePeNumbersForSchedule() >= requiredPesNumber && castedVm.getAvailableRamForSchedule() >= requiredMemory){
+//                    AllVm.add(vm);
+//                }
+                if (castedVm.isSuitableForTask(requiredPesNumber, requiredMemory)){
                     AllVm.add(vm);
                 }
             }
@@ -275,7 +278,8 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                 for (ContainerVm vm :newRequiredVms){
                     CondorVM castedVm = (CondorVM) vm;
                     assert castedVm != null;
-                    if (castedVm.getAvailablePeNumbersForSchedule() >= task.getNumberOfPes() && castedVm.getAvailableRamForSchedule() >= requiredMemory && task.isVmAffordable(vm)){
+//                    if (castedVm.getAvailablePeNumbersForSchedule() >= task.getNumberOfPes() && castedVm.getAvailableRamForSchedule() >= requiredMemory && task.isVmAffordable(vm)){
+                    if (castedVm.isSuitableForTask(task.getNumberOfPes(), requiredMemory) && task.isVmAffordable(vm)){
                         //create a new container for running on this vm
                         castedVm.setAvailablePeNumbersForSchedule(castedVm.getAvailablePeNumbersForSchedule() - task.getNumberOfPes());
                         castedVm.setAvailableRamForSchedule(castedVm.getAvailableRamForSchedule() - requiredMemory);
