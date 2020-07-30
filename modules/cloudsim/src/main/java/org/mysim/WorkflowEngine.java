@@ -16,10 +16,7 @@ import org.mysim.budgetdistribution.BudgetDistributionStrategy;
 import org.mysim.deadlinedistribution.DeadlineDistributionStrategy;
 import org.mysim.planning.MyPlanningAlgorithm;
 import org.mysim.planning.PlanningAlgorithmStrategy;
-import org.mysim.utils.MySimTags;
-import org.mysim.utils.Parameters;
-import org.mysim.utils.WorkflowList;
-import org.mysim.utils.ReplicaCatalog;
+import org.mysim.utils.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -133,8 +130,21 @@ public class WorkflowEngine extends SimEntity {
 
     public void processMonitoringVms(SimEvent ev){
 
-        List <? extends ContainerVm> vmToDestroyList = new ArrayList<>();
-        // TODO EHSAN: calculate the list according to vm state history from broker crated vm list..
+        List <ContainerVm> vmToDestroyList = new ArrayList<>();
+        // T ODO EHSAN: calculate the list according to vm state history from broker crated vm list..
+        for (ContainerVm vm : broker.getVmsCreatedList()){
+            List<VmStateEntry> busyStateHistory =  ((CondorVM) vm).getBusyStateHistory();
+            double oldestIdleTime = Double.MAX_VALUE;
+            for (VmStateEntry stateEntry: busyStateHistory){
+                if (stateEntry.getState() == MySimTags.VM_STATUS_BUSY){
+                    break;
+                }
+                oldestIdleTime = stateEntry.getTime();
+            }
+            if ((CloudSim.clock() - oldestIdleTime) > Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN){
+                vmToDestroyList.add(vm);
+            }
+        }
         // T ODO EHSAN: remove this vm as a storage in replica
         for(ContainerVm vm: vmToDestroyList){
             ReplicaCatalog.removeStorageFromStorageList(Integer.toString(vm.getId()));

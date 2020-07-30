@@ -5,7 +5,9 @@ import org.cloudbus.cloudsim.container.containerProvisioners.ContainerPe;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerRamProvisioner;
 import org.cloudbus.cloudsim.container.core.PowerContainerVm;
 import org.cloudbus.cloudsim.container.schedulers.ContainerScheduler;
+import org.cloudbus.cloudsim.core.CloudSim;
 import org.mysim.utils.MySimTags;
+import org.mysim.utils.Parameters;
 import org.mysim.utils.VmStateEntry;
 //import org.workflowsim.WorkflowSimTags;
 
@@ -15,6 +17,10 @@ import java.util.List;
 public class CondorVM extends PowerContainerVm {
     private int state;
     private final List<VmStateEntry> busyStateHistory = new LinkedList<VmStateEntry>();
+    /**
+     * The previous time.
+     */
+    private double previousBusyStateCheckTime;
 
     private double costPerMem = 0.0;
     private double costPerBW = 0.0;
@@ -47,27 +53,52 @@ public class CondorVM extends PowerContainerVm {
         setCostPerMem(costPerMem);
         setCostPerStorage(costPerStorage);
         setCostPerBW(costPerBW);
+        setState(MySimTags.VM_STATUS_IDLE);
         setAvailablePeNumbersForSchedule(peList.size());
         setAvailableRamForSchedule(ram);
+    }
+    @Override
+    public double updateVmProcessing(final double currentTime, final List<Double> mipsShare) {
+        double time = super.updateVmProcessing(currentTime, mipsShare);
+        //currentTime > getPreviousBusyStateCheckTime() && (currentTime - 0.2) % getSchedulingInterval() == 0
+        if ((currentTime - getPreviousBusyStateCheckTime()) >= getSchedulingInterval()) {
+            if (CloudSim.clock() != 0 && getContainerList().size() > 0){
+                addBusyStateHistory(currentTime, MySimTags.VM_STATUS_BUSY);
+                setState(MySimTags.VM_STATUS_BUSY);
+
+            }else if(CloudSim.clock() != 0 && getContainerList().size() <= 0){
+                addBusyStateHistory(currentTime, MySimTags.VM_STATUS_IDLE);
+                setState(MySimTags.VM_STATUS_IDLE);
+            }
+            setPreviousBusyStateCheckTime(currentTime);
+        }
+
+        return time;
     }
 
     public void addBusyStateHistory( double time, int state){
         VmStateEntry newState = new VmStateEntry(time, state);
-        if (!getBusyStateHistory().isEmpty()){
-            VmStateEntry previousState = getBusyStateHistory().get(getBusyStateHistory().size() - 1);
-            if (previousState.getTime() == time) {
-                getBusyStateHistory().set(getBusyStateHistory().size() - 1, newState);
-                return;
-            }
+        getBusyStateHistory().add(0, newState);
+        if (getBusyStateHistory().size() > HISTORY_LENGTH) {
+            getBusyStateHistory().remove(HISTORY_LENGTH);
         }
-        getBusyStateHistory().add(newState);
+
+//        if (!getBusyStateHistory().isEmpty()){
+//            VmStateEntry previousState = getBusyStateHistory().get(getBusyStateHistory().size() - 1);
+//            if (previousState.getTime() == time) {
+//                getBusyStateHistory().set(getBusyStateHistory().size() - 1, newState);
+//                return;
+//            }
+//        }
+//        getBusyStateHistory().add(newState);
     }
     public boolean isSuitableForTask(Task task){
-        //TODO EHSAN: Implement this
+        //T ODO EHSAN: Implement this
+        return getAvailablePeNumbersForSchedule() >= task.getNumberOfPes() &&
+                getAvailableRamForSchedule() >= (int) Math.ceil(task.getMemory());
 //        ContainerSchedulerTimeShared scheduler = (ContainerSchedulerTimeShared) getContainerScheduler();
 //        scheduler.getPesInUse();
 //        if ( task.getNumberOfPes() > (getPeList().size() - scheduler.getPesInUse()) || )
-        return false;
     }
     //----------------setter and getter
     public int getState() {
@@ -80,6 +111,14 @@ public class CondorVM extends PowerContainerVm {
 
     public List<VmStateEntry> getBusyStateHistory() {
         return busyStateHistory;
+    }
+
+    public double getPreviousBusyStateCheckTime() {
+        return previousBusyStateCheckTime;
+    }
+
+    public void setPreviousBusyStateCheckTime(double previousBusyStateCheckTime) {
+        this.previousBusyStateCheckTime = previousBusyStateCheckTime;
     }
 
     public double getCostPerMem() {

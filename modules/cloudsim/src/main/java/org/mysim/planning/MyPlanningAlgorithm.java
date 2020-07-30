@@ -327,7 +327,9 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                             new ContainerSchedulerTimeSharedOverSubscription(peList),
                             new ContainerRamProvisionerSimple(Parameters.VM_RAM[VmType]),
                             new ContainerBwProvisionerSimple(Parameters.VM_BW),
-                            peList, Parameters.CONTAINER_VM_SCHEDULING_INTERVAL);
+                            peList, Parameters.CONTAINER_VM_SCHEDULING_INTERVAL,
+                            Parameters.COST[VmType], Parameters.COST_PER_MEM[VmType],
+                            Parameters.COST_PER_STORAGE[VmType], Parameters.COST_PER_BW[VmType]);
 
                     newVm.setAvailablePeNumbersForSchedule(newVm.getAvailablePeNumbersForSchedule() - task.getNumberOfPes());
                     newVm.setAvailableRamForSchedule(newVm.getAvailableRamForSchedule() - requiredMemory);

@@ -103,6 +103,7 @@ public class Parameters {
 
     public static final int R_T_Q_SCHEDULING_INTERVAL = 100;
     public static final int MONITORING_INTERVAL = 500;
+    public static final double VM_THRESH_HOLD_FOR_SHUTDOWN = 60;
     public static final int CHECK_FINISHED_STATUS_DELAY = 200;
 
 
