@@ -81,6 +81,7 @@ public class Parameters {
         costModel = model;
     }
 
+    //---------------------------------  VM
     public static final int VM_TYPES_NUMBERS = 4;
     public static final double[] VM_MIPS = new double[]{1000, 1000, 1000, 1000};
     public static final int[] VM_PES = new int[]{1, 2, 4, 8};
@@ -93,6 +94,7 @@ public class Parameters {
 
     public static final int VM_SIZE = 2500;//MB
 
+    //---------------------------------  Container
     public static final double[] CONTAINER_MIPS = new double[]{1000, 1000, 1000, 1000}; // exactly same as vm
     public static final int[] CONTAINER_PES = new int[]{1, 1, 1};
     public static final double[] CONTAINER_RAM = new double[]{128, 256, 512};
@@ -100,6 +102,15 @@ public class Parameters {
     public static final double CONTAINER_VM_SCHEDULING_INTERVAL = 300.0D;
 
     public static final int CONTAINER_SIZE = 600;// MB
+
+    //---------------------------------  HOST
+    public static final int HOST_TYPES = 1;
+    public static final int[] HOST_MIPS = new int[]{37274};
+    public static final int[] HOST_PES = new int[]{48};
+    public static final int[] HOST_RAM = new int[]{262144};
+    public static final int HOST_BW = 1000000;
+    public static final long HOST_STORAGE = 1000000;
+
 
     public static final int R_T_Q_SCHEDULING_INTERVAL = 100;
     public static final int MONITORING_INTERVAL = 500;

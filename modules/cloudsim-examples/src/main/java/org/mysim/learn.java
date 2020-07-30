@@ -3,7 +3,10 @@ package org.mysim;
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerBwProvisionerSimple;
+import org.cloudbus.cloudsim.container.containerProvisioners.ContainerPe;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerRamProvisionerSimple;
+import org.cloudbus.cloudsim.container.containerProvisioners.CotainerPeProvisionerSimple;
+import org.cloudbus.cloudsim.container.core.Container;
 import org.cloudbus.cloudsim.container.core.ContainerCloudlet;
 import org.cloudbus.cloudsim.container.core.ContainerVm;
 import org.cloudbus.cloudsim.container.core.PowerContainerVm;
@@ -278,5 +281,29 @@ public class learn {
 //
 //            System.out.println(wf.getTaskList().size());
 //        }
+
+
+        int VmType = 0;
+        ArrayList<ContainerPe> peList = new ArrayList<ContainerPe>();
+        for (int j = 0; j < Parameters.VM_PES[VmType]; ++j){
+            peList.add(new ContainerPe(j, new CotainerPeProvisionerSimple((double) Parameters.VM_MIPS[VmType])));
+        }
+
+        CondorVM newVm = new CondorVM(IDs.pollId(ContainerVm.class), 121212, Parameters.VM_MIPS[VmType],
+                Parameters.VM_RAM[VmType], Parameters.VM_BW, Parameters.VM_SIZE, "Xen",
+                new ContainerSchedulerTimeSharedOverSubscription(peList),
+                new ContainerRamProvisionerSimple(Parameters.VM_RAM[VmType]),
+                new ContainerBwProvisionerSimple(Parameters.VM_BW),
+                peList, Parameters.CONTAINER_VM_SCHEDULING_INTERVAL,
+                Parameters.COST[VmType], Parameters.COST_PER_MEM[VmType],
+                Parameters.COST_PER_STORAGE[VmType], Parameters.COST_PER_BW[VmType]);
+
+        List<ContainerVm> vmlist = new ArrayList<>();
+        vmlist.add(newVm);
+
+        ContainerVm vm = vmlist.get(0);
+
+        CondorVM castedVm = (CondorVM) vm;
+        System.out.println("BYE");
     }
 }

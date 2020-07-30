@@ -166,7 +166,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     provisionedVm =  vmRankedList.get(0).vm;
                 }
                 if (provisionedVm != null){
-                    // TODO EHSAN: it may have some bugs in casting.. need check
+                    // T ODO EHSAN: it may have some bugs in casting.. need check
                     // 1- update scheduled capacity of vm--
                     // 2- create a new container to deploy on this vm--
                     // 3- add container to newRequiredContainers--
@@ -269,7 +269,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
         // the groups are sorted and accessed according to min deadline among each
         for(Entry<String, Double> entry : listOfEntries){
             List<Task> tasksList = taskCluster.get(entry.getKey());
-            // maybe tasksList.sort(compareByDepth) is not needed TODO
+            // maybe tasksList.sort(compareByDepth) is not needed
             //tasksList.sort(compareByDepth);
             for(Task task: tasksList){
                 int requiredMemory = (int)Math.ceil(task.getMemory());

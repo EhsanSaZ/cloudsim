@@ -385,6 +385,13 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
         }
     }
 
+    public void bindSchedulerDatacenter(int datacenterId) {
+        if (datacenterId <= 0) {
+            Log.printLine("Error in data center id");
+            return;
+        }
+        this.datacenterIdsList.add(datacenterId);
+    }
     ////////////////////setter and getter
     protected void setVmToDatacenterRequestedIdsList(Map<Integer,List<Integer>> datacenterRequestedIdsListMap){
         this.vmToDatacenterRequestedIdsList = datacenterRequestedIdsListMap;

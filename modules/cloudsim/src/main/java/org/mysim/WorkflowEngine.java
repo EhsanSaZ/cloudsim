@@ -25,12 +25,14 @@ import java.util.List;
 public class WorkflowEngine extends SimEntity {
 
     private WorkflowParser workflowParser;
+    private WorkflowDatacenterBroker broker;
+
     private DeadlineDistributionStrategy deadlineDistributor;
     private BudgetDistributionStrategy budgetDistributor;
 
     private PlanningAlgorithmStrategy planner;
 
-    private WorkflowDatacenterBroker broker;
+    private QOSGenerator qosGenerator;
 
     private List<Workflow> workflowList;
     protected List<Task> readyTaskList;
@@ -49,9 +51,12 @@ public class WorkflowEngine extends SimEntity {
 
     public WorkflowEngine(String name) {
         super(name);
+
+        setQosGenerator(new QOSGenerator());
+
+        setWorkflowList(new ArrayList<>());
         setReadyTaskList(new ArrayList<>());
         setScheduledTaskList(new ArrayList<>());
-        setWorkflowList(new ArrayList<>());
 
         setNewRequiredContainers(new ArrayList<>());
         setSubmittedNewRequiredContainers(new ArrayList<>());
@@ -551,4 +556,13 @@ public class WorkflowEngine extends SimEntity {
     public List<Task> getScheduledTaskList() { return scheduledTaskList; }
 
     public void setScheduledTaskList(List<Task> scheduledTaskList) { this.scheduledTaskList = scheduledTaskList; }
+
+    public QOSGenerator getQosGenerator() {
+        return qosGenerator;
+    }
+
+    public void setQosGenerator(QOSGenerator qosGenerator) {
+        this.qosGenerator = qosGenerator;
+    }
+
 }
