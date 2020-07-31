@@ -33,6 +33,7 @@ public class QOSGenerator {
 
         workflow.setDeadline(generateDeadline());
         workflow.setBudget(generateBudget());
+        finish();
     }
 
     private void calculateTasksRunningTimes() {

@@ -119,8 +119,17 @@ public class WorkflowEngine extends SimEntity {
         Workflow wf = workflowParser.get_next_workflow();
         processDatastaging(wf);
 
+        // T ODO EHSAN: generate Qos for workflow
+        getQosGenerator().setWorkflow(wf);
+        getQosGenerator().run();// finish is called in run
+//        getQosGenerator().finish();
+
+        // add budget dist for workflow
         deadlineDistributor.setWorkflow(wf);
         deadlineDistributor.run();
+
+        budgetDistributor.calculateSubBudgetWholeWorkflow(wf);
+
         getWorkflowList().add(wf);
         collectReadyTaskList();
 
@@ -311,6 +320,9 @@ public class WorkflowEngine extends SimEntity {
             if (w.getTaskList().size() > 0){
                 deadlineDistributor.setWorkflow(w);
                 deadlineDistributor.updateSubDeadlines();
+
+                budgetDistributor.calculateSubBudgetWholeWorkflow(w);
+
                 collectReadyTaskList(task, w);
             } else if (w.getTaskList().size() == 0 && w.getSubmittedTaskList().size() == 0) {
                 // this w is done..

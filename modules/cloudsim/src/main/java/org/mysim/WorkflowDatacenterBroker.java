@@ -119,7 +119,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                     " has been created in Datacenter #", datacenterId, ", Host #",
                     ContainerVmList.getById(getVmsCreatedList(), vmId).getHost().getId());
             //send response to workflow engine..
-            schedule(getWorkflowEngineId(),CloudSim.getMinTimeBetweenEvents(),CloudSimTags.VM_CREATE_ACK,ev);
+            schedule(getWorkflowEngineId(),CloudSim.getMinTimeBetweenEvents(),CloudSimTags.VM_CREATE_ACK,data);
         } else {
             Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Creation of VM #", vmId,
                     " failed in Datacenter #", datacenterId);
