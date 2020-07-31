@@ -2,6 +2,7 @@ package org.mysim.deadlinedistribution;
 
 import org.cloudbus.cloudsim.Consts;
 import org.cloudbus.cloudsim.Log;
+import org.cloudbus.cloudsim.core.CloudSim;
 import org.mysim.FileItem;
 import org.mysim.Task;
 import org.mysim.utils.Parameters;
@@ -27,8 +28,8 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
     @Override
     public void run() {
         if (wf != null) {
-            Log.printLine(" DeadlineDistribution running with  workflow " + wf.getName() +
-                    " and with " + wf.getTaskList().size() + " tasks.");
+            Log.printConcatLine(CloudSim.clock(), "Start DeadlineDistribution for workflow ", wf.getName(),
+                    " and with ", wf.getTaskList().size() , " tasks.");
 
             averageBandwidth = Parameters.VM_BW;
 
@@ -39,7 +40,7 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
             distributeDeadline();
             finishDistribution();
         } else {
-            Log.printLine(" No workflow set for deadline distribution");
+            Log.printConcatLine(CloudSim.clock()," No workflow set for deadline distribution" );
         }
 
     }
@@ -47,6 +48,8 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
     @Override
     public void updateSubDeadlines(){
         if (wf != null) {
+            Log.printConcatLine(CloudSim.clock(), "Start updating sub-deadlines for workflow " , wf.getName() ,
+                    " and with " , wf.getTaskList().size() , " tasks.");
             averageBandwidth = Parameters.VM_BW;
             calculateTaskExecutionTime();
             calculateTransferTimes();
@@ -54,13 +57,14 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
             finishDistribution();
 
         } else {
-            Log.printLine(" No workflow set for update deadline distribution");
+            Log.printConcatLine(CloudSim.clock()," No workflow set for update deadline distribution" );
+
         }
     }
     private void updateSubDeadlinesDistribution(){
         double maxFinishTime= Double.MIN_VALUE;
         for(Task task: wf.getExecutedTaskList()){
-            if(task.getFinishTime() >maxFinishTime){
+            if(task.getFinishTime() > maxFinishTime && task.getFinishTime() > 0){
                 maxFinishTime = task.getFinishTime();
             }
         }
@@ -211,6 +215,7 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
         }
     }
     private void finishDistribution() {
+        Log.printConcatLine(CloudSim.clock(), " Deadline distribution for workflow ", wf.getName(), " finished");
         averageBandwidth = -1;
         taskExecutionTimes.clear();
         taskTransferTimes.clear();

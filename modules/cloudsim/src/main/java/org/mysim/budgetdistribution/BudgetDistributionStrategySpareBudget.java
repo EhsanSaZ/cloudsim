@@ -1,5 +1,7 @@
 package org.mysim.budgetdistribution;
 
+import org.cloudbus.cloudsim.Log;
+import org.cloudbus.cloudsim.core.CloudSim;
 import org.mysim.FileItem;
 import org.mysim.Task;
 import org.mysim.Workflow;
@@ -18,6 +20,9 @@ public class BudgetDistributionStrategySpareBudget extends BudgetDistributionStr
 
     @Override
     public void calculateSubBudgetWholeWorkflow(Workflow wf){
+        Log.printConcatLine(CloudSim.clock()," Start BudgetDistribution for workflow ", wf.getName(),
+                " and with ", wf.getTaskList().size() , " tasks.");
+
         populateCostMaps(wf);
 
         double estimatedMinNeededBudget = 0.0;
@@ -42,8 +47,8 @@ public class BudgetDistributionStrategySpareBudget extends BudgetDistributionStr
                 t.setSubBudget(unallocMinCostMap.get(t));
             }
         }
-
         finish();
+        Log.printConcatLine(CloudSim.clock(), " Budget distribution for workflow ", wf.getName(), " finished");
     }
 
     @Override

@@ -170,7 +170,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                         , ", On Host#", hostId);
                 setContainersCreated(getContainersCreated()+1);
                 // send response to workflow engine
-                schedule(getWorkflowEngineId(),CloudSim.getMinTimeBetweenEvents(), containerCloudSimTags.CONTAINER_CREATE_ACK, ev);
+                schedule(getWorkflowEngineId(),CloudSim.getMinTimeBetweenEvents(), containerCloudSimTags.CONTAINER_CREATE_ACK, data);
             }
         } else {
             Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Failed Creation of Container #", containerId);

@@ -1,6 +1,7 @@
 package org.mysim;
 
 import org.apache.commons.math3.distribution.PoissonDistribution;
+import org.cloudbus.cloudsim.Consts;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.container.core.Container;
 import org.cloudbus.cloudsim.container.core.ContainerCloudlet;
@@ -117,6 +118,7 @@ public class WorkflowEngine extends SimEntity {
         // get and parse a new workflow
         // collect all ready task
         Workflow wf = workflowParser.get_next_workflow();
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "process new workflow for submission");
         processDatastaging(wf);
 
         // T ODO EHSAN: generate Qos for workflow
@@ -143,7 +145,7 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void processMonitoringVms(SimEvent ev){
-
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Start monitoring and search for Idle Vms.");
         List <ContainerVm> vmToDestroyList = new ArrayList<>();
         // T ODO EHSAN: calculate the list according to vm state history from broker crated vm list..
         for (ContainerVm vm : broker.getVmsCreatedList()){
@@ -157,6 +159,7 @@ public class WorkflowEngine extends SimEntity {
             }
             if ((CloudSim.clock() - oldestIdleTime) > Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN){
                 vmToDestroyList.add(vm);
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Select Vm #", vm.getId() , " to destroy");
             }
         }
         // T ODO EHSAN: remove this vm as a storage in replica
@@ -191,13 +194,18 @@ public class WorkflowEngine extends SimEntity {
             workflowParser.setJobIdStartsFrom(workflowParser.getJobIdStartsFrom() + 1);
 
             List<FileItem> fileList = new ArrayList<>();
+            double fileSize = 0.0;
             for (FileItem file : allFileList){
                 if (file.isRealInputFile(allFileList)){
                     ReplicaCatalog.addFileToStorage(file.getName(), Parameters.SOURCE);
                     fileList.add(file);
+                    fileSize += file.getSize();
                 }
             }
+
+            fileSize /= fileList.size();
             stageInTask.setFileList(fileList);
+            stageInTask.setMemory(Math.ceil(fileSize / Consts.MILLION));
             stageInTask.setClassType(Parameters.ClassType.STAGE_IN.value);
 
             stageInTask.setDepth(0);
@@ -214,6 +222,7 @@ public class WorkflowEngine extends SimEntity {
         }
     }
     public void processFinishedStatus(SimEvent ev){
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Check finished status");
         boolean flag = true;
         for (Workflow w : getWorkflowList()){
             if(w.getTaskList().size()>0 || w.getSubmittedTaskList().size()>0){
@@ -222,15 +231,18 @@ public class WorkflowEngine extends SimEntity {
             }
         }
         if (flag){
+            Log.printConcatLine(CloudSim.clock(), ": ", getName(), "All workflows are executed completely");
             schedule(this.getId(), 0,CloudSimTags.END_OF_SIMULATION, null );
             // T ODO EHSAN: do any extra needed action here..like signal to other entities...
         }else {
+            Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Simulation is not finished yet");
             // T ODO EHSAN: use an appropriate delay
             schedule(this.getId(), Parameters.CHECK_FINISHED_STATUS_DELAY, MySimTags.CHECK_FINISHED_STATUS, null);
         }
     }
     public void processVmCreate(SimEvent ev) {
         // submit all new containers on new vms...
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Vm creation Ack received");
         int[] data = (int[]) ev.getData();
         int datacenterId = data[0];
         int vmId = data[1];
@@ -246,6 +258,7 @@ public class WorkflowEngine extends SimEntity {
                         list.add(c);
                     }
                 }
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Submitting scheduled containers on Vm #", vm.getId());
                 broker.submitContainerListDynamic(list);
                 getNewRequiredContainersOnNewVms().removeAll( list);
                 getSubmittedNewRequiredContainers().addAll(list);
@@ -258,6 +271,7 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void processContainerCreate(SimEvent ev) {
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Container creation Ack received");
         int[] data = (int[]) ev.getData();
         int vmId = data[0];
         int containerId = data[1];
@@ -266,15 +280,18 @@ public class WorkflowEngine extends SimEntity {
             if(vmId ==-1){
                 Log.printConcatLine("Error : Where is the VM");
             }else {
+                // T ODO TEST : FIX LOGIC HERE
                 Container c = ContainerList.getById(getSubmittedNewRequiredContainers(), containerId);
                 if (c != null){
                     getSubmittedNewRequiredContainers().remove(c);
                     submitTasksOnContainer(containerId, vmId);
+                    return;
                 }else{
                     c = ContainerList.getById(getSubmittedNewRequiredContainersOnNewVms(), containerId);
                     if (c != null){
                         getSubmittedNewRequiredContainersOnNewVms().remove(c);
                         submitTasksOnContainer(containerId, vmId);
+                        return;
                     }
                 }
                 Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": No Container with Id",containerId ," exists in submitted container list");
@@ -285,6 +302,9 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void submitTasksOnContainer(int containerId, int vmId){
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Submitting scheduled tasks on Vm #", vmId,
+                " and Container #", containerId);
+
         List <Task> list = new ArrayList<>();
         for(Task t: getScheduledTaskList()){
             if(t.getContainerId() == containerId && t.getVmId() == vmId){
@@ -308,11 +328,13 @@ public class WorkflowEngine extends SimEntity {
 
         // collect all ready task ???
         // collect all ready among the child of this returened task...??
+
         ContainerCloudlet cloudlet = (ContainerCloudlet) ev.getData();
         Task task = (Task) cloudlet;
         task.setTaskExecutionCost(task.getProcessingCost());
         task.setTaskExecutionTime(task.getActualCPUTime());
         Workflow w = WorkflowList.getById(getWorkflowList(), task.getWorkflowID());
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Task #", task.getCloudletId(), "is Returned");
         if (w != null) {
             w.getExecutedTaskList().add(task);
             w.setTotalCost(w.getTotalCost() + task.getTaskExecutionCost());
@@ -323,8 +345,12 @@ public class WorkflowEngine extends SimEntity {
 
                 budgetDistributor.calculateSubBudgetWholeWorkflow(w);
 
-                collectReadyTaskList(task, w);
+//                collectReadyTaskList(task, w);
+                collectReadyTaskList(w);
             } else if (w.getTaskList().size() == 0 && w.getSubmittedTaskList().size() == 0) {
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Execution of workflow #", w.getWorkflowId(), "is finished.",
+                        "Deleting related files in replica catalog.");
+
                 // this w is done..
                 // delete all files from replica catalog
                 List<FileItem> allFileList = new ArrayList<>();
@@ -354,32 +380,9 @@ public class WorkflowEngine extends SimEntity {
     public void collectReadyTaskList() {
         // get all ready tasks among all workflows.. tasks with all parents executed
         // start planning them
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Collecting all ready tasks from all workflows");
         for (Workflow w : getWorkflowList()) {
-            List<Task> list = w.getTaskList();
-            int num = list.size();
-
-            for (int i = 0; i < num; i++) {
-                Task task = list.get(i);
-                //Dont use job.isFinished() it is not right
-                if (!hasTaskListContainsID(w.getExecutedTaskList(), task.getCloudletId())) {
-                    List<Task> parentList = task.getParentList();
-                    boolean flag = true;
-                    for (Task p : parentList) {
-                        if (!hasTaskListContainsID(w.getExecutedTaskList(), p.getCloudletId())) {
-                            flag = false;
-                            break;
-                        }
-                    }
-                    if (flag) {
-                        getReadyTaskList().add(task);
-                        // ready task should be removed now from workflow task list. done by pointer
-                        // removing  later on return  may cause to multiple submissions
-                        list.remove(task);
-                        i--;
-                        num--;
-                    }
-                }
-            }
+            collectReadyTaskList(w);
         }
 
 //        processPlanningReadyTaskList();
@@ -395,7 +398,9 @@ public class WorkflowEngine extends SimEntity {
         return false;
     }
 
-    public void collectReadyTaskList(Task finishedTask, Workflow w) {
+    public void collectReadyTaskList(Workflow w) {
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Updating ready task queue. ",
+                "collecting tasks from workflow #", w.getWorkflowId());
         List<Task> list = w.getTaskList();
         int num = list.size();
         for (int i = 0; i < num; i++) {
@@ -424,6 +429,7 @@ public class WorkflowEngine extends SimEntity {
 
     public void processPlanningReadyTaskList() {
         if ( getReadyTaskList().size() > 0){
+            Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Start scheduling Ready Task Queue");
             MyPlanningAlgorithm planning_algorithm = (MyPlanningAlgorithm) getPlanner();
             planning_algorithm.ScheduleTasks( broker, getReadyTaskList(), getScheduledTaskList(),
                     getNewRequiredContainers(), getNewRequiredVms(), getNewRequiredContainersOnNewVms());
@@ -435,6 +441,9 @@ public class WorkflowEngine extends SimEntity {
                         Workflow w = WorkflowList.getById(getWorkflowList(), task.getWorkflowID());
                         assert w != null;
                         w.getSubmittedTaskList().add(task);
+                        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Task #", task.getCloudletId(),
+                                "will run on already running container");
+
                     }
                 }
                 getScheduledTaskList().removeAll(planning_algorithm.getScheduledTasksOnRunningContainers());
@@ -444,12 +453,14 @@ public class WorkflowEngine extends SimEntity {
 
             // first submit new containers on already running vms--> on receive container create ack submit tasks on these containers...
             if (getNewRequiredContainers().size() > 0){
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Submitting new containers on already running Vms");
                 broker.submitContainerListDynamic(getNewRequiredContainers());
                 getSubmittedNewRequiredContainers().addAll(getNewRequiredContainers());
                 getNewRequiredContainers().clear();
 //        setNewRequiredContainers(new ArrayList<>());
             }
             if (getNewRequiredVms().size() > 0){
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Submitting new Vms");
                 // second submit new vms --> on receive vm create ack submits new containers on new vms on these new vms...
                 broker.createVMsInDataCenterDynamic(getNewRequiredVms());
                 getSubmittedNewRequiredVms().addAll(getNewRequiredVms());
