@@ -54,7 +54,9 @@ public class WassExample {
             BudgetDistributionStrategySpareBudget bDistribution = new BudgetDistributionStrategySpareBudget();
 
 //            ContainerAllocationPolicy containerAllocationPolicy = new ContainerAllocationPolicyRS();
-            ContainerAllocationPolicy containerAllocationPolicy = new ContainerAllocationPolicySimple();
+//            ContainerAllocationPolicy containerAllocationPolicy = new ContainerAllocationPolicySimple();
+            ContainerAllocationPolicy containerAllocationPolicy = new PowerContainerAllocationPolicySimple();
+
 
             double overUtilizationThreshold = 0.80;
             double underUtilizationThreshold = 0.70;

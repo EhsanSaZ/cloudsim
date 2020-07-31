@@ -628,6 +628,7 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
                 }
                 if (result) {
                     ContainerVm containerVm = getContainerAllocationPolicy().getContainerVm(container);
+                    data[0] = containerVm.getId();
                     if(containerVm.getId() == -1){
                         Log.printConcatLine("The ContainerVM ID is not known (-1) !");
                     }
