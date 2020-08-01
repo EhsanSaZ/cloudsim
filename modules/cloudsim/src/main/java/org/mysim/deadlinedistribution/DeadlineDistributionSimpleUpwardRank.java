@@ -28,7 +28,7 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
     @Override
     public void run() {
         if (wf != null) {
-            Log.printConcatLine(CloudSim.clock(), "Start DeadlineDistribution for workflow ", wf.getName(),
+            Log.printConcatLine(CloudSim.clock(), " Start DeadlineDistribution for workflow ", wf.getName(),
                     " and with ", wf.getTaskList().size() , " tasks.");
 
             averageBandwidth = Parameters.VM_BW;
@@ -48,7 +48,7 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
     @Override
     public void updateSubDeadlines(){
         if (wf != null) {
-            Log.printConcatLine(CloudSim.clock(), "Start updating sub-deadlines for workflow " , wf.getName() ,
+            Log.printConcatLine(CloudSim.clock(), " Start updating sub-deadlines for workflow " , wf.getName() ,
                     " and with " , wf.getTaskList().size() , " tasks.");
             averageBandwidth = Parameters.VM_BW;
             calculateTaskExecutionTime();

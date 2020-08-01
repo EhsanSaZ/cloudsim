@@ -118,8 +118,10 @@ public class WorkflowEngine extends SimEntity {
         // get and parse a new workflow
         // collect all ready task
         Workflow wf = workflowParser.get_next_workflow();
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "process new workflow for submission");
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), " process new workflow for submission");
         processDatastaging(wf);
+
+        wf.setTaskNumbers(wf.getTaskList().size());
 
         // T ODO EHSAN: generate Qos for workflow
         getQosGenerator().setWorkflow(wf);
@@ -145,7 +147,7 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void processMonitoringVms(SimEvent ev){
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Start monitoring and search for Idle Vms.");
+//        Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Start monitoring and search for Idle Vms.");
         List <ContainerVm> vmToDestroyList = new ArrayList<>();
         // T ODO EHSAN: calculate the list according to vm state history from broker crated vm list..
         for (ContainerVm vm : broker.getVmsCreatedList()){
@@ -159,7 +161,7 @@ public class WorkflowEngine extends SimEntity {
             }
             if ((CloudSim.clock() - oldestIdleTime) > Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN){
                 vmToDestroyList.add(vm);
-                Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Select Vm #", vm.getId() , " to destroy");
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Select Vm #", vm.getId() , " to destroy");
             }
         }
         // T ODO EHSAN: remove this vm as a storage in replica
@@ -222,27 +224,27 @@ public class WorkflowEngine extends SimEntity {
         }
     }
     public void processFinishedStatus(SimEvent ev){
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Check finished status");
+//        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Check finished status");
         boolean flag = true;
         for (Workflow w : getWorkflowList()){
-            if(w.getTaskList().size()>0 || w.getSubmittedTaskList().size()>0){
+            if(w.getExecutedTaskList().size() != w.getTaskNumbers()){// T ODO FIX: condition is not right
                 flag = false;
                 break;
             }
         }
         if (flag){
-            Log.printConcatLine(CloudSim.clock(), ": ", getName(), "All workflows are executed completely");
+//            Log.printConcatLine(CloudSim.clock(), ": ", getName(), " All workflows are executed completely");
             schedule(this.getId(), 0,CloudSimTags.END_OF_SIMULATION, null );
             // T ODO EHSAN: do any extra needed action here..like signal to other entities...
         }else {
-            Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Simulation is not finished yet");
+//            Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Simulation is not finished yet");
             // T ODO EHSAN: use an appropriate delay
             schedule(this.getId(), Parameters.CHECK_FINISHED_STATUS_DELAY, MySimTags.CHECK_FINISHED_STATUS, null);
         }
     }
     public void processVmCreate(SimEvent ev) {
         // submit all new containers on new vms...
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Vm creation Ack received");
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Vm creation Ack received");
         int[] data = (int[]) ev.getData();
         int datacenterId = data[0];
         int vmId = data[1];
@@ -258,7 +260,7 @@ public class WorkflowEngine extends SimEntity {
                         list.add(c);
                     }
                 }
-                Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Submitting scheduled containers on Vm #", vm.getId());
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Submitting scheduled containers on Vm #", vm.getId());
                 broker.submitContainerListDynamic(list);
                 getNewRequiredContainersOnNewVms().removeAll( list);
                 getSubmittedNewRequiredContainers().addAll(list);
@@ -271,7 +273,7 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void processContainerCreate(SimEvent ev) {
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Container creation Ack received");
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Container creation Ack received");
         int[] data = (int[]) ev.getData();
         int vmId = data[0];
         int containerId = data[1];
@@ -302,7 +304,7 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void submitTasksOnContainer(int containerId, int vmId){
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Submitting scheduled tasks on Vm #", vmId,
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Submitting scheduled tasks on Vm #", vmId,
                 " and Container #", containerId);
 
         List <Task> list = new ArrayList<>();
@@ -334,7 +336,7 @@ public class WorkflowEngine extends SimEntity {
         task.setTaskExecutionCost(task.getProcessingCost());
         task.setTaskExecutionTime(task.getActualCPUTime());
         Workflow w = WorkflowList.getById(getWorkflowList(), task.getWorkflowID());
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Task #", task.getCloudletId(), "is Returned");
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Task #", task.getCloudletId(), " is Returned");
         if (w != null) {
             w.getExecutedTaskList().add(task);
             w.setTotalCost(w.getTotalCost() + task.getTaskExecutionCost());
@@ -347,9 +349,9 @@ public class WorkflowEngine extends SimEntity {
 
 //                collectReadyTaskList(task, w);
                 collectReadyTaskList(w);
-            } else if (w.getTaskList().size() == 0 && w.getSubmittedTaskList().size() == 0) {
-                Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Execution of workflow #", w.getWorkflowId(), "is finished.",
-                        "Deleting related files in replica catalog.");
+            } else if (w.getExecutedTaskList().size() == w.getTaskNumbers()) { //T ODO FIX: condtion is bug
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Execution of workflow #", w.getWorkflowId(), " is finished.",
+                        " Deleting related files in replica catalog.");
 
                 // this w is done..
                 // delete all files from replica catalog
@@ -380,7 +382,7 @@ public class WorkflowEngine extends SimEntity {
     public void collectReadyTaskList() {
         // get all ready tasks among all workflows.. tasks with all parents executed
         // start planning them
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Collecting all ready tasks from all workflows");
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Collecting all ready tasks from all workflows");
         for (Workflow w : getWorkflowList()) {
             collectReadyTaskList(w);
         }
@@ -399,7 +401,7 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void collectReadyTaskList(Workflow w) {
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Updating ready task queue. ",
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Updating ready task queue. ",
                 "collecting tasks from workflow #", w.getWorkflowId());
         List<Task> list = w.getTaskList();
         int num = list.size();
@@ -429,7 +431,7 @@ public class WorkflowEngine extends SimEntity {
 
     public void processPlanningReadyTaskList() {
         if ( getReadyTaskList().size() > 0){
-            Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Start scheduling Ready Task Queue");
+            Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Start scheduling Ready Task Queue");
             MyPlanningAlgorithm planning_algorithm = (MyPlanningAlgorithm) getPlanner();
             planning_algorithm.ScheduleTasks( broker, getReadyTaskList(), getScheduledTaskList(),
                     getNewRequiredContainers(), getNewRequiredVms(), getNewRequiredContainersOnNewVms());
@@ -441,8 +443,8 @@ public class WorkflowEngine extends SimEntity {
                         Workflow w = WorkflowList.getById(getWorkflowList(), task.getWorkflowID());
                         assert w != null;
                         w.getSubmittedTaskList().add(task);
-                        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Task #", task.getCloudletId(),
-                                "will run on already running container");
+                        Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Task #", task.getCloudletId(),
+                                " will run on already running container");
 
                     }
                 }
@@ -453,14 +455,14 @@ public class WorkflowEngine extends SimEntity {
 
             // first submit new containers on already running vms--> on receive container create ack submit tasks on these containers...
             if (getNewRequiredContainers().size() > 0){
-                Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Submitting new containers on already running Vms");
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Submitting new containers on already running Vms");
                 broker.submitContainerListDynamic(getNewRequiredContainers());
                 getSubmittedNewRequiredContainers().addAll(getNewRequiredContainers());
                 getNewRequiredContainers().clear();
 //        setNewRequiredContainers(new ArrayList<>());
             }
             if (getNewRequiredVms().size() > 0){
-                Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Submitting new Vms");
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Submitting new Vms");
                 // second submit new vms --> on receive vm create ack submits new containers on new vms on these new vms...
                 broker.createVMsInDataCenterDynamic(getNewRequiredVms());
                 getSubmittedNewRequiredVms().addAll(getNewRequiredVms());

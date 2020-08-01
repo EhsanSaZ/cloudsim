@@ -22,6 +22,7 @@ public class Workflow {
 
     private double totalCost;
 
+    private int taskNumbers;
 
     public Workflow(String name,final int workflowId, int deadline, int budget){
             setName(name);
@@ -33,6 +34,7 @@ public class Workflow {
             setBudget(budget);
             setFinishTime(-1);
             setTotalCost(0);
+            setTaskNumbers(-1);
     }
 
     public List<Task> getTaskList() {
@@ -95,4 +97,11 @@ public class Workflow {
         return workflowId;
     }
 
+    public int getTaskNumbers() {
+        return taskNumbers;
+    }
+
+    public void setTaskNumbers(int taskNumbers) {
+        this.taskNumbers = taskNumbers;
+    }
 }

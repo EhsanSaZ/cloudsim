@@ -355,16 +355,16 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             //The input file is not an output File
             if (file.isRealOutputFile(requiredFiles)) {
                 //this file will be register on shared and local storage in future for now we just calculate transfer time
-                double maxRate = Double.MIN_VALUE;
-                for (Storage storage : getStorageList()) {
-                    double rate = storage.getMaxTransferRate();
-                    if (rate > maxRate) {
-                        maxRate = rate;
-                    }
+//                double maxRate = Double.MIN_VALUE;
+//                for (Storage storage : getStorageList()) {
+//                    double rate = storage.getMaxTransferRate();
+//                    if (rate > maxRate) {
+//                        maxRate = rate;
+//                    }
                     //Storage storage = getStorageList().get(0);
-                }
+//                }
                 // convert B to Mb
-                time += file.getSize()  * 8 / (double) Consts.MILLION / maxRate;
+                time += file.getSize()  * 8 / (double) Consts.MILLION / Parameters.VM_BW;
             }
         }
         return time;
@@ -413,16 +413,16 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
 
                  //the file is not on the vm, get from shared storage on data center
                 if (!foundOnLocal){
-                    double maxRate = Double.MIN_VALUE;
-                    for (Storage storage : getStorageList()) {
-                        double rate = storage.getMaxTransferRate();
-                        if (rate > maxRate) {
-                            maxRate = rate;
-                        }
-                    }
+//                    double maxRate = Double.MIN_VALUE;
+//                    for (Storage storage : getStorageList()) {
+//                        double rate = storage.getMaxTransferRate();
+//                        if (rate > maxRate) {
+//                            maxRate = rate;
+//                        }
+//                    }
                     //Storage storage = getStorageList().get(0);
                     // file size in is B convert it to Mb because bw is Mbs
-                    time += file.getSize()  * 8 / (double) Consts.MILLION / maxRate;
+                    time += file.getSize()  * 8 / (double) Consts.MILLION / Parameters.VM_BW;
                 }
                 // because the task is running on the vm for future the vm must contain this file
                 ReplicaCatalog.addFileToStorage(file.getName(), Integer.toString(vmId));
