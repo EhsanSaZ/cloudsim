@@ -62,6 +62,7 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
         }
     }
     private void updateSubDeadlinesDistribution(){
+        // TODO FIX: bug in calculation on make span.. what is finish time?
         double maxFinishTime= Double.MIN_VALUE;
         for(Task task: wf.getExecutedTaskList()){
             if(task.getFinishTime() > maxFinishTime && task.getFinishTime() > 0){

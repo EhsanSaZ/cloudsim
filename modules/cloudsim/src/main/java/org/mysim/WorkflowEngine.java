@@ -50,6 +50,8 @@ public class WorkflowEngine extends SimEntity {
 
     private final PoissonDistribution poissonDistribution;
 
+    private boolean isRunning= true;
+
     public WorkflowEngine(String name) {
         super(name);
 
@@ -147,30 +149,32 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void processMonitoringVms(SimEvent ev){
-//        Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Start monitoring and search for Idle Vms.");
-        List <ContainerVm> vmToDestroyList = new ArrayList<>();
-        // T ODO EHSAN: calculate the list according to vm state history from broker crated vm list..
-        for (ContainerVm vm : broker.getVmsCreatedList()){
-            List<VmStateEntry> busyStateHistory =  ((CondorVM) vm).getBusyStateHistory();
-            double oldestIdleTime = Double.MAX_VALUE;
-            for (VmStateEntry stateEntry: busyStateHistory){
-                if (stateEntry.getState() == MySimTags.VM_STATUS_BUSY){
-                    break;
-                }
-                oldestIdleTime = stateEntry.getTime();
-            }
-            if ((CloudSim.clock() - oldestIdleTime) > Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN){
-                vmToDestroyList.add(vm);
-                Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Select Vm #", vm.getId() , " to destroy");
-            }
-        }
-        // T ODO EHSAN: remove this vm as a storage in replica
-        for(ContainerVm vm: vmToDestroyList){
-            ReplicaCatalog.removeStorageFromStorageList(Integer.toString(vm.getId()));
-        }
-        broker.destroyVms(vmToDestroyList);
+        if (isRunning){
+////            Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Start monitoring and search for Idle Vms.");
+//            List <ContainerVm> vmToDestroyList = new ArrayList<>();
+//            // T ODO EHSAN: calculate the list according to vm state history from broker crated vm list..
+//            for (ContainerVm vm : broker.getVmsCreatedList()){
+//                List<VmStateEntry> busyStateHistory =  ((CondorVM) vm).getBusyStateHistory();
+//                double oldestIdleTime = Double.MAX_VALUE;
+//                for (VmStateEntry stateEntry: busyStateHistory){
+//                    if (stateEntry.getState() == MySimTags.VM_STATUS_BUSY){
+//                        break;
+//                    }
+//                    oldestIdleTime = stateEntry.getTime();
+//                }
+//                if ((CloudSim.clock() - oldestIdleTime) > Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN){
+//                    vmToDestroyList.add(vm);
+//                    Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Select Vm #", vm.getId() , " to destroy");
+//                }
+//            }
+//            // T ODO EHSAN: remove this vm as a storage in replica
+//            for(ContainerVm vm: vmToDestroyList){
+//                ReplicaCatalog.removeStorageFromStorageList(Integer.toString(vm.getId()));
+//            }
+//            broker.destroyVms(vmToDestroyList);
 
-        schedule(this.getId(), Parameters.MONITORING_INTERVAL, MySimTags.DO_MONITORING,null);
+            schedule(this.getId(), Parameters.MONITORING_INTERVAL, MySimTags.DO_MONITORING,null);
+        }
     }
 
     public void processDatastaging(Workflow wf){
@@ -430,47 +434,50 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void processPlanningReadyTaskList() {
-        if ( getReadyTaskList().size() > 0){
-            Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Start scheduling Ready Task Queue");
-            MyPlanningAlgorithm planning_algorithm = (MyPlanningAlgorithm) getPlanner();
-            planning_algorithm.ScheduleTasks( broker, getReadyTaskList(), getScheduledTaskList(),
-                    getNewRequiredContainers(), getNewRequiredVms(), getNewRequiredContainersOnNewVms());
-            // submit new containers on already running vms and submit new required vms..
-            // submit tasks on running containers
-            if (planning_algorithm.getScheduledTasksOnRunningContainers().size() >0){
-                for(Task task : planning_algorithm.getScheduledTasksOnRunningContainers()){
-                    if (task.getVmId() != -1 && task.getContainerId()!= -1){
-                        Workflow w = WorkflowList.getById(getWorkflowList(), task.getWorkflowID());
-                        assert w != null;
-                        w.getSubmittedTaskList().add(task);
-                        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Task #", task.getCloudletId(),
-                                " will run on already running container");
+        if (isRunning){
+//            Log.printConcatLine(getReadyTaskList().size());
+            if ( getReadyTaskList().size() > 0){
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Start scheduling Ready Task Queue");
+                MyPlanningAlgorithm planning_algorithm = (MyPlanningAlgorithm) getPlanner();
+                planning_algorithm.ScheduleTasks( broker, getReadyTaskList(), getScheduledTaskList(),
+                        getNewRequiredContainers(), getNewRequiredVms(), getNewRequiredContainersOnNewVms());
+                // submit new containers on already running vms and submit new required vms..
+                // submit tasks on running containers
+                if (planning_algorithm.getScheduledTasksOnRunningContainers().size() >0){
+                    for(Task task : planning_algorithm.getScheduledTasksOnRunningContainers()){
+                        if (task.getVmId() != -1 && task.getContainerId()!= -1){
+                            Workflow w = WorkflowList.getById(getWorkflowList(), task.getWorkflowID());
+                            assert w != null;
+                            w.getSubmittedTaskList().add(task);
+                            Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Task #", task.getCloudletId(),
+                                    " will run on already running container.");
 
+                        }
                     }
+                    getScheduledTaskList().removeAll(planning_algorithm.getScheduledTasksOnRunningContainers());
+                    broker.submitTaskListDynamic(planning_algorithm.getScheduledTasksOnRunningContainers());
+                    planning_algorithm.clear();
                 }
-                getScheduledTaskList().removeAll(planning_algorithm.getScheduledTasksOnRunningContainers());
-                broker.submitTaskListDynamic(planning_algorithm.getScheduledTasksOnRunningContainers());
-                planning_algorithm.clear();
-            }
 
-            // first submit new containers on already running vms--> on receive container create ack submit tasks on these containers...
-            if (getNewRequiredContainers().size() > 0){
-                Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Submitting new containers on already running Vms");
-                broker.submitContainerListDynamic(getNewRequiredContainers());
-                getSubmittedNewRequiredContainers().addAll(getNewRequiredContainers());
-                getNewRequiredContainers().clear();
+                // first submit new containers on already running vms--> on receive container create ack submit tasks on these containers...
+                if (getNewRequiredContainers().size() > 0){
+                    Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Submitting new containers on already running Vms");
+                    broker.submitContainerListDynamic(getNewRequiredContainers());
+                    getSubmittedNewRequiredContainers().addAll(getNewRequiredContainers());
+                    getNewRequiredContainers().clear();
 //        setNewRequiredContainers(new ArrayList<>());
-            }
-            if (getNewRequiredVms().size() > 0){
-                Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Submitting new Vms");
-                // second submit new vms --> on receive vm create ack submits new containers on new vms on these new vms...
-                broker.createVMsInDataCenterDynamic(getNewRequiredVms());
-                getSubmittedNewRequiredVms().addAll(getNewRequiredVms());
-                getNewRequiredVms().clear();
+                }
+                if (getNewRequiredVms().size() > 0){
+                    Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Submitting new Vms");
+                    // second submit new vms --> on receive vm create ack submits new containers on new vms on these new vms...
+                    broker.createVMsInDataCenterDynamic(getNewRequiredVms());
+                    getSubmittedNewRequiredVms().addAll(getNewRequiredVms());
+                    getNewRequiredVms().clear();
 //        setNewRequiredVms(new ArrayList<>());
+                }
             }
+            schedule(this.getId(), Parameters.R_T_Q_SCHEDULING_INTERVAL, MySimTags.SCHEDULING_READY_TQ, null);
         }
-        schedule(this.getId(), Parameters.R_T_Q_SCHEDULING_INTERVAL, MySimTags.SCHEDULING_READY_TQ, null);
     }
 
     protected void processOtherEvent(SimEvent ev) {
@@ -493,6 +500,7 @@ public class WorkflowEngine extends SimEntity {
     @Override
     public void shutdownEntity() {
         Log.printConcatLine(getName(), " is shutting down...");
+        this.isRunning = false;
     }
 
     // Setter and Getter functions

@@ -101,10 +101,10 @@ public class Parameters {
     public static final double[] CONTAINER_MIPS = new double[]{1000, 1000, 1000, 1000}; // exactly same as vm
     public static final int[] CONTAINER_PES = new int[]{1, 1, 1};
     public static final double[] CONTAINER_RAM = new double[]{128, 256, 512};
-    public static final double CONTAINER_BW = 500; // Mb/s...
+    public static final double CONTAINER_BW = 0.001; // Mb/s...
     public static final double CONTAINER_VM_SCHEDULING_INTERVAL = 300.0D;
-
-    public static final int CONTAINER_SIZE = 600;// MB
+    // TODO EHSAN: FIX SIZE
+    public static final int CONTAINER_SIZE = 1; //600;// MB
 
     //---------------------------------  HOST
     public static final int HOST_TYPES = 1;

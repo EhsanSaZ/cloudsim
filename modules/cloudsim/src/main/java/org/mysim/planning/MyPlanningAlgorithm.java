@@ -1,5 +1,6 @@
 package org.mysim.planning;
 
+import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerBwProvisionerSimple;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerPe;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerRamProvisionerSimple;
@@ -50,12 +51,12 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                               List<Container> newRequiredContainers,
                               List<ContainerVm> newRequiredVms,
                               List<Container> newRequiredContainersOnNewVms) {
-
+        Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: Start scheduling Ready task Queue with ",readyTasks.size(), "tasks");
         readyTasks.sort(compareBySubDeadline);
         List<Task> waitQueue = new ArrayList<>();
         List<Task> toRemove = new ArrayList<>();
         List<Container> idleRunningContainerList = new ArrayList<>();
-
+        Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: Collecting idle Running Containers");
         for (Container container: broker.getContainersCreatedList()){
             if(container.getWorkloadMips() == 0){
                 idleRunningContainerList.add(container);
@@ -184,6 +185,10 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     task.setVmId(vm.getId());
                     task.setContainerId(newContainer.getId());
 
+                    Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: ",
+                            "Task #", task.getCloudletId(), " scheduled to run on VM #", provisionedVm.getId(), " and Container #",
+                            newContainer.getId());
+
                     newRequiredContainers.add(newContainer);
                     scheduledTasks.add(task);
                     toRemove.add(task);
@@ -292,6 +297,10 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                         task.setVmId(vm.getId());
                         task.setContainerId(newContainer.getId());
 
+                        Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: ",
+                                "Task #", task.getCloudletId(), " scheduled to run on VM #", castedVm.getId(), " and Container #",
+                                newContainer.getId());
+
                         newRequiredContainersOnNewVms.add(newContainer);
                         scheduledTasks.add(task);
                         toRemove.add(task);
@@ -348,6 +357,11 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 
                     task.setVmId(newVm.getId());
                     task.setContainerId(newContainer.getId());
+
+
+                    Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: ",
+                            "Task #", task.getCloudletId(), " scheduled to run on VM #", newVm.getId(), " and Container #",
+                            newContainer.getId());
 
                     newRequiredVms.add(newVm);
                     newRequiredContainersOnNewVms.add(newContainer);

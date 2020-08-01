@@ -99,10 +99,14 @@ public class WassExample {
 
             // get all data that  we need from engine and broker...
             System.out.println(workflowEngine.getWorkflowList().size());
+//            Workflow w = workflowEngine.getWorkflowList().get(0);
+//            System.out.println(w.getBudget());
+//            System.out.println(w.getDeadline());
+//            System.out.println(w.getTotalCost());
 
             CloudSim.stopSimulation();
             // print informations
-            Log.printLine("ContainerCloudSimExample1 finished!");
+            Log.printLine("Wass Example finished!");
         } catch (Exception e) {
         Log.printLine("The simulation has been terminated due to an unexpected error");
         e.printStackTrace();
