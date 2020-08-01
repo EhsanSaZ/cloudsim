@@ -249,6 +249,8 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 //                    }
 //                    schedule(getVmsToDatacentersMap().get(cloudlet.getVmId()), CloudSim.getMinTimeBetweenEvents(),
 //                            MySimTags.CLOUDLET_SUBMIT_DYNAMIC, cloudlet);
+                    Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Trying to Send Task #", cloudlet.getCloudletId(),
+                            " to Datacenter #", getVmsToDatacentersMap().get(cloudlet.getVmId()) ," for execution.");
                     schedule(getVmsToDatacentersMap().get(cloudlet.getVmId()), CloudSim.getMinTimeBetweenEvents(),
                             CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
                 }
@@ -267,6 +269,8 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
         for(Container c: containerList){
             if (!getContainersToVmsMap().containsKey(c.getId())){
                 successfullySubmitted.add(c);
+                Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Create Container #" + c.getId()
+                        + " in Datacenter #" + getDatacenterIdsList().get(0));
             }
         }
 
@@ -290,9 +294,9 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                      List <Integer> requestedList = new ArrayList<>();
                      requestedList.add(nextDataCenterId);
                      getVmToDatacenterRequestedIdsList().put(vm.getId(), requestedList);
-                     String nextDataCenterName = CloudSim.getEntityName(nextDataCenterId);
+//                     String nextDataCenterName = CloudSim.getEntityName(nextDataCenterId);
                      Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Create VM #" + vm.getId()
-                             + " in " + nextDataCenterName + " DYNAMIC TOR");
+                             + " in Datacenter #" + nextDataCenterId );
 //                     sendNow(nextDataCenterId, MySimTags.VM_CREATE_DYNAMIC_ACK, vm);
 //                     sendNow(nextDataCenterId, CloudSimTags.VM_CREATE_ACK, vm);
                      schedule(nextDataCenterId, Parameters.VM_PROVISIONING_DELAY,CloudSimTags.VM_CREATE_ACK, vm);
@@ -305,7 +309,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                              getVmToDatacenterRequestedIdsList().put(vm.getId(), requestedList);
                              String nextDataCenterName = CloudSim.getEntityName(nextDataCenterId);
                              Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Create VM #" + vm.getId()
-                                     + " in " + nextDataCenterName + " DYNAMIC TOR");
+                                     + " in Datacenter #" + nextDataCenterId);
 //                             sendNow(nextDataCenterId, MySimTags.VM_CREATE_DYNAMIC_ACK, vm);
 //                             sendNow(nextDataCenterId, CloudSimTags.VM_CREATE_ACK, vm);
                              schedule(nextDataCenterId, Parameters.VM_PROVISIONING_DELAY, CloudSimTags.VM_CREATE_ACK, vm);
@@ -335,6 +339,8 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 
          }
          int datacenterId = getVmsToDatacentersMap().get(container.getVm().getId());
+         Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Destroy Cintainer #" + container.getId() +
+                 " in Datacenter #" + datacenterId);
          schedule(datacenterId, Parameters.CONTAINER_DESTROY_DELAY, MySimTags.CONTAINER_DESTROY, container);
          getContainerList().remove(container);
 
@@ -368,6 +374,8 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                         getContainersCreatedList().remove(container);
                         getContainersToVmsMap().remove(container.getId());
                     }
+                    Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Destroy Cintainer #" + container.getId() +
+                            " in Datacenter #" + datacenterId);
                     schedule(datacenterId, Parameters.CONTAINER_DESTROY_DELAY , MySimTags.CONTAINER_DESTROY, container);
                     getContainerList().remove(container);
                 }
@@ -381,6 +389,8 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
             getVmsDestroyedList().add(vm);
             setVmsDestroyed(getVmsDestroyed() +1);
 
+            Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Destroy VM #" +vm.getId() +
+                    " in Datacenter #" + datacenterId);
             schedule(datacenterId, Parameters.VM_DESTROY_DELAY, CloudSimTags.VM_DESTROY, vm);
         }
     }

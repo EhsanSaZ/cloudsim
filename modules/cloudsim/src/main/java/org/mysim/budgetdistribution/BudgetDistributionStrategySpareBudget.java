@@ -20,7 +20,7 @@ public class BudgetDistributionStrategySpareBudget extends BudgetDistributionStr
 
     @Override
     public void calculateSubBudgetWholeWorkflow(Workflow wf){
-        Log.printConcatLine(CloudSim.clock()," Start BudgetDistribution for workflow ", wf.getName(),
+        Log.printConcatLine(CloudSim.clock(),": BudgetDistributor: Start BudgetDistribution for workflow ", wf.getName(),
                 " and with ", wf.getTaskList().size() , " tasks.");
 
         populateCostMaps(wf);
@@ -48,7 +48,7 @@ public class BudgetDistributionStrategySpareBudget extends BudgetDistributionStr
             }
         }
         finish();
-        Log.printConcatLine(CloudSim.clock(), " Budget distribution for workflow ", wf.getName(), " finished");
+        Log.printConcatLine(CloudSim.clock(), ": BudgetDistributor: Budget distribution for workflow ", wf.getName(), " finished");
     }
 
     @Override

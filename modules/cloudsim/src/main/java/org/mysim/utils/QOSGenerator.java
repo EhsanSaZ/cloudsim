@@ -31,7 +31,7 @@ public class QOSGenerator {
         uniformDistribution = new UniformRealDistribution();
     }
     public void run(){
-        Log.printConcatLine(CloudSim.clock(), ": QOSGenerator starting calculation for workflow #",
+        Log.printConcatLine(CloudSim.clock(), ": QOSGenerator: starting calculation for workflow #",
                 workflow.getWorkflowId());
         calculateTasksRunningTimes();
 
@@ -56,7 +56,7 @@ public class QOSGenerator {
         }
     }
     public double generateDeadline(){
-        Log.printConcatLine(CloudSim.clock(), ": QOS Generating Deadline for workflow #", workflow.getWorkflowId());
+        Log.printConcatLine(CloudSim.clock(), ": QOS: Generating Deadline for workflow #", workflow.getWorkflowId());
         double minMakeSpan = estimateMinMakeSpan();
         double maxMakeSpan = estimateMaxMakeSpan();
 
@@ -64,7 +64,7 @@ public class QOSGenerator {
         return minMakeSpan + (maxMakeSpan - minMakeSpan) * Parameters.ALPHA_DEADLINE_FACTOR;
     }
     public double generateBudget(){
-        Log.printConcatLine(CloudSim.clock(), ": QOS Generating Budget for workflow #", workflow.getWorkflowId());
+        Log.printConcatLine(CloudSim.clock(), ": QOS: Generating Budget for workflow #", workflow.getWorkflowId());
         double minCost = estimateMinCost();
         double maxCost = estimateMaxCost();
 //        return minCost + (maxCost - minCost) * uniformDistribution.sample();
@@ -139,7 +139,7 @@ public class QOSGenerator {
     }
 
     public void finish() {
-        Log.printConcatLine(CloudSim.clock(), ": QOSGenerator finish Calculation for workflow #", workflow.getWorkflowId());
+        Log.printConcatLine(CloudSim.clock(), ": QOSGenerator: finish Calculation for workflow #", workflow.getWorkflowId());
 
         taskMINExecutionTimes.clear();
         taskMAXExecutionTimes.clear();

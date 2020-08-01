@@ -83,11 +83,13 @@ public class Parameters {
 
     //---------------------------------  VM
     public static final int VM_TYPES_NUMBERS = 4;
+    // TODO EHSAN: FIX MIPS
     public static final double[] VM_MIPS = new double[]{1000, 1000, 1000, 1000};
-    public static final int[] VM_PES = new int[]{1, 2, 4, 8};
+    public static final int[] VM_PES = new int[]{2, 4, 8, 16};//new int[]{1, 2, 4, 8};
     public static final float[] VM_RAM = new float[]{(float) 1024, (float) 2048, (float) 4096, (float) 8192};//**MB*
-    public static final int VM_BW = 100000;// Mb/s...
-    public static final double COST[] = new double[]{3, 6, 9, 12};
+    public static final int VM_BW = 500; //100000;// Mb/s...
+    // TODO EHSAN: FIX COST
+    public static final double COST[] = new double[]{1, 1.8, 3.5, 7 };
     public static final double COST_PER_MEM[] = new double[]{1, 2, 3, 4};
     public static final double COST_PER_STORAGE[] = new double[]{1, 2, 3, 4};
     public static final double COST_PER_BW[] = new double[]{1, 2, 3, 4};
@@ -95,23 +97,26 @@ public class Parameters {
     public static final int VM_SIZE = 2500;//MB
 
     //---------------------------------  Container
+    // TODO EHSAN: FIX MIPS
     public static final double[] CONTAINER_MIPS = new double[]{1000, 1000, 1000, 1000}; // exactly same as vm
     public static final int[] CONTAINER_PES = new int[]{1, 1, 1};
     public static final double[] CONTAINER_RAM = new double[]{128, 256, 512};
-    public static final double CONTAINER_BW = 1;
+    public static final double CONTAINER_BW = 500; // Mb/s...
     public static final double CONTAINER_VM_SCHEDULING_INTERVAL = 300.0D;
 
     public static final int CONTAINER_SIZE = 600;// MB
 
     //---------------------------------  HOST
     public static final int HOST_TYPES = 1;
+    // T ODO EHSAN: FIX MIPS
     public static final int[] HOST_MIPS = new int[]{37274};
-    public static final int[] HOST_PES = new int[]{48};
+    public static final int[] HOST_PES = new int[]{64};
     public static final int[] HOST_RAM = new int[]{262144};
     public static final int HOST_BW = 1000000;
     public static final long HOST_STORAGE = 1000000;
 
 
+    // THIS VARIES BY EXPERIMENT
     public static final int R_T_Q_SCHEDULING_INTERVAL = 100;
     public static final int MONITORING_INTERVAL = 500;
     public static final double VM_THRESH_HOLD_FOR_SHUTDOWN = 60;
@@ -119,8 +124,8 @@ public class Parameters {
 
 
     public static final double VM_PROVISIONING_DELAY = 100;
-    public static final double VM_DESTROY_DELAY = 0.01;
     public static final double CONTAINER_PROVISIONING_DELAY = 10;
+    public static final double VM_DESTROY_DELAY = 0.01;
     public static final double CONTAINER_DESTROY_DELAY = 0.01;
 
     public static final NormalDistribution CPU_DEGRADATION = new NormalDistribution(12,10);
