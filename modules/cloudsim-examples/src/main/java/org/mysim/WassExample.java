@@ -38,6 +38,7 @@ public class WassExample {
 
     public static void main(String[] args) {
         try {
+//            Log.disable();
             int num_user = 1;
             Calendar calendar = Calendar.getInstance();
             boolean trace_flag = false;
@@ -104,6 +105,23 @@ public class WassExample {
 //            System.out.println(w.getDeadline());
 //            System.out.println(w.getTotalCost());
 
+//            for (Task task: workflowEngine.getWorkflowList().get(0).getExecutedTaskList()){
+//                Log.printLine(task.getCloudletLength()+ "   "   + task.getExecStartTime()+ "     " + task.getFinishTime());
+//            }
+            int success =0;
+            for (Workflow workflow: workflowEngine.getWorkflowList()) {
+                Log.printLine("--------------"+ workflow.getName()+ "-------------------");
+                Log.printLine(workflow.getDeadline());
+                Log.printLine(workflow.getCurrentMakeSpan());
+                Log.printLine("");
+                Log.printLine(workflow.getBudget());
+                Log.printLine(workflow.getTotalCost());
+                if (workflow.getCurrentMakeSpan() <= workflow.getDeadline() && workflow.getTotalCost() <= workflow.getBudget()){
+                    success++;
+                }
+            }
+            Log.printLine("\n PSR");
+            Log.printLine((double)success / workflowEngine.getWorkflowList().size());
             CloudSim.stopSimulation();
             // print informations
             Log.printLine("Wass Example finished!");

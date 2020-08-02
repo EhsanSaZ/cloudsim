@@ -37,7 +37,7 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
             calculateTransferTimes();
             calculateRanks();
 
-            distributeDeadline();
+            distributeDeadline(wf.getDeadline());
             finishDistribution();
         } else {
             Log.printConcatLine(CloudSim.clock(),": DeadlineDistributor: No workflow set for deadline distribution" );
@@ -62,34 +62,30 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
         }
     }
     private void updateSubDeadlinesDistribution(){
-        // TODO FIX: bug in calculation on make span.. what is finish time?
-        double maxFinishTime= Double.MIN_VALUE;
-        for(Task task: wf.getExecutedTaskList()){
-            if(task.getFinishTime() > maxFinishTime && task.getFinishTime() > 0){
-                maxFinishTime = task.getFinishTime();
-            }
-        }
-        double remainingTime = wf.getDeadline() - maxFinishTime;
-        if (remainingTime > 0 ){
-            List<TaskRank> taskRank = new ArrayList<>();
-            for(Task t : wf.getTaskList()){
-                taskRank.add(new TaskRank(t, t.getRank()));
-            }
+        // T ODO FIX: bug in calculation on make span.. what is finish time?
+        double deadlineRemainingTime = wf.getDeadline() - wf.getCurrentMakeSpan();
+
+        if (deadlineRemainingTime > 0 ){
+            distributeDeadline(deadlineRemainingTime);
+//            List<TaskRank> taskRank = new ArrayList<>();
+//            for(Task t : wf.getTaskList()){
+//                taskRank.add(new TaskRank(t, t.getRank()));
+//            }
             // Sorting in non-ascending order of rank
-            Collections.sort(taskRank);
-            double rank_entry = taskRank.get(0).rank;
+//            Collections.sort(taskRank);
+//            double rank_entry = taskRank.get(0).rank;
 
-            for (TaskRank tRank : taskRank) {
-                double averageExecutionTime = 0.0;
-
-                for (Double exeTime : taskExecutionTimes.get(tRank.task).values()) {
-                    averageExecutionTime += exeTime;
-                }
-                averageExecutionTime /= taskExecutionTimes.get(tRank.task).size();
-
-                double sub_deadline = ((rank_entry - tRank.rank) + averageExecutionTime) * remainingTime/ rank_entry;
-                tRank.task.setSubDeadline(sub_deadline);
-            }
+//            for (TaskRank tRank : taskRank) {
+//                double averageExecutionTime = 0.0;
+//
+//                for (Double exeTime : taskExecutionTimes.get(tRank.task).values()) {
+//                    averageExecutionTime += exeTime;
+//                }
+//                averageExecutionTime /= taskExecutionTimes.get(tRank.task).size();
+//
+//                double sub_deadline = ((rank_entry - tRank.rank) + averageExecutionTime) * remainingTime/ rank_entry;
+//                tRank.task.setSubDeadline(sub_deadline);
+//            }
         }else{
             // option 1 reject whole workflow as failure
             // option 2 user fastest time amon all vms as deadline... selected for now..
@@ -158,6 +154,7 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
             t.setRank(rank.get(t));
         }
     }
+
     private double calculateRank(Task task) {
         if (rank.containsKey(task)) {
             return rank.get(task);
@@ -194,7 +191,7 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
         }
     }
 
-    private  void distributeDeadline(){
+    private  void distributeDeadline(double remainingDeadline){
         List<TaskRank> taskRank = new ArrayList<>();
         for(Task t : wf.getTaskList()){
             taskRank.add(new TaskRank(t, t.getRank()));
@@ -211,7 +208,7 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
             }
             averageExecutionTime /= taskExecutionTimes.get(tRank.task).size();
 
-            double sub_deadline = ((rank_entry - tRank.rank) + averageExecutionTime) * wf.getDeadline()/ rank_entry;
+            double sub_deadline = ((rank_entry - tRank.rank) + averageExecutionTime) * remainingDeadline/ rank_entry;
             tRank.task.setSubDeadline(sub_deadline);
         }
     }

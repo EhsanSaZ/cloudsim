@@ -37,6 +37,24 @@ public class Workflow {
             setTaskNumbers(-1);
     }
 
+    public double getCurrentMakeSpan(){
+        double maxFinishTime= Double.MIN_VALUE;
+        double minStartTime = Double.MAX_VALUE;
+        if (getExecutedTaskList().size() > 0){
+            for(Task task: getExecutedTaskList()){
+                if(task.getFinishTime() >= 0){
+                    maxFinishTime = Math.max(maxFinishTime, task.getFinishTime());
+                }
+                if(task.getExecStartTime() >=0){
+                    minStartTime = Math.min(minStartTime, task.getExecStartTime());
+                }
+            }
+            return maxFinishTime - minStartTime;
+        }
+        return 0.0;
+    }
+
+    //---------------------------setter and getter--------------------
     public List<Task> getTaskList() {
         return taskList;
     }
