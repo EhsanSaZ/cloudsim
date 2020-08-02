@@ -32,6 +32,7 @@ public class CondorVM extends PowerContainerVm {
 
     private int availablePeNumbersForSchedule;
     private double availableRamForSchedule;
+    private long availableSizeForSchedule;
 
     public CondorVM(final int id, final int userId, final double mips, final float ram, final long bw, final long size, final String vmm,
                     final ContainerScheduler containerScheduler, final ContainerRamProvisioner containerRamProvisioner, final ContainerBwProvisioner containerBwProvisioner,
@@ -41,6 +42,7 @@ public class CondorVM extends PowerContainerVm {
         setState(MySimTags.VM_STATUS_IDLE);
         setAvailablePeNumbersForSchedule(peList.size());
         setAvailableRamForSchedule(ram);
+        setAvailableSizeForSchedule(size);
     }
 
     public CondorVM(final int id, final int userId, final double mips, final float ram, final long bw, final long size, final String vmm,
@@ -56,6 +58,7 @@ public class CondorVM extends PowerContainerVm {
         setState(MySimTags.VM_STATUS_IDLE);
         setAvailablePeNumbersForSchedule(peList.size());
         setAvailableRamForSchedule(ram);
+        setAvailableSizeForSchedule(size);
     }
     @Override
     public double updateVmProcessing(final double currentTime, final List<Double> mipsShare) {
@@ -183,5 +186,13 @@ public class CondorVM extends PowerContainerVm {
 
     public void setAvailableRamForSchedule(double availableRamForSchedule) {
         this.availableRamForSchedule = availableRamForSchedule;
+    }
+
+    public long getAvailableSizeForSchedule() {
+        return availableSizeForSchedule;
+    }
+
+    public void setAvailableSizeForSchedule(long availableSizeForSchedule) {
+        this.availableSizeForSchedule = availableSizeForSchedule;
     }
 }

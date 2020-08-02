@@ -77,23 +77,11 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 //                if (castedVm.getAvailablePeNumbersForSchedule() >= requiredPesNumber && castedVm.getAvailableRamForSchedule() >= requiredMemory){
 //                    AllVm.add(vm);
 //                }
-                if (castedVm.isSuitableForTask(requiredPesNumber, requiredMemory)){
+                // T ODO EHSAN FIX: CHECK FOR STORAGE TOO
+                if (castedVm.isSuitableForTask(requiredPesNumber, requiredMemory) && castedVm.getAvailableSizeForSchedule() >= Parameters.CONTAINER_SIZE){
                     AllVm.add(vm);
                 }
             }
-//            Container checkContainer = new Container(IDs.pollId(Container.class),
-//                    broker.getId(),Parameters.CONTAINER_MIPS[0], requiredPesNumber, (int)Math.ceil(task.getMemory()), (long)Parameters.CONTAINER_BW,
-//                    Parameters.CONTAINER_SIZE, "Xen", null, 1);
-//            for (ContainerVm vm:broker.getVmsCreatedList()){
-//                ContainerSchedulerTimeShared scheduler = (ContainerSchedulerTimeShared) vm.getContainerScheduler();
-//                if(vm.isSuitableForContainer(checkContainer)){
-//                    AllVm.add(vm);
-//                }
-//                if(vm.isSuitableForContainer(checkContainer) && ( vm.getPeList().size() - scheduler.getPesInUse() > requiredPesNumber)){
-//                    AllVm.add(vm);
-//                }
-//            }
-//            checkContainer = null;
             if (AllVm.size() > 0){
                 //  All_VMs  in to two  affordable and non-affordable sets
                 List <ContainerVm> affordableVms= new ArrayList<>();
@@ -176,6 +164,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     CondorVM vm = (CondorVM) provisionedVm;
                     vm.setAvailablePeNumbersForSchedule(vm.getAvailablePeNumbersForSchedule() - requiredPesNumber);
                     vm.setAvailableRamForSchedule(vm.getAvailableRamForSchedule() - requiredMemory);
+                    vm.setAvailableSizeForSchedule(vm.getAvailableSizeForSchedule() - Parameters.CONTAINER_SIZE);
 
                     Container newContainer = new Container(IDs.pollId(Container.class),
                             broker.getId(),Parameters.CONTAINER_MIPS[0],
@@ -210,6 +199,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                 // T ODO EHSAN: check for delay if possible ignore this task and continue
                 //  else add to wait queue and continue
                 // check for possibility of running task on any other container on total brokers vms..
+                // TODO EHSAN FIX: choose a right place for delaying task
                 double remainingTimeToDeadline = task.getSubDeadline() - (CloudSim.clock() + Parameters.R_T_Q_SCHEDULING_INTERVAL);
                 double minExecutionTime = task.getCloudletLength() / ( Parameters.VM_MIPS[0] * Parameters.VM_PES[Parameters.VM_TYPES_NUMBERS-1] );
                 double maxExecutionTime = task.getCloudletLength() / ( Parameters.VM_MIPS[0] * Parameters.VM_PES[0] );
@@ -219,6 +209,8 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     // so do nothing and let task remains in ready task queue for next interval
                     waitQueue.add(task);
                 }else{
+//                    System.out.println("task is delayed");
+                    Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: Task# ", task.getCloudletId() , " is delayed");
                     task.setSubDeadline(remainingTimeToDeadline);
                 }
 //                waitQueue.add(task);
@@ -284,10 +276,13 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     CondorVM castedVm = (CondorVM) vm;
                     assert castedVm != null;
 //                    if (castedVm.getAvailablePeNumbersForSchedule() >= task.getNumberOfPes() && castedVm.getAvailableRamForSchedule() >= requiredMemory && task.isVmAffordable(vm)){
-                    if (castedVm.isSuitableForTask(task.getNumberOfPes(), requiredMemory) && task.isVmAffordable(vm)){
+                    // T ODO EHSAN FIX: CHECK FOR STORAGE TOO
+                    if (castedVm.isSuitableForTask(task.getNumberOfPes(), requiredMemory) && castedVm.getAvailableSizeForSchedule() >= Parameters.CONTAINER_SIZE && task.isVmAffordable(vm)){
                         //create a new container for running on this vm
                         castedVm.setAvailablePeNumbersForSchedule(castedVm.getAvailablePeNumbersForSchedule() - task.getNumberOfPes());
                         castedVm.setAvailableRamForSchedule(castedVm.getAvailableRamForSchedule() - requiredMemory);
+                        castedVm.setAvailableSizeForSchedule(castedVm.getAvailableSizeForSchedule() - Parameters.CONTAINER_SIZE);
+
 
                         Container newContainer = new Container(IDs.pollId(Container.class),
                                 broker.getId(),Parameters.CONTAINER_MIPS[0],
@@ -330,11 +325,12 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                         task.setNumberOfPes(Math.min(task.getNumberOfPes(), Parameters.VM_PES[VmType]));
                         task.setMemory(Math.min(requiredMemory, Parameters.VM_RAM[VmType]));
                     }
-
+//                    System.out.println("chosen type "+ VmType);
                     ArrayList<ContainerPe> peList = new ArrayList<ContainerPe>();
                     for (int j = 0; j < Parameters.VM_PES[VmType]; ++j){
                         peList.add(new ContainerPe(j, new CotainerPeProvisionerSimple((double) Parameters.VM_MIPS[VmType])));
                     }
+                    // T ODO EHSAN FIX: CHECK FOR STORAGE TOO
                     CondorVM newVm = new CondorVM(IDs.pollId(ContainerVm.class), broker.getId(), Parameters.VM_MIPS[VmType],
                             Parameters.VM_RAM[VmType], Parameters.VM_BW, Parameters.VM_SIZE, "Xen",
                             new ContainerSchedulerTimeSharedOverSubscription(peList),
@@ -346,6 +342,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 
                     newVm.setAvailablePeNumbersForSchedule(newVm.getAvailablePeNumbersForSchedule() - task.getNumberOfPes());
                     newVm.setAvailableRamForSchedule(newVm.getAvailableRamForSchedule() - requiredMemory);
+                    newVm.setAvailableSizeForSchedule(newVm.getAvailableSizeForSchedule() - Parameters.CONTAINER_SIZE);
 
                     Container newContainer = new Container(IDs.pollId(Container.class), broker.getId(), Parameters.CONTAINER_MIPS[0],
                             task.getNumberOfPes(), (int)Math.min(requiredMemory, Parameters.VM_RAM[VmType]),
