@@ -15,6 +15,7 @@ import org.mysim.FileItem;
 import org.mysim.Task;
 import org.mysim.WorkflowDatacenterBroker;
 import org.mysim.simschedulers.ContainerCloudletSchedulerSpaceShared;
+import org.mysim.utils.MySimTags;
 import org.mysim.utils.Parameters;
 import org.mysim.utils.ReplicaCatalog;
 
@@ -56,12 +57,22 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
         List<Task> waitQueue = new ArrayList<>();
         List<Task> toRemove = new ArrayList<>();
         List<Container> idleRunningContainerList = new ArrayList<>();
+
         Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: Collecting idle Running Containers");
         for (Container container: broker.getContainersCreatedList()){
             if(container.getWorkloadMips() == 0){
                 idleRunningContainerList.add(container);
             }
         }
+//        Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: Setting isScheduled to false for Vms with 0 containers");
+//        for (ContainerVm vm: broker.getVmsCreatedList()){
+//            CondorVM castedVm = (CondorVM) vm;
+//            assert castedVm != null;
+//            if(castedVm.getContainerList().size() == 0){
+//                castedVm.setScheduled(false);
+//            }
+//        }
+
         // Try to schedule tasks in ready Queue on already running resources (by broker)
         for (Task task: readyTasks){
             int requiredPesNumber = calculateRequiredPesNumber(task);
@@ -165,7 +176,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     vm.setAvailablePeNumbersForSchedule(vm.getAvailablePeNumbersForSchedule() - requiredPesNumber);
                     vm.setAvailableRamForSchedule(vm.getAvailableRamForSchedule() - requiredMemory);
                     vm.setAvailableSizeForSchedule(vm.getAvailableSizeForSchedule() - Parameters.CONTAINER_SIZE);
-
+//                    vm.setScheduled(true);
                     Container newContainer = new Container(IDs.pollId(Container.class),
                             broker.getId(),Parameters.CONTAINER_MIPS[0],
                             requiredPesNumber, requiredMemory, (long)Parameters.CONTAINER_BW, Parameters.CONTAINER_SIZE,
@@ -217,7 +228,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 //                continue;
             }
         }
-
+        Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: Sending signal to destroy idle containers");
         // collect and destroy all containers with workload 0
         for (Container container:idleRunningContainerList){
             broker.destroyContainer(container);
@@ -282,7 +293,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                         castedVm.setAvailablePeNumbersForSchedule(castedVm.getAvailablePeNumbersForSchedule() - task.getNumberOfPes());
                         castedVm.setAvailableRamForSchedule(castedVm.getAvailableRamForSchedule() - requiredMemory);
                         castedVm.setAvailableSizeForSchedule(castedVm.getAvailableSizeForSchedule() - Parameters.CONTAINER_SIZE);
-
+//                        castedVm.setState(MySimTags.VM_STATUS_BUSY);
 
                         Container newContainer = new Container(IDs.pollId(Container.class),
                                 broker.getId(),Parameters.CONTAINER_MIPS[0],
@@ -343,6 +354,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     newVm.setAvailablePeNumbersForSchedule(newVm.getAvailablePeNumbersForSchedule() - task.getNumberOfPes());
                     newVm.setAvailableRamForSchedule(newVm.getAvailableRamForSchedule() - requiredMemory);
                     newVm.setAvailableSizeForSchedule(newVm.getAvailableSizeForSchedule() - Parameters.CONTAINER_SIZE);
+//                    newVm.setState(MySimTags.VM_STATUS_BUSY);
 
                     Container newContainer = new Container(IDs.pollId(Container.class), broker.getId(), Parameters.CONTAINER_MIPS[0],
                             task.getNumberOfPes(), (int)Math.min(requiredMemory, Parameters.VM_RAM[VmType]),

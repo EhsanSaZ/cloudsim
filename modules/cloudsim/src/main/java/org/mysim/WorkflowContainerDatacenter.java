@@ -570,7 +570,8 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
         // release used resources for future scheduling
         CondorVM castedVm = ( CondorVM) getContainerAllocationPolicy().getContainerVm(container);
         castedVm.setAvailableRamForSchedule(castedVm.getAvailableRamForSchedule() + container.getRam());
-        castedVm.setAvailablePeNumbersForSchedule(castedVm.getNumberOfPes() + container.getNumberOfPes());
+        castedVm.setAvailablePeNumbersForSchedule(castedVm.getAvailablePeNumbersForSchedule() + container.getNumberOfPes());
+        castedVm.setAvailableSizeForSchedule(castedVm.getAvailableSizeForSchedule() + Parameters.CONTAINER_SIZE);
 
         getContainerAllocationPolicy().deallocateVmForContainer(container);
         if (ack) {
@@ -582,7 +583,6 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             sendNow(container.getUserId(), MySimTags.CONTAINER_DESTROY_ACK, data);
         }
         getContainerList().remove(container);
-
     }
 
     @Override

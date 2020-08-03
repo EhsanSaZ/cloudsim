@@ -1,5 +1,6 @@
 package org.mysim;
 
+import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerBwProvisioner;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerPe;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerRamProvisioner;
@@ -15,7 +16,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class CondorVM extends PowerContainerVm {
-    private int state;
+//    private int state;
+//    private boolean isScheduled;
     private final List<VmStateEntry> busyStateHistory = new LinkedList<VmStateEntry>();
     /**
      * The previous time.
@@ -39,7 +41,7 @@ public class CondorVM extends PowerContainerVm {
                     List<? extends ContainerPe> peList, final double schedulingInterval) {
         super(id, userId, mips, ram, bw, size, vmm, containerScheduler, containerRamProvisioner, containerBwProvisioner,
                 peList, schedulingInterval);
-        setState(MySimTags.VM_STATUS_IDLE);
+//        setState(MySimTags.VM_STATUS_IDLE);
         setAvailablePeNumbersForSchedule(peList.size());
         setAvailableRamForSchedule(ram);
         setAvailableSizeForSchedule(size);
@@ -55,7 +57,7 @@ public class CondorVM extends PowerContainerVm {
         setCostPerMem(costPerMem);
         setCostPerStorage(costPerStorage);
         setCostPerBW(costPerBW);
-        setState(MySimTags.VM_STATUS_IDLE);
+//        setState(MySimTags.VM_STATUS_IDLE);
         setAvailablePeNumbersForSchedule(peList.size());
         setAvailableRamForSchedule(ram);
         setAvailableSizeForSchedule(size);
@@ -67,11 +69,11 @@ public class CondorVM extends PowerContainerVm {
         if ((currentTime - getPreviousBusyStateCheckTime()) >= getSchedulingInterval()) {
             if (CloudSim.clock() != 0 && getContainerList().size() > 0){
                 addBusyStateHistory(currentTime, MySimTags.VM_STATUS_BUSY);
-                setState(MySimTags.VM_STATUS_BUSY);
+//                setState(MySimTags.VM_STATUS_BUSY);
 
-            }else if(CloudSim.clock() != 0 && getContainerList().size() <= 0){
+            }else if(CloudSim.clock() != 0 && getContainerList().size() == 0){
                 addBusyStateHistory(currentTime, MySimTags.VM_STATUS_IDLE);
-                setState(MySimTags.VM_STATUS_IDLE);
+//                setState(MySimTags.VM_STATUS_IDLE);
             }
             setPreviousBusyStateCheckTime(currentTime);
         }
@@ -104,13 +106,14 @@ public class CondorVM extends PowerContainerVm {
 //        if ( task.getNumberOfPes() > (getPeList().size() - scheduler.getPesInUse()) || )
     }
     //----------------setter and getter
-    public int getState() {
-        return state;
-    }
 
-    public void setState(int state) {
-        this.state = state;
-    }
+//    public int getState() {
+//        return state;
+//    }
+
+//    public void setState(int state) {
+//        this.state = state;
+//    }
 
     public List<VmStateEntry> getBusyStateHistory() {
         return busyStateHistory;

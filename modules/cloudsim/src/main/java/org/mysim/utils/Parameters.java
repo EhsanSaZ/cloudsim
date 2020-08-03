@@ -36,8 +36,8 @@ public class Parameters {
         }
     }
 
-    // TODO EHSAN: SCALE OF MEMORY AND RUNTIME NEEDED TO BE CHECKED
-    private static double runtime_scale = 1.0;
+    // T ODO EHSAN: SCALE OF MEMORY AND RUNTIME NEEDED TO BE CHECKED
+    private static double runtime_scale = 15.0;
     private static double peakMemory_Scale = 1.0;
     private static double minPeakMemory = 10.0  * Consts.MILLION ;// in Byte
     /**
@@ -112,13 +112,13 @@ public class Parameters {
     public static final int[] HOST_MIPS = new int[]{37274};
     public static final int[] HOST_PES = new int[]{64};
     public static final int[] HOST_RAM = new int[]{262144};
-    public static final int HOST_BW = 1000000;
+    public static final int HOST_BW = 100000000;
     public static final long HOST_STORAGE = 1000000;
 
 
     // THIS VARIES BY EXPERIMENT
     public static final int R_T_Q_SCHEDULING_INTERVAL = 100;
-    public static final int MONITORING_INTERVAL = 500;
+    public static final int MONITORING_INTERVAL = 50;
     public static final double VM_THRESH_HOLD_FOR_SHUTDOWN = 60;
     public static final int CHECK_FINISHED_STATUS_DELAY = 200;
 

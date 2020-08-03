@@ -150,28 +150,31 @@ public class WorkflowEngine extends SimEntity {
 
     public void processMonitoringVms(SimEvent ev){
         if (isRunning){
-////            Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Start monitoring and search for Idle Vms.");
-//            List <ContainerVm> vmToDestroyList = new ArrayList<>();
-//            // T ODO EHSAN: calculate the list according to vm state history from broker crated vm list..
-//            for (ContainerVm vm : broker.getVmsCreatedList()){
-//                List<VmStateEntry> busyStateHistory =  ((CondorVM) vm).getBusyStateHistory();
-//                double oldestIdleTime = Double.MAX_VALUE;
-//                for (VmStateEntry stateEntry: busyStateHistory){
-//                    if (stateEntry.getState() == MySimTags.VM_STATUS_BUSY){
-//                        break;
-//                    }
-//                    oldestIdleTime = stateEntry.getTime();
-//                }
-//                if ((CloudSim.clock() - oldestIdleTime) > Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN){
-//                    vmToDestroyList.add(vm);
-//                    Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Select Vm #", vm.getId() , " to destroy");
-//                }
-//            }
-//            // T ODO EHSAN: remove this vm as a storage in replica
-//            for(ContainerVm vm: vmToDestroyList){
-//                ReplicaCatalog.removeStorageFromStorageList(Integer.toString(vm.getId()));
-//            }
-//            broker.destroyVms(vmToDestroyList);
+            Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Start monitoring and search for Idle Vms.");
+            List <ContainerVm> vmToDestroyList = new ArrayList<>();
+            // T ODO EHSAN: calculate the list according to vm state history from broker crated vm list..
+            for (ContainerVm vm : broker.getVmsCreatedList()){
+                CondorVM castedVm = (CondorVM) vm;
+                if(castedVm.getAvailablePeNumbersForSchedule()==castedVm.getPeList().size()){
+                    List<VmStateEntry> busyStateHistory =  castedVm.getBusyStateHistory();
+                    double oldestIdleTime = Double.MAX_VALUE;
+                    for (VmStateEntry stateEntry: busyStateHistory){
+                        if (stateEntry.getState() == MySimTags.VM_STATUS_BUSY){
+                            break;
+                        }
+                        oldestIdleTime = stateEntry.getTime();
+                    }
+                    if ((CloudSim.clock() - oldestIdleTime) > Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN){
+                        vmToDestroyList.add(vm);
+                        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Select Vm #", vm.getId() , " to destroy");
+                    }
+                }
+            }
+            // T ODO EHSAN: remove this vm as a storage in replica
+            for(ContainerVm vm: vmToDestroyList){
+                ReplicaCatalog.removeStorageFromStorageList(Integer.toString(vm.getId()));
+            }
+            broker.destroyVms(vmToDestroyList);
 
             schedule(this.getId(), Parameters.MONITORING_INTERVAL, MySimTags.DO_MONITORING,null);
         }
