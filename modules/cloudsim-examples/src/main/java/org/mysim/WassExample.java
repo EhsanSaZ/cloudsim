@@ -99,7 +99,7 @@ public class WassExample {
             CloudSim.startSimulation();
 
             // get all data that  we need from engine and broker...
-            System.out.println(workflowEngine.getWorkflowList().size());
+//            System.out.println(workflowEngine.getWorkflowList().size());
 //            Workflow w = workflowEngine.getWorkflowList().get(0);
 //            System.out.println(w.getBudget());
 //            System.out.println(w.getDeadline());

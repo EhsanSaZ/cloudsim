@@ -31,16 +31,17 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
     //            return Double.compare(t1.getSubDeadline(), t2.getSubDeadline());
     //        }
     //    };
+    // sort ascending order
     Comparator<Task> compareBySubDeadline = (t1, t2) -> Double.compare(t1.getSubDeadline(), t2.getSubDeadline());
-
+    // sort ascending order
     Comparator<Task> compareByDepth = (t1, t2) -> Double.compare(t1.getDepth(), t2.getDepth());
-
+    // sort ascending order
     Comparator<Entry<String, Double>> valueComparator = new Comparator<Entry<String,Double>>() {
-
         @Override
         public int compare(Entry<String, Double> e1, Entry<String, Double> e2) {
             return e1.getValue().compareTo( e2.getValue()); }
     };
+    private Random rd = new Random();
 
     public MyPlanningAlgorithm(){
         setScheduledTasksOnRunningContainers(new ArrayList<>());
@@ -286,8 +287,8 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                 for (ContainerVm vm :newRequiredVms){
                     CondorVM castedVm = (CondorVM) vm;
                     assert castedVm != null;
-//                    if (castedVm.getAvailablePeNumbersForSchedule() >= task.getNumberOfPes() && castedVm.getAvailableRamForSchedule() >= requiredMemory && task.isVmAffordable(vm)){
                     // T ODO EHSAN FIX: CHECK FOR STORAGE TOO
+//                    if (castedVm.getAvailablePeNumbersForSchedule() >= task.getNumberOfPes() && castedVm.getAvailableRamForSchedule() >= requiredMemory && task.isVmAffordable(vm)){
                     if (castedVm.isSuitableForTask(task.getNumberOfPes(), requiredMemory) && castedVm.getAvailableSizeForSchedule() >= Parameters.CONTAINER_SIZE && task.isVmAffordable(vm)){
                         //create a new container for running on this vm
                         castedVm.setAvailablePeNumbersForSchedule(castedVm.getAvailablePeNumbersForSchedule() - task.getNumberOfPes());
@@ -330,13 +331,15 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     int VmType = Parameters.VM_TYPES_NUMBERS - 1;
                     if (appropriateVmsType.size() > 0){
                         // calculate Bi facotr for all types and deploy on the best one
-                        List<BiFactorRankVmType> vmTypesRankList = sortOnFactorForTaskVmTypes(appropriateVmsType, task, Parameters.BI_FACTOR);
-                        VmType = vmTypesRankList.get(0).vmType;
+//                        List<BiFactorRankVmType> vmTypesRankList = sortOnFactorForTaskVmTypes(appropriateVmsType, task, Parameters.BI_FACTOR);
+//                        VmType = vmTypesRankList.get(0).vmType;
+                        // radome choose 68 % success
+                        VmType = rd.nextInt(appropriateVmsType.size());
                     }else{
                         task.setNumberOfPes(Math.min(task.getNumberOfPes(), Parameters.VM_PES[VmType]));
                         task.setMemory(Math.min(requiredMemory, Parameters.VM_RAM[VmType]));
                     }
-//                    System.out.println("chosen type "+ VmType);
+                    System.out.println("chosen type "+ VmType);
                     ArrayList<ContainerPe> peList = new ArrayList<ContainerPe>();
                     for (int j = 0; j < Parameters.VM_PES[VmType]; ++j){
                         peList.add(new ContainerPe(j, new CotainerPeProvisionerSimple((double) Parameters.VM_MIPS[VmType])));
@@ -435,6 +438,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
             this.BiFactor = BiFactor;
         }
 
+        // descending order
         @Override
         public int compareTo( BiFactorRank o) {
             return o.BiFactor.compareTo(BiFactor);
@@ -449,6 +453,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
             this.BiFactor = BiFactor;
         }
 
+        // descending order
         @Override
         public int compareTo(BiFactorRankVmType o) {
             return o.BiFactor.compareTo(BiFactor);
@@ -472,11 +477,12 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                 int availablePeAfterSchedule = Parameters.VM_PES[vmType] - task.getNumberOfPes();
                 double availableMemAfterSchedule = Parameters.VM_RAM[vmType] - (int)Math.ceil(task.getMemory());
                 U_factor = Math.hypot( 1 - ((double)availablePeAfterSchedule / Parameters.VM_PES[vmType]), 1-(availableMemAfterSchedule / Parameters.VM_RAM[vmType] ));
+
+//                C_factor = 0;
             }
             vmTypesRankList.add( new BiFactorRankVmType(vmType, C_factor + U_factor));
         }
-        vmTypesRankList.sort(Collections.reverseOrder());
-
+        Collections.sort(vmTypesRankList);
         return vmTypesRankList;
     }
 
@@ -503,9 +509,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
             vmRankedList.add( new BiFactorRank(vm, C_factor + U_factor));
         }
         // sort on descending order
-//        Collections.sort(vmRankedList, Collections.reverseOrder());
-        vmRankedList.sort(Collections.reverseOrder());
-
+        Collections.sort(vmRankedList);
         return vmRankedList;
     }
 
