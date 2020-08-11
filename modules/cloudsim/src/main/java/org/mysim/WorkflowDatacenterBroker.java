@@ -119,7 +119,8 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                     " has been created in Datacenter #", datacenterId, ", Host #",
                     ContainerVmList.getById(getVmsCreatedList(), vmId).getHost().getId());
             //send response to workflow engine..
-            schedule(getWorkflowEngineId(),CloudSim.getMinTimeBetweenEvents(),CloudSimTags.VM_CREATE_ACK,data);
+//            schedule(getWorkflowEngineId(),CloudSim.getMinTimeBetweenEvents(),CloudSimTags.VM_CREATE_ACK,data);
+            sendNow(getWorkflowEngineId(),CloudSimTags.VM_CREATE_ACK,data);
         } else {
             Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Creation of VM #", vmId,
                     " failed in Datacenter #", datacenterId);
@@ -170,7 +171,8 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                         , ", On Host#", hostId);
                 setContainersCreated(getContainersCreated()+1);
                 // send response to workflow engine
-                schedule(getWorkflowEngineId(),CloudSim.getMinTimeBetweenEvents(), containerCloudSimTags.CONTAINER_CREATE_ACK, data);
+//                schedule(getWorkflowEngineId(),CloudSim.getMinTimeBetweenEvents(), containerCloudSimTags.CONTAINER_CREATE_ACK, data);
+                sendNow(getWorkflowEngineId(), containerCloudSimTags.CONTAINER_CREATE_ACK, data);
             }
         } else {
             Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Failed Creation of Container #", containerId);
@@ -200,7 +202,8 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 //        if (ContainerParameters.getOverheadParams().getPostDelay() != null) {
 //            delay = ContainerParameters.getOverheadParams().getPostDelay(job);
 //        }
-        schedule(getWorkflowEngineId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.CLOUDLET_RETURN, cloudlet);
+//        schedule(getWorkflowEngineId(), CloudSim.getMinTimeBetweenEvents(), CloudSimTags.CLOUDLET_RETURN, cloudlet);
+        sendNow(getWorkflowEngineId(), CloudSimTags.CLOUDLET_RETURN, cloudlet);
 
 //        schedule(this.getId(), 0.0, MySimTags.CLOUDLET_UPDATE);
     }
@@ -252,8 +255,9 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                     Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Trying to Send Task #", cloudlet.getCloudletId(),
                             " to Datacenter #", getVmsToDatacentersMap().get(cloudlet.getVmId()) ," for execution on VM #",
                             cloudlet.getVmId() , " and Container #", cloudlet.getContainerId());
-                    schedule(getVmsToDatacentersMap().get(cloudlet.getVmId()), CloudSim.getMinTimeBetweenEvents(),
-                            CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+//                    schedule(getVmsToDatacentersMap().get(cloudlet.getVmId()), CloudSim.getMinTimeBetweenEvents(),
+//                            CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
+                    sendNow(getVmsToDatacentersMap().get(cloudlet.getVmId()), CloudSimTags.CLOUDLET_SUBMIT, cloudlet);
                 }
             }
         }

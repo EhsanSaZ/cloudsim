@@ -111,19 +111,41 @@ public class WassExample {
             int success =0;
             for (Workflow workflow: workflowEngine.getWorkflowList()) {
                 Log.printLine("--------------"+ workflow.getName()+ "-------------------");
-                Log.printLine(workflow.getDeadline());
-                Log.printLine(workflow.getCurrentMakeSpan());
+                Log.printLine("Deadline:" + workflow.getDeadline());
+                Log.printLine("Make Span:" + workflow.getCurrentMakeSpan());
                 Log.printLine("");
-                Log.printLine(workflow.getBudget());
-                Log.printLine(workflow.getTotalCost());
+                Log.printLine("Budget:" + workflow.getBudget());
+                Log.printLine("Cost:" + workflow.getTotalCost());
                 if (workflow.getCurrentMakeSpan() <= workflow.getDeadline() && workflow.getTotalCost() <= workflow.getBudget()){
+//                if (workflow.getCurrentMakeSpan() <= workflow.getDeadline()){
                     success++;
                 }
             }
             Log.printLine("\n PSR");
-            Log.printLine((double)success / workflowEngine.getWorkflowList().size());
+            Log.printLine((double)success / workflowEngine.getWorkflowList().size() + "\n");
+
+            Log.printConcatLine("TOTAL VM NUMBERS: ", broker.getVmsDestroyedList().size() + broker.getVmsCreatedList().size());
+            Log.printConcatLine("TOTAL  Destroyed VM NUMBERS: ", broker.getVmsDestroyedList().size());
+            Log.printConcatLine("TOTAL Created VM NUMBERS: ", broker.getVmsCreatedList().size());
+
+//            Log.printConcatLine(" Destroyed VM Info");
+//            for(ContainerVm vm : broker.getVmsDestroyedList()){
+//                Log.printLine("-------------- #"+ vm.getId()+ " -------------------");
+//                Log.printConcatLine("vm Type: " , vm.getNumberOfPes());
+//                Log.printConcatLine("Lease Time    Release Time");
+//                Log.printLine( ((CondorVM) vm).getLeaseTime() + "   " + ((CondorVM)vm).getReleaseTime());
+//            }
+//            Log.printConcatLine("\n");
+//            Log.printConcatLine(" Created VM Info");
+//            for(ContainerVm vm : broker.getVmsCreatedList()){
+//                Log.printLine("-------------- #"+ vm.getId()+ " -------------------");
+//                Log.printConcatLine("vm Type: " , vm.getNumberOfPes());
+//                Log.printConcatLine("Lease Time    Release Time");
+//                Log.printLine( ((CondorVM) vm).getLeaseTime() + "   " + ((CondorVM)vm).getReleaseTime());
+//            }
             CloudSim.stopSimulation();
             // print informations
+            Log.printLine("\n");
             Log.printLine("Wass Example finished!");
         } catch (Exception e) {
         Log.printLine("The simulation has been terminated due to an unexpected error");
