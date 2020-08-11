@@ -37,13 +37,13 @@ public class Parameters {
     }
 
     // T ODO EHSAN: SCALE OF MEMORY AND RUNTIME NEEDED TO BE CHECKED
-    private static double runtime_scale = 15.0;
+    private static double runtime_scale = 1.0;
     private static double peakMemory_Scale = 1.0;
     private static double minPeakMemory = 10.0  * Consts.MILLION ;// in Byte
     /**
      * The default cost model is based on datacenter, similar to CloudSim
      */
-    private static CostModel costModel =CostModel.DATACENTER;
+    private static CostModel costModel =CostModel.VM;
 
     private static String workflowsDirectory;
 
@@ -89,7 +89,7 @@ public class Parameters {
     public static final float[] VM_RAM = new float[]{(float) 1024, (float) 2048, (float) 4096, (float) 8192};//**MB*
     public static final int VM_BW = 500; //100000;// Mb/s...
     // TODO EHSAN: FIX COST
-    public static final double COST[] = new double[]{1, 1.8, 3.5, 7 };
+    public static final double COST[] = new double[]{1, 1.9, 3.7, 7.3 };
     public static final double COST_PER_MEM[] = new double[]{1, 2, 3, 4};
     public static final double COST_PER_STORAGE[] = new double[]{1, 2, 3, 4};
     public static final double COST_PER_BW[] = new double[]{1, 2, 3, 4};
@@ -104,17 +104,21 @@ public class Parameters {
     public static final double CONTAINER_BW = 0.001; // Mb/s...
     public static final double CONTAINER_VM_SCHEDULING_INTERVAL = 300.0D;
     // TODO EHSAN: FIX SIZE
-    public static final int CONTAINER_SIZE = 1; //600;// MB
+    public static final int CONTAINER_SIZE = 600; //600;// MB
 
     //---------------------------------  HOST
     public static final int HOST_TYPES = 1;
     // T ODO EHSAN: FIX MIPS
-    public static final int[] HOST_MIPS = new int[]{37274};
-    public static final int[] HOST_PES = new int[]{64};
-    public static final int[] HOST_RAM = new int[]{262144};
-    public static final int HOST_BW = 100000000;
-    public static final long HOST_STORAGE = 1000000;
-
+//    public static final int[] HOST_MIPS = new int[]{37274};
+//    public static final int[] HOST_PES = new int[]{64};
+//    public static final int[] HOST_RAM = new int[]{262144};
+//    public static final int HOST_BW = 100000000;
+//    public static final long HOST_STORAGE = 1000000;
+    public static final int[] HOST_MIPS = new int[]{99999};
+    public static final int[] HOST_PES = new int[]{128};
+    public static final int[] HOST_RAM = new int[]{524288};
+    public static final int HOST_BW = Integer.MAX_VALUE;
+    public static final long HOST_STORAGE = Integer.MAX_VALUE;
 
     // THIS VARIES BY EXPERIMENT
     public static final int R_T_Q_SCHEDULING_INTERVAL = 100;
@@ -130,8 +134,9 @@ public class Parameters {
 
     public static final NormalDistribution CPU_DEGRADATION = new NormalDistribution(12,10);
     public static final NormalDistribution BW_DEGRADATION = new NormalDistribution(9.5,5);
+    public static final boolean ENABLE_DEGRADATION = true;
 
-    public static final int BILLING_PERIOD = 60;
+    public static final int BILLING_PERIOD =60;
     public static final double CPU_COST_FACTOR = 0.5;
     public static final double ALPHA_DEADLINE_FACTOR = 0.5;
     public static final double BETA_BUDGET_FACTOR = 0.5;

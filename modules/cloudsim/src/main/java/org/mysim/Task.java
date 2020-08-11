@@ -241,9 +241,12 @@ public class Task extends ContainerCloudlet {
     @Override
     public double getProcessingCost() {
         // cloudlet cost: execution cost...
-        double relativeCostRate = getCostPerSec() * (Parameters.CPU_COST_FACTOR * (getAllocatedContainerTotalMips() / getAllocatedVmTotalMips()) +
-                                                    (1 - Parameters.CPU_COST_FACTOR) * (getAllocatedContainerRam() / getAllocatedVmRam())
-                                                    );
+        double actualCPUTime = getActualCPUTime();
+        double costpersecond = getCostPerSec();
+//        double relativeCostRate = getCostPerSec() * (Parameters.CPU_COST_FACTOR * (getAllocatedContainerTotalMips() / getAllocatedVmTotalMips()) +
+//                                                    (1 - Parameters.CPU_COST_FACTOR) * (getAllocatedContainerRam() / getAllocatedVmRam())
+//                                                    );
+        double relativeCostRate = getCostPerSec() * ( getAllocatedContainerTotalMips() / getAllocatedVmTotalMips());
 
         double cost = relativeCostRate * Math.ceil( getActualCPUTime() / Parameters.BILLING_PERIOD);
 
@@ -268,12 +271,12 @@ public class Task extends ContainerCloudlet {
 
     public double estimateTaskCost (ContainerVm vm){
         CondorVM castedVm = (CondorVM) vm;
-        int[] config = getFutureContainerConfig(vm);
 
 //        double relativeCostRate = castedVm.getCost() * ( Parameters.CPU_COST_FACTOR * ((double)getNumberOfPes() / vm.getPeList().size()) +
 //                ( 1 - Parameters.CPU_COST_FACTOR) * (getMemory()/ castedVm.getRam())
 //        );
 //        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * getNumberOfPes()) )+ getTransferTime(Parameters.VM_BW);
+        int[] config = getFutureContainerConfig(vm);
         double relativeCostRate = castedVm.getCost() * ((double)config[0] / vm.getNumberOfPes());
         double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * config[0]) )+ getTransferTime(Parameters.VM_BW);
         return relativeCostRate * Math.ceil( executionTime / Parameters.BILLING_PERIOD);
@@ -281,12 +284,11 @@ public class Task extends ContainerCloudlet {
 
     public double estimateTaskCostForVmType(int vmType){
 
-        int[] config = getFutureContainerConfigForVmType(vmType);
-
 //        double relativeCostRate =  Parameters.COST[vmType] * ( Parameters.CPU_COST_FACTOR * ((double)getNumberOfPes() / Parameters.VM_PES[vmType]) +
 //                ( 1 - Parameters.CPU_COST_FACTOR) * (getMemory()/ Parameters.VM_RAM[vmType])
 //        );
 //        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * getNumberOfPes()) )+ getTransferTime(Parameters.VM_BW);
+        int[] config = getFutureContainerConfigForVmType(vmType);
         double relativeCostRate = Parameters.COST[vmType] *((double)config[0] / Parameters.VM_PES[vmType]);
         double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * config[0]) )+ getTransferTime(Parameters.VM_BW);
         return relativeCostRate * Math.ceil( executionTime / Parameters.BILLING_PERIOD);
@@ -319,6 +321,11 @@ public class Task extends ContainerCloudlet {
         config[1] = (int) (config[0] * (Parameters.VM_RAM[vmType] / Parameters.VM_PES[vmType]));
 
         return config;
+    }
+
+    public void updateCoudletLength(int peNumbers){
+        // bug of cloudsim min length must be 110
+        setCloudletLength(Math.max(getCloudletLength() / peNumbers, 110));
     }
 
     //-------------------------------------- setter and getter ----------------------------------

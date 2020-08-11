@@ -109,6 +109,7 @@ public class WassExample {
 //                Log.printLine(task.getCloudletLength()+ "   "   + task.getExecStartTime()+ "     " + task.getFinishTime());
 //            }
             int success =0;
+            int success2 =0;
             for (Workflow workflow: workflowEngine.getWorkflowList()) {
                 Log.printLine("--------------"+ workflow.getName()+ "-------------------");
                 Log.printLine("Deadline:" + workflow.getDeadline());
@@ -117,12 +118,17 @@ public class WassExample {
                 Log.printLine("Budget:" + workflow.getBudget());
                 Log.printLine("Cost:" + workflow.getTotalCost());
                 if (workflow.getCurrentMakeSpan() <= workflow.getDeadline() && workflow.getTotalCost() <= workflow.getBudget()){
-//                if (workflow.getCurrentMakeSpan() <= workflow.getDeadline()){
                     success++;
+                }
+                if (workflow.getCurrentMakeSpan() <= workflow.getDeadline()){
+                    success2++;
                 }
             }
             Log.printLine("\n PSR");
             Log.printLine((double)success / workflowEngine.getWorkflowList().size() + "\n");
+
+            Log.printLine("\n deadline success");
+            Log.printLine((double)success2 / workflowEngine.getWorkflowList().size() + "\n");
 
             Log.printConcatLine("TOTAL VM NUMBERS: ", broker.getVmsDestroyedList().size() + broker.getVmsCreatedList().size());
             Log.printConcatLine("TOTAL  Destroyed VM NUMBERS: ", broker.getVmsDestroyedList().size());

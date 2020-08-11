@@ -15,7 +15,6 @@ import org.mysim.FileItem;
 import org.mysim.Task;
 import org.mysim.WorkflowDatacenterBroker;
 import org.mysim.simschedulers.ContainerCloudletSchedulerSpaceShared;
-import org.mysim.utils.MySimTags;
 import org.mysim.utils.Parameters;
 import org.mysim.utils.ReplicaCatalog;
 
@@ -76,9 +75,9 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 
         // Try to schedule tasks in ready Queue on already running resources (by broker)
         for (Task task: readyTasks){
-            int requiredPesNumber = calculateRequiredPesNumber(task);
-            task.setNumberOfPes(requiredPesNumber);
-            int requiredMemory = (int)Math.ceil(task.getMemory());
+            int minRequiredPesNumber = calculateMinRequiredPesNumber(task);
+            int minRequiredMemory = (int)Math.ceil(task.getMemory());
+            task.setNumberOfPes(minRequiredPesNumber);
 
             ContainerVm provisionedVm = null;
             // Get all Vms that has at list t'(Core num, mem demand) available resources
@@ -86,11 +85,10 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
             for (ContainerVm vm:broker.getVmsCreatedList()){
                 CondorVM castedVm = (CondorVM) vm;
                 assert castedVm != null;
-//                if (castedVm.getAvailablePeNumbersForSchedule() >= requiredPesNumber && castedVm.getAvailableRamForSchedule() >= requiredMemory){
-//                    AllVm.add(vm);
-//                }
                 // T ODO EHSAN FIX: CHECK FOR STORAGE TOO
-                if (castedVm.isSuitableForTask(requiredPesNumber, requiredMemory) && castedVm.getAvailableSizeForSchedule() >= Parameters.CONTAINER_SIZE){
+                int [] futureContainerConfig = task.getFutureContainerConfig(vm);
+
+                if (castedVm.isSuitableForTask(futureContainerConfig[0], futureContainerConfig[1]) && castedVm.getAvailableSizeForSchedule() >= Parameters.CONTAINER_SIZE){
                     AllVm.add(vm);
                 }
             }
@@ -124,7 +122,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     // look for a container with 0 workload
                     // choose one of them that is appropriate to use for running task
                     if (provisionedVm == null){
-                        int index = scheduleOnRunningContainers(idleRunningContainerList, task, requiredPesNumber, requiredMemory);
+                        int index = scheduleOnRunningContainers(idleRunningContainerList, task, minRequiredPesNumber, minRequiredMemory);
                         if (index != -1){
                             scheduledTasks.add(task);
                             toRemove.add(task);
@@ -142,7 +140,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     // when it is not possible to run on a new container on non-affordable vm with input data
                     // look for a container with 0 workload
                     // choose one of them that is appropriate to use for running task
-                    int index = scheduleOnRunningContainers(idleRunningContainerList, task, requiredPesNumber, requiredMemory);
+                    int index = scheduleOnRunningContainers(idleRunningContainerList, task, minRequiredPesNumber, minRequiredMemory);
                     if (index != -1){
                         scheduledTasks.add(task);
                         toRemove.add(task);
@@ -174,17 +172,23 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     // 4- add task to scheduled task--
                     // 5- and add to remove list inorder to remove from ready tasks at the end...--
                     CondorVM vm = (CondorVM) provisionedVm;
-                    vm.setAvailablePeNumbersForSchedule(vm.getAvailablePeNumbersForSchedule() - requiredPesNumber);
-                    vm.setAvailableRamForSchedule(vm.getAvailableRamForSchedule() - requiredMemory);
+                    int [] futureContainerConfig = task.getFutureContainerConfig(vm);
+
+                    vm.setAvailablePeNumbersForSchedule(vm.getAvailablePeNumbersForSchedule() - futureContainerConfig[0]);
+                    vm.setAvailableRamForSchedule(vm.getAvailableRamForSchedule() - futureContainerConfig[1]);
                     vm.setAvailableSizeForSchedule(vm.getAvailableSizeForSchedule() - Parameters.CONTAINER_SIZE);
+
 //                    vm.setScheduled(true);
                     Container newContainer = new Container(IDs.pollId(Container.class),
                             broker.getId(),Parameters.CONTAINER_MIPS[0],
-                            requiredPesNumber, requiredMemory, (long)Parameters.CONTAINER_BW, Parameters.CONTAINER_SIZE,
+                            futureContainerConfig[0], futureContainerConfig[1], (long)Parameters.CONTAINER_BW, Parameters.CONTAINER_SIZE,
                             "Xen",new ContainerCloudletSchedulerSpaceShared(),Parameters.CONTAINER_VM_SCHEDULING_INTERVAL);
                     newContainer.setVm(vm);
                     task.setVmId(vm.getId());
                     task.setContainerId(newContainer.getId());
+                    task.setNumberOfPes(futureContainerConfig[0]);
+                    // because actual cloudlet length in Res for execution is lenght per PE
+                    task.updateCoudletLength(task.getNumberOfPes());
 
                     Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: ",
                             "Task #", task.getCloudletId(), " scheduled to run on VM #", provisionedVm.getId(), " and Container #",
@@ -201,7 +205,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                 // choose one of them that is appropriate to use for running task
                 // if it is not possible too, check if delay is possible or not
                 // if delay is not possible to add task to WaitQueue to run on new resources..
-                int index = scheduleOnRunningContainers(idleRunningContainerList, task, requiredPesNumber, requiredMemory);
+                int index = scheduleOnRunningContainers(idleRunningContainerList, task, minRequiredPesNumber, minRequiredMemory);
                 if (index != -1){
                     scheduledTasks.add(task);
                     toRemove.add(task);
@@ -229,7 +233,9 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 //                continue;
             }
         }
-        Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: Sending signal to destroy idle containers");
+        if (idleRunningContainerList.size() > 0){
+            Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: Sending signal to destroy idle containers");
+        }
         // collect and destroy all containers with workload 0
         for (Container container:idleRunningContainerList){
             broker.destroyContainer(container);
@@ -281,28 +287,36 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
             // maybe tasksList.sort(compareByDepth) is not needed
             //tasksList.sort(compareByDepth);
             for(Task task: tasksList){
-                int requiredMemory = (int)Math.ceil(task.getMemory());
+                int minRequiredPesNumber = calculateMinRequiredPesNumber(task);
+                int minRequiredMemory = (int)Math.ceil(task.getMemory());
+                task.setNumberOfPes(minRequiredPesNumber);
 //                ContainerVm provisionedVm = null;
                 boolean notScheduled = true;
                 for (ContainerVm vm :newRequiredVms){
                     CondorVM castedVm = (CondorVM) vm;
                     assert castedVm != null;
                     // T ODO EHSAN FIX: CHECK FOR STORAGE TOO
-//                    if (castedVm.getAvailablePeNumbersForSchedule() >= task.getNumberOfPes() && castedVm.getAvailableRamForSchedule() >= requiredMemory && task.isVmAffordable(vm)){
-                    if (castedVm.isSuitableForTask(task.getNumberOfPes(), requiredMemory) && castedVm.getAvailableSizeForSchedule() >= Parameters.CONTAINER_SIZE && task.isVmAffordable(vm)){
+//                    if (castedVm.getAvailablePeNumbersForSchedule() >= task.getNumberOfPes() && castedVm.getAvailableRamForSchedule() >= minRequiredMemory && task.isVmAffordable(vm)){
+                    int [] futureContainerConfig = task.getFutureContainerConfig(vm);
+
+                    if (castedVm.isSuitableForTask(futureContainerConfig[0], futureContainerConfig[1])
+                            && castedVm.getAvailableSizeForSchedule() >= Parameters.CONTAINER_SIZE && task.isVmAffordable(vm)){
                         //create a new container for running on this vm
-                        castedVm.setAvailablePeNumbersForSchedule(castedVm.getAvailablePeNumbersForSchedule() - task.getNumberOfPes());
-                        castedVm.setAvailableRamForSchedule(castedVm.getAvailableRamForSchedule() - requiredMemory);
+                        castedVm.setAvailablePeNumbersForSchedule(castedVm.getAvailablePeNumbersForSchedule() - futureContainerConfig[0]);
+                        castedVm.setAvailableRamForSchedule(castedVm.getAvailableRamForSchedule() - futureContainerConfig[1]);
                         castedVm.setAvailableSizeForSchedule(castedVm.getAvailableSizeForSchedule() - Parameters.CONTAINER_SIZE);
 //                        castedVm.setState(MySimTags.VM_STATUS_BUSY);
 
                         Container newContainer = new Container(IDs.pollId(Container.class),
                                 broker.getId(),Parameters.CONTAINER_MIPS[0],
-                                task.getNumberOfPes(), requiredMemory, (long)Parameters.CONTAINER_BW, Parameters.CONTAINER_SIZE,
+                                futureContainerConfig[0], futureContainerConfig[1], (long)Parameters.CONTAINER_BW, Parameters.CONTAINER_SIZE,
                                 "Xen",new ContainerCloudletSchedulerSpaceShared(),Parameters.CONTAINER_VM_SCHEDULING_INTERVAL);
                         newContainer.setVm(vm);
                         task.setVmId(vm.getId());
                         task.setContainerId(newContainer.getId());
+                        task.setNumberOfPes(futureContainerConfig[0]);
+                        // because actual cloudlet length in Res for execution is lenght per PE
+                        task.updateCoudletLength(task.getNumberOfPes());
 
                         Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: ",
                                 "Task #", task.getCloudletId(), " scheduled to run on VM #", castedVm.getId(), " and Container #",
@@ -319,7 +333,11 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     List <Integer> appropriateVmsType = new ArrayList<>();
                     for (int i = 0; i < Parameters.VM_TYPES_NUMBERS; i++){
                         // check if type i is ok or not..
-                        if (Parameters.VM_PES[i] >= task.getNumberOfPes() && Parameters.VM_RAM[i] >= requiredMemory){
+                        int [] futureContainerConfig = task.getFutureContainerConfigForVmType(i);
+//                        if (Parameters.VM_PES[i] >= task.getNumberOfPes() && Parameters.VM_RAM[i] >= minRequiredMemory){
+//                            appropriateVmsType.add(i);
+//                        }
+                        if (Parameters.VM_PES[i] >= futureContainerConfig[0] && Parameters.VM_RAM[i] >= futureContainerConfig[1]){
                             appropriateVmsType.add(i);
                         }
                     }
@@ -333,13 +351,14 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                         // calculate Bi facotr for all types and deploy on the best one
 //                        List<BiFactorRankVmType> vmTypesRankList = sortOnFactorForTaskVmTypes(appropriateVmsType, task, Parameters.BI_FACTOR);
 //                        VmType = vmTypesRankList.get(0).vmType;
-                        // radome choose 68 % success
-                        VmType = rd.nextInt(appropriateVmsType.size());
+//                         radome choose  success
+                        VmType = appropriateVmsType.get(rd.nextInt(appropriateVmsType.size()));
                     }else{
                         task.setNumberOfPes(Math.min(task.getNumberOfPes(), Parameters.VM_PES[VmType]));
-                        task.setMemory(Math.min(requiredMemory, Parameters.VM_RAM[VmType]));
+                        task.setMemory(Math.min(minRequiredMemory, Parameters.VM_RAM[VmType]));
                     }
-                    System.out.println("chosen type "+ VmType);
+                    int [] futureContainerConfig = task.getFutureContainerConfigForVmType(VmType);
+//                    System.out.println("chosen type "+ VmType);
                     ArrayList<ContainerPe> peList = new ArrayList<ContainerPe>();
                     for (int j = 0; j < Parameters.VM_PES[VmType]; ++j){
                         peList.add(new ContainerPe(j, new CotainerPeProvisionerSimple((double) Parameters.VM_MIPS[VmType])));
@@ -354,14 +373,14 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                             Parameters.COST[VmType], Parameters.COST_PER_MEM[VmType],
                             Parameters.COST_PER_STORAGE[VmType], Parameters.COST_PER_BW[VmType]);
 
-                    newVm.setAvailablePeNumbersForSchedule(newVm.getAvailablePeNumbersForSchedule() - task.getNumberOfPes());
-                    newVm.setAvailableRamForSchedule(newVm.getAvailableRamForSchedule() - requiredMemory);
+                    newVm.setAvailablePeNumbersForSchedule(newVm.getAvailablePeNumbersForSchedule() - futureContainerConfig[0]);
+                    newVm.setAvailableRamForSchedule(newVm.getAvailableRamForSchedule() - futureContainerConfig[1]);
                     newVm.setAvailableSizeForSchedule(newVm.getAvailableSizeForSchedule() - Parameters.CONTAINER_SIZE);
 //                    newVm.setState(MySimTags.VM_STATUS_BUSY);
 
                     Container newContainer = new Container(IDs.pollId(Container.class), broker.getId(), Parameters.CONTAINER_MIPS[0],
-                            task.getNumberOfPes(), (int)Math.min(requiredMemory, Parameters.VM_RAM[VmType]),
-                            (long)Parameters.CONTAINER_BW, Parameters.CONTAINER_SIZE, "Xen",
+                            futureContainerConfig[0], futureContainerConfig[1], (long)Parameters.CONTAINER_BW,
+                            Parameters.CONTAINER_SIZE, "Xen",
                             new ContainerCloudletSchedulerSpaceShared(),
                             Parameters.CONTAINER_VM_SCHEDULING_INTERVAL);
 
@@ -369,7 +388,9 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 
                     task.setVmId(newVm.getId());
                     task.setContainerId(newContainer.getId());
-
+                    task.setNumberOfPes(futureContainerConfig[0]);
+                    // because actual cloudlet length in Res for execution is lenght per PE
+                    task.updateCoudletLength(task.getNumberOfPes());
 
                     Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: ",
                             "Task #", task.getCloudletId(), " scheduled to run on VM #", newVm.getId(), " and Container #",
@@ -410,8 +431,9 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
             if (container.getNumberOfPes() >= requiredPe && container.getRam() >= requiredMem){
                 CondorVM castedVm =  (CondorVM) container.getVm();
                 // calculate cost of execution
-                double relativeCostRate = castedVm.getCost() * ( Parameters.CPU_COST_FACTOR * ((double)container.getNumberOfPes() / castedVm.getPeList().size()) +
-                        ( 1 - Parameters.CPU_COST_FACTOR) * (container.getRam()/ castedVm.getRam()));
+//                double relativeCostRate = castedVm.getCost() * ( Parameters.CPU_COST_FACTOR * ((double)container.getNumberOfPes() / castedVm.getPeList().size()) +
+//                        ( 1 - Parameters.CPU_COST_FACTOR) * (container.getRam()/ castedVm.getRam()));
+                double relativeCostRate = castedVm.getCost() *( (double)container.getNumberOfPes() /  castedVm.getNumberOfPes());
                 double executionTime = (task.getCloudletLength() / (container.getNumberOfPes() * Parameters.CONTAINER_MIPS[0])) + task.getTransferTime(Parameters.VM_BW);
                 double estimatedCost = relativeCostRate * Math.ceil( executionTime / Parameters.BILLING_PERIOD);
 
@@ -420,6 +442,9 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     container.setWorkloadMips(Parameters.CONTAINER_MIPS[0]);
                     task.setContainerId(container.getId());
                     task.setVmId(container.getVm().getId());
+                    task.setNumberOfPes(container.getNumberOfPes());
+                    // because actual cloudlet length in Res for execution is lenght per PE
+                    task.updateCoudletLength(task.getNumberOfPes());
 //                    scheduledTasks.add(task);
 //                    toremove.add(task);
                     getScheduledTasksOnRunningContainers().add(task);
@@ -468,16 +493,16 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
         for (int vmType: vmTypesList){
             double cost = task.estimateTaskCostForVmType(vmType);
             minCost = Math.min(cost, minCost);
-            costMap.put(vmType, task.estimateTaskCostForVmType(vmType));
+            costMap.put(vmType, cost);
         }
         for (int vmType: vmTypesList){
             double C_factor =(task.getSubBudget() - costMap.get(vmType)) / (task.getSubBudget() - minCost);
             double U_factor = 0.0;
             if (factorType == Parameters.BI_FACTOR){
-                int availablePeAfterSchedule = Parameters.VM_PES[vmType] - task.getNumberOfPes();
-                double availableMemAfterSchedule = Parameters.VM_RAM[vmType] - (int)Math.ceil(task.getMemory());
+                int [] futureContainerConfig = task.getFutureContainerConfigForVmType(vmType);
+                int availablePeAfterSchedule = Parameters.VM_PES[vmType] - futureContainerConfig[0];
+                double availableMemAfterSchedule = Parameters.VM_RAM[vmType] - futureContainerConfig[1];
                 U_factor = Math.hypot( 1 - ((double)availablePeAfterSchedule / Parameters.VM_PES[vmType]), 1-(availableMemAfterSchedule / Parameters.VM_RAM[vmType] ));
-
 //                C_factor = 0;
             }
             vmTypesRankList.add( new BiFactorRankVmType(vmType, C_factor + U_factor));
@@ -494,15 +519,16 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
         for (ContainerVm vm: vmList){
             double cost = task.estimateTaskCost(vm);
             minCost = Math.min(cost, minCost);
-            costMap.put(vm.getId(), task.estimateTaskCost(vm));
+            costMap.put(vm.getId(), cost);
         }
 
         for (ContainerVm vm: vmList){
             double C_factor = (task.getSubBudget() - costMap.get(vm.getId())) / (task.getSubBudget() - minCost);
             double U_factor = 0.0;
             if (factorType == Parameters.BI_FACTOR){
-                int availablePeAfterSchedule = ((CondorVM) vm).getAvailablePeNumbersForSchedule() - task.getNumberOfPes();
-                double availableMemAfterSchedule = ((CondorVM) vm).getAvailableRamForSchedule() - (int)Math.ceil(task.getMemory());
+                int [] futureContainerConfig = task.getFutureContainerConfig(vm);
+                int availablePeAfterSchedule = ((CondorVM) vm).getAvailablePeNumbersForSchedule() - futureContainerConfig[0];
+                double availableMemAfterSchedule = ((CondorVM) vm).getAvailableRamForSchedule() - futureContainerConfig[1];
 //                double U_factor = Math.sqrt(Math.pow((1 - (availablePeAfterSchedule / vm.getPeList().size())), 2) + Math.pow((1-(availableMemAfterSchedule / vm.getRam())), 2));
                 U_factor = Math.hypot( 1 - ((double)availablePeAfterSchedule / vm.getPeList().size()), 1-(availableMemAfterSchedule / vm.getRam()));
             }
@@ -522,7 +548,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
         scheduledTasksOnRunningContainers.clear();
     }
 
-    public int calculateRequiredPesNumber(Task task){
+    public int calculateMinRequiredPesNumber(Task task){
         double time = task.getSubDeadline() - task.getTransferTime(Parameters.VM_BW);
         if (time < 0){
             // just transfer time is more than deadline so use max number of cores
