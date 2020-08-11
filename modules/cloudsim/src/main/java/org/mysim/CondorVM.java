@@ -36,6 +36,8 @@ public class CondorVM extends PowerContainerVm {
     private double availableRamForSchedule;
     private long availableSizeForSchedule;
 
+    private  double memPerCore;
+
     public CondorVM(final int id, final int userId, final double mips, final float ram, final long bw, final long size, final String vmm,
                     final ContainerScheduler containerScheduler, final ContainerRamProvisioner containerRamProvisioner, final ContainerBwProvisioner containerBwProvisioner,
                     List<? extends ContainerPe> peList, final double schedulingInterval) {
@@ -45,6 +47,7 @@ public class CondorVM extends PowerContainerVm {
         setAvailablePeNumbersForSchedule(peList.size());
         setAvailableRamForSchedule(ram);
         setAvailableSizeForSchedule(size);
+        setMemPerCore(ram/peList.size());
     }
 
     public CondorVM(final int id, final int userId, final double mips, final float ram, final long bw, final long size, final String vmm,
@@ -61,6 +64,7 @@ public class CondorVM extends PowerContainerVm {
         setAvailablePeNumbersForSchedule(peList.size());
         setAvailableRamForSchedule(ram);
         setAvailableSizeForSchedule(size);
+        setMemPerCore(ram/peList.size());
     }
     @Override
     public double updateVmProcessing(final double currentTime, final List<Double> mipsShare) {
@@ -198,4 +202,8 @@ public class CondorVM extends PowerContainerVm {
     public void setAvailableSizeForSchedule(long availableSizeForSchedule) {
         this.availableSizeForSchedule = availableSizeForSchedule;
     }
+
+    public double getMemPerCore() { return memPerCore; }
+
+    public void setMemPerCore(double memPerCore) { this.memPerCore = memPerCore; }
 }
