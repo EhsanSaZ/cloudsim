@@ -285,19 +285,21 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             ContainerCloudletScheduler scheduler = container.getContainerCloudletScheduler();
 
             // increase task size to simulate cpu degradation..
-            double cpuDegradation =  Parameters.CPU_DEGRADATION.sample();
-            if (cpuDegradation > 0 && cpuDegradation < 24 ){
-                task.setCloudletLength((long) (task.getCloudletLength() * 100 / (100- cpuDegradation)));
-            } else if (cpuDegradation > 0){
-                task.setCloudletLength((long) (task.getCloudletLength() * 1.32));// 100/76
-            }
+            if (Parameters.ENABLE_DEGRADATION){
+                double cpuDegradation =  Parameters.CPU_DEGRADATION.sample();
+                if (cpuDegradation > 0 && cpuDegradation < 24 ){
+                    task.setCloudletLength((long) (task.getCloudletLength() * 100 / (100- cpuDegradation)));
+                } else if (cpuDegradation > 0){
+                    task.setCloudletLength((long) (task.getCloudletLength() * 1.32));// 100/76
+                }
 
-            // increase total transfer time to simulate BW degradation
-            long bwDegradation = (long) Parameters.BW_DEGRADATION.sample();
-            if (bwDegradation > 0 && bwDegradation < 19 ){
-                totalTransterTime = totalTransterTime * 100 /(100 - bwDegradation) ;
-            } else if (bwDegradation > 19){
-                totalTransterTime = totalTransterTime * 1.23 ; // 100/81
+                // increase total transfer time to simulate BW degradation
+                long bwDegradation = (long) Parameters.BW_DEGRADATION.sample();
+                if (bwDegradation > 0 && bwDegradation < 19 ){
+                    totalTransterTime = totalTransterTime * 100 /(100 - bwDegradation) ;
+                } else if (bwDegradation > 19){
+                    totalTransterTime = totalTransterTime * 1.23 ; // 100/81
+                }
             }
             //  T ODO Ehsan: consider input output transfer time for task finish time.
 
@@ -310,8 +312,8 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             // if this cloudlet is in the exec queue
             if (estimatedFinishTime > 0.0 && !Double.isInfinite(estimatedFinishTime)) {
                 // TODO EHSAN: in original version estimated finish time is sum with transfer time.
-                //estimatedFinishTime += input_fileTransferTime
-                //estimatedFinishTime += output_fileTransferTime
+//                estimatedFinishTime += input_fileTransferTime;
+//                estimatedFinishTime += output_fileTransferTime;
                 send(getId(), estimatedFinishTime, CloudSimTags.VM_DATACENTER_EVENT);
             } else {
                 Log.printLine("Warning: You schedule cloudlet to a busy VM or container");
