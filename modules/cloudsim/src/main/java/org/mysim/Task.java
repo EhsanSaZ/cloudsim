@@ -1,5 +1,6 @@
 package org.mysim;
 
+import org.apache.commons.math3.analysis.function.Max;
 import org.cloudbus.cloudsim.Consts;
 import org.cloudbus.cloudsim.UtilizationModel;
 import org.cloudbus.cloudsim.UtilizationModelFull;
@@ -267,19 +268,27 @@ public class Task extends ContainerCloudlet {
 
     public double estimateTaskCost (ContainerVm vm){
         CondorVM castedVm = (CondorVM) vm;
+        int[] config = getFutureContainerConfig(vm);
 
-        double relativeCostRate = castedVm.getCost() * ( Parameters.CPU_COST_FACTOR * ((double)getNumberOfPes() / vm.getPeList().size()) +
-                ( 1 - Parameters.CPU_COST_FACTOR) * (getMemory()/ castedVm.getRam())
-        );
-        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * getNumberOfPes()) )+ getTransferTime(Parameters.VM_BW);
+//        double relativeCostRate = castedVm.getCost() * ( Parameters.CPU_COST_FACTOR * ((double)getNumberOfPes() / vm.getPeList().size()) +
+//                ( 1 - Parameters.CPU_COST_FACTOR) * (getMemory()/ castedVm.getRam())
+//        );
+//        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * getNumberOfPes()) )+ getTransferTime(Parameters.VM_BW);
+        double relativeCostRate = castedVm.getCost() * ((double)config[0] / vm.getNumberOfPes());
+        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * config[0]) )+ getTransferTime(Parameters.VM_BW);
         return relativeCostRate * Math.ceil( executionTime / Parameters.BILLING_PERIOD);
     }
+
     public double estimateTaskCostForVmType(int vmType){
 
-        double relativeCostRate =  Parameters.COST[vmType] * ( Parameters.CPU_COST_FACTOR * ((double)getNumberOfPes() / Parameters.VM_PES[vmType]) +
-                ( 1 - Parameters.CPU_COST_FACTOR) * (getMemory()/ Parameters.VM_RAM[vmType])
-        );
-        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * getNumberOfPes()) )+ getTransferTime(Parameters.VM_BW);
+        int[] config = getFutureContainerConfigForVmType(vmType);
+
+//        double relativeCostRate =  Parameters.COST[vmType] * ( Parameters.CPU_COST_FACTOR * ((double)getNumberOfPes() / Parameters.VM_PES[vmType]) +
+//                ( 1 - Parameters.CPU_COST_FACTOR) * (getMemory()/ Parameters.VM_RAM[vmType])
+//        );
+//        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * getNumberOfPes()) )+ getTransferTime(Parameters.VM_BW);
+        double relativeCostRate = Parameters.COST[vmType] *((double)config[0] / Parameters.VM_PES[vmType]);
+        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * config[0]) )+ getTransferTime(Parameters.VM_BW);
         return relativeCostRate * Math.ceil( executionTime / Parameters.BILLING_PERIOD);
     }
 
@@ -287,6 +296,32 @@ public class Task extends ContainerCloudlet {
         return (estimateTaskCost(vm) < getSubBudget());
     }
 
+    public int[] getFutureContainerConfig(ContainerVm vm){
+        int[] config = new int[2];
+        config[0] = getNumberOfPes();
+        config[1] = (int)Math.ceil(getMemory());
+
+        CondorVM castedVm = (CondorVM) vm;
+        double ratio = Math.max( (double) config[0] / castedVm.getNumberOfPes(), config[1] / castedVm.getRam());
+        config[0] = (int) Math.ceil( ratio * castedVm.getNumberOfPes());
+        config[1] = (int) (config[0] * castedVm.getMemPerCore());
+
+        return config;
+    }
+
+    public int[] getFutureContainerConfigForVmType(int vmType){
+        int[] config = new int[2];
+        config[0] = getNumberOfPes();
+        config[1] = (int)Math.ceil(getMemory());
+
+        double ratio = Math.max( (double) config[0] / Parameters.VM_PES[vmType], config[1] / Parameters.VM_RAM[vmType]);
+        config[0] = (int) Math.ceil( ratio * Parameters.VM_PES[vmType]);
+        config[1] = (int) (config[0] * (Parameters.VM_RAM[vmType] / Parameters.VM_PES[vmType]));
+
+        return config;
+    }
+
+    //-------------------------------------- setter and getter ----------------------------------
     public double getSubDeadline() {
         return subDeadline;
     }
