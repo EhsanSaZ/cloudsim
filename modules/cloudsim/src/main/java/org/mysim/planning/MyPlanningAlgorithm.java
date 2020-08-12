@@ -78,7 +78,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
             int minRequiredPesNumber = calculateMinRequiredPesNumber(task);
             int minRequiredMemory = (int)Math.ceil(task.getMemory());
             task.setNumberOfPes(minRequiredPesNumber);
-
+//            task.updateCoudletLength(minRequiredPesNumber);
             ContainerVm provisionedVm = null;
             // Get all Vms that has at list t'(Core num, mem demand) available resources
             List <ContainerVm> AllVm= new ArrayList<>();
@@ -217,8 +217,8 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                 // check for possibility of running task on any other container on total brokers vms..
                 // TODO EHSAN FIX: choose a right place for delaying task
                 double remainingTimeToDeadline = task.getSubDeadline() - (CloudSim.clock() + Parameters.R_T_Q_SCHEDULING_INTERVAL);
-                double minExecutionTime = task.getCloudletLength() / ( Parameters.VM_MIPS[0] * Parameters.VM_PES[Parameters.VM_TYPES_NUMBERS-1] );
-                double maxExecutionTime = task.getCloudletLength() / ( Parameters.VM_MIPS[0] * Parameters.VM_PES[0] );
+                double minExecutionTime = task.getTaskTotalLength() / ( Parameters.VM_MIPS[0] * Parameters.VM_PES[Parameters.VM_TYPES_NUMBERS-1] );
+                double maxExecutionTime = task.getTaskTotalLength() / ( Parameters.VM_MIPS[0] * Parameters.VM_PES[0] );
                 if ((maxExecutionTime + task.getTransferTime(Parameters.VM_BW) > remainingTimeToDeadline)) {
                     // it is not possible to delay the task so put it on wait queue
                     // if the condition is false it means that delay is possible
@@ -290,6 +290,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                 int minRequiredPesNumber = calculateMinRequiredPesNumber(task);
                 int minRequiredMemory = (int)Math.ceil(task.getMemory());
                 task.setNumberOfPes(minRequiredPesNumber);
+//                task.updateCoudletLength(minRequiredPesNumber);
 //                ContainerVm provisionedVm = null;
                 boolean notScheduled = true;
                 for (ContainerVm vm :newRequiredVms){
@@ -349,12 +350,13 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     int VmType = Parameters.VM_TYPES_NUMBERS - 1;
                     if (appropriateVmsType.size() > 0){
                         // calculate Bi facotr for all types and deploy on the best one
-//                        List<BiFactorRankVmType> vmTypesRankList = sortOnFactorForTaskVmTypes(appropriateVmsType, task, Parameters.BI_FACTOR);
-//                        VmType = vmTypesRankList.get(0).vmType;
+                        List<BiFactorRankVmType> vmTypesRankList = sortOnFactorForTaskVmTypes(appropriateVmsType, task, Parameters.BI_FACTOR);
+                        VmType = vmTypesRankList.get(0).vmType;
 //                         radome choose  success
-                        VmType = appropriateVmsType.get(rd.nextInt(appropriateVmsType.size()));
+//                        VmType = appropriateVmsType.get(rd.nextInt(appropriateVmsType.size()));
                     }else{
                         task.setNumberOfPes(Math.min(task.getNumberOfPes(), Parameters.VM_PES[VmType]));
+                        task.updateCoudletLength(task.getNumberOfPes());
                         task.setMemory(Math.min(minRequiredMemory, Parameters.VM_RAM[VmType]));
                     }
                     int [] futureContainerConfig = task.getFutureContainerConfigForVmType(VmType);
@@ -434,7 +436,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 //                double relativeCostRate = castedVm.getCost() * ( Parameters.CPU_COST_FACTOR * ((double)container.getNumberOfPes() / castedVm.getPeList().size()) +
 //                        ( 1 - Parameters.CPU_COST_FACTOR) * (container.getRam()/ castedVm.getRam()));
                 double relativeCostRate = castedVm.getCost() *( (double)container.getNumberOfPes() /  castedVm.getNumberOfPes());
-                double executionTime = (task.getCloudletLength() / (container.getNumberOfPes() * Parameters.CONTAINER_MIPS[0])) + task.getTransferTime(Parameters.VM_BW);
+                double executionTime = (task.getTaskTotalLength() / (container.getNumberOfPes() * Parameters.CONTAINER_MIPS[0])) + task.getTransferTime(Parameters.VM_BW);
                 double estimatedCost = relativeCostRate * Math.ceil( executionTime / Parameters.BILLING_PERIOD);
 
                 if(estimatedCost <= task.getSubBudget()){
@@ -554,7 +556,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
             // just transfer time is more than deadline so use max number of cores
             return Parameters.VM_PES[Parameters.VM_TYPES_NUMBERS-1];
         }
-        int peNum = (int) Math.ceil(task.getCloudletLength()  / (time * Parameters.VM_MIPS[0]));
+        int peNum = (int) Math.ceil(task.getTaskTotalLength()  / (time * Parameters.VM_MIPS[0]));
 
         return Math.min(peNum, Parameters.VM_PES[Parameters.VM_TYPES_NUMBERS - 1]);
     }

@@ -1,6 +1,5 @@
 package org.mysim;
 
-import org.apache.commons.math3.analysis.function.Max;
 import org.cloudbus.cloudsim.Consts;
 import org.cloudbus.cloudsim.UtilizationModel;
 import org.cloudbus.cloudsim.UtilizationModelFull;
@@ -53,6 +52,8 @@ public class Task extends ContainerCloudlet {
     private double allocatedContainerTotalMips;
     private double allocatedContainerRam;
 
+    private long taskTotalLength;
+
     public Task(final int taskId, int workflowId, final long taskLength, double peak_memory) {
         /**
          * We do not use cloudletFileSize and cloudletOutputSize here. We have
@@ -76,6 +77,7 @@ public class Task extends ContainerCloudlet {
         this.allocatedVmRam = -1;
         this.allocatedContainerTotalMips = -1;
         this.allocatedContainerRam = -1;
+        this.taskTotalLength = taskLength;
 
     }
     public Task(final int taskId,int workflowId, final long taskLength, double peak_memory, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
@@ -95,6 +97,7 @@ public class Task extends ContainerCloudlet {
         this.allocatedVmRam = -1;
         this.allocatedContainerTotalMips = -1;
         this.allocatedContainerRam = -1;
+        this.taskTotalLength = taskLength;
     }
 
     public Task(final int taskId,int workflowId, final long taskLength, double peak_memory, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
@@ -115,6 +118,7 @@ public class Task extends ContainerCloudlet {
         this.allocatedVmRam = -1;
         this.allocatedContainerTotalMips = -1;
         this.allocatedContainerRam = -1;
+        this.taskTotalLength = taskLength;
     }
 
     public Task(final int taskId, int workflowId, final long taskLength, double peak_memory, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
@@ -135,6 +139,7 @@ public class Task extends ContainerCloudlet {
         this.allocatedVmRam = -1;
         this.allocatedContainerTotalMips = -1;
         this.allocatedContainerRam = -1;
+        this.taskTotalLength = taskLength;
     }
 
     public Task(final int taskId,int workflowId, final long taskLength, double peak_memory, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
@@ -155,6 +160,7 @@ public class Task extends ContainerCloudlet {
         this.allocatedVmRam = -1;
         this.allocatedContainerTotalMips = -1;
         this.allocatedContainerRam = -1;
+        this.taskTotalLength = taskLength;
     }
 
 
@@ -278,7 +284,7 @@ public class Task extends ContainerCloudlet {
 //        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * getNumberOfPes()) )+ getTransferTime(Parameters.VM_BW);
         int[] config = getFutureContainerConfig(vm);
         double relativeCostRate = castedVm.getCost() * ((double)config[0] / vm.getNumberOfPes());
-        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * config[0]) )+ getTransferTime(Parameters.VM_BW);
+        double executionTime = ( getTaskTotalLength() / (Parameters.VM_MIPS[0] * config[0]) )+ getTransferTime(Parameters.VM_BW);
         return relativeCostRate * Math.ceil( executionTime / Parameters.BILLING_PERIOD);
     }
 
@@ -290,7 +296,7 @@ public class Task extends ContainerCloudlet {
 //        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * getNumberOfPes()) )+ getTransferTime(Parameters.VM_BW);
         int[] config = getFutureContainerConfigForVmType(vmType);
         double relativeCostRate = Parameters.COST[vmType] *((double)config[0] / Parameters.VM_PES[vmType]);
-        double executionTime = ( getCloudletLength() / (Parameters.VM_MIPS[0] * config[0]) )+ getTransferTime(Parameters.VM_BW);
+        double executionTime = ( getTaskTotalLength() / (Parameters.VM_MIPS[0] * config[0]) )+ getTransferTime(Parameters.VM_BW);
         return relativeCostRate * Math.ceil( executionTime / Parameters.BILLING_PERIOD);
     }
 
@@ -325,7 +331,7 @@ public class Task extends ContainerCloudlet {
 
     public void updateCoudletLength(int peNumbers){
         // bug of cloudsim min length must be 110
-        setCloudletLength(Math.max(getCloudletLength() / peNumbers, 110));
+        setCloudletLength(Math.max(getTaskTotalLength() / getNumberOfPes(), 110));
     }
 
     //-------------------------------------- setter and getter ----------------------------------
@@ -392,4 +398,12 @@ public class Task extends ContainerCloudlet {
     public double getAllocatedContainerRam() { return allocatedContainerRam; }
 
     public void setAllocatedContainerRam(double allocatedContainerRam) { this.allocatedContainerRam = allocatedContainerRam; }
+
+    public long getTaskTotalLength() {
+        return taskTotalLength;
+    }
+
+    public void setTaskTotalLength(long taskTotalLength) {
+        this.taskTotalLength = taskTotalLength;
+    }
 }

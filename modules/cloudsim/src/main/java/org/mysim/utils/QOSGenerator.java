@@ -43,9 +43,9 @@ public class QOSGenerator {
     private void calculateTasksRunningTimes() {
         for (Task t : workflow.getTaskList()) {
             taskMAXExecutionTimes.put(t,
-                    t.getCloudletLength() / (Parameters.VM_MIPS[0] * Parameters.VM_PES[0]) );
+                    t.getTaskTotalLength() / (Parameters.VM_MIPS[0] * Parameters.VM_PES[0]) );
             taskMINExecutionTimes.put(t,
-                    t.getCloudletLength() / (Parameters.VM_MIPS[Parameters.VM_TYPES_NUMBERS-1] * Parameters.VM_PES[Parameters.VM_TYPES_NUMBERS-1]));
+                    t.getTaskTotalLength() / (Parameters.VM_MIPS[Parameters.VM_TYPES_NUMBERS-1] * Parameters.VM_PES[Parameters.VM_TYPES_NUMBERS-1]));
             double transferTime = 0.0;
             for (FileItem file: t.getFileList()){
                 if (file.isRealInputFile(t.getFileList()) || file.isRealOutputFile(t.getFileList())){

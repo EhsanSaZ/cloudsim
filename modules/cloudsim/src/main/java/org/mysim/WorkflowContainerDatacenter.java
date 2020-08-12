@@ -303,11 +303,14 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             }
             //  T ODO Ehsan: consider input output transfer time for task finish time.
 
-            double estimatedFinishTime = scheduler.cloudletSubmit(task, totalTransterTime);
+//            double estimatedFinishTime = scheduler.cloudletSubmit(task, totalTransterTime);
+            // because transfer time is added to cloudlet size as an extra size in cloudlet scheduler so total time must be divided by total task pe numbers
+            double estimatedFinishTime = scheduler.cloudletSubmit(task, totalTransterTime/task.getNumberOfPes());
 //            updateTaskExecTime(job, container);
             // T ODO EHSAN: this finish time is wrong... but this is not used..
 //            task.setTaskFinishTime(task.getExecStartTime() + task.getCloudletLength() / container.getMips());
-            task.setTaskFinishTime(task.getExecStartTime() + totalTransterTime + task.getCloudletLength() /  (container.getNumberOfPes() * container.getMips()));
+//            task.setTaskFinishTime(task.getExecStartTime() + totalTransterTime + task.getCloudletLength() /  (container.getNumberOfPes() * container.getMips()));
+            task.setTaskFinishTime(task.getExecStartTime() + totalTransterTime + task.getTaskTotalLength() /  (container.getNumberOfPes() * container.getMips()));
 
             // if this cloudlet is in the exec queue
             if (estimatedFinishTime > 0.0 && !Double.isInfinite(estimatedFinishTime)) {

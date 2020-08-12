@@ -37,7 +37,7 @@ public class Parameters {
     }
 
     // T ODO EHSAN: SCALE OF MEMORY AND RUNTIME NEEDED TO BE CHECKED
-    private static double runtime_scale = 1.0;
+    private static double runtime_scale = 1;
     private static double peakMemory_Scale = 1.0;
     private static double minPeakMemory = 10.0  * Consts.MILLION ;// in Byte
     /**

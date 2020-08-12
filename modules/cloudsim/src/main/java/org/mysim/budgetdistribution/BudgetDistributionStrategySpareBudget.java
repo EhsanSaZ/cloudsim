@@ -130,7 +130,7 @@ public class BudgetDistributionStrategySpareBudget extends BudgetDistributionStr
 
     private double calculateTaskExecutionCostOnVmType(Task task, int vmTypeIndex){
         //T ODO EHSAN: this estimation must be implemented
-        double exe_time = (task.getCloudletLength() / (Parameters.VM_MIPS[vmTypeIndex] * Parameters.VM_PES[vmTypeIndex]) )
+        double exe_time = (task.getTaskTotalLength() / (Parameters.VM_MIPS[vmTypeIndex] * Parameters.VM_PES[vmTypeIndex]) )
                 + task.getTransferTime(Parameters.VM_BW);
         return  Parameters.COST[vmTypeIndex] * Math.ceil( exe_time / Parameters.BILLING_PERIOD);
     }
