@@ -36,6 +36,9 @@ public class Parameters {
         }
     }
 
+    public enum VM_SELECTION_TYPE{
+        BI_FACTOR, RANDOM;
+    }
     // T ODO EHSAN: SCALE OF MEMORY AND RUNTIME NEEDED TO BE CHECKED
     private static double runtime_scale = 1;
     private static double peakMemory_Scale = 1.0;
@@ -83,12 +86,12 @@ public class Parameters {
 
     //---------------------------------  VM
     public static final int VM_TYPES_NUMBERS = 4;
-    // TODO EHSAN: FIX MIPS
+    // T ODO EHSAN: FIX MIPS
     public static final double[] VM_MIPS = new double[]{1000, 1000, 1000, 1000};
     public static final int[] VM_PES = new int[]{2, 4, 8, 16};//new int[]{1, 2, 4, 8};
     public static final float[] VM_RAM = new float[]{(float) 1024, (float) 2048, (float) 4096, (float) 8192};//**MB*
     public static final int VM_BW = 500; //100000;// Mb/s...
-    // TODO EHSAN: FIX COST
+    // T ODO EHSAN: FIX COST
     public static final double COST[] = new double[]{1, 1.9, 3.7, 7.3 };
     public static final double COST_PER_MEM[] = new double[]{1, 2, 3, 4};
     public static final double COST_PER_STORAGE[] = new double[]{1, 2, 3, 4};
@@ -97,16 +100,17 @@ public class Parameters {
     public static final int VM_SIZE = 2500;//MB
 
     //---------------------------------  Container
-    // TODO EHSAN: FIX MIPS
+    // T ODO EHSAN: FIX MIPS
     public static final double[] CONTAINER_MIPS = new double[]{1000, 1000, 1000, 1000}; // exactly same as vm
     public static final int[] CONTAINER_PES = new int[]{1, 1, 1};
     public static final double[] CONTAINER_RAM = new double[]{128, 256, 512};
     public static final double CONTAINER_BW = 0.001; // Mb/s...
     public static final double CONTAINER_VM_SCHEDULING_INTERVAL = 300.0D;
-    // TODO EHSAN: FIX SIZE
+    // T ODO EHSAN: FIX SIZE
     public static final int CONTAINER_SIZE = 600; //600;// MB
 
     //---------------------------------  HOST
+    public static final int HOST_NUMBERS = 50;
     public static final int HOST_TYPES = 1;
     // T ODO EHSAN: FIX MIPS
 //    public static final int[] HOST_MIPS = new int[]{37274};
@@ -120,7 +124,9 @@ public class Parameters {
     public static final int HOST_BW = Integer.MAX_VALUE;
     public static final long HOST_STORAGE = Integer.MAX_VALUE;
 
-    // THIS VARIES BY EXPERIMENT
+    //------------------------------------ Experiment Parameters
+    public static VM_SELECTION_TYPE Packing_VM_SELECTION_TYPE = VM_SELECTION_TYPE.RANDOM;
+//    public static VM_SELECTION_TYPE Packing_VM_SELECTION_TYPE = VM_SELECTION_TYPE.BI_FACTOR;
     public static final int R_T_Q_SCHEDULING_INTERVAL = 100;
     public static final int MONITORING_INTERVAL = 50;
     public static final double VM_THRESH_HOLD_FOR_SHUTDOWN = 60;
@@ -132,6 +138,7 @@ public class Parameters {
     public static final double VM_DESTROY_DELAY = 0.01;
     public static final double CONTAINER_DESTROY_DELAY = 0.01;
 
+    // degradation does not have any effect because many tasks are very small even with degradation still smaller than a power of a single core...
     public static final NormalDistribution CPU_DEGRADATION = new NormalDistribution(12,10);
     public static final NormalDistribution BW_DEGRADATION = new NormalDistribution(9.5,5);
     public static final boolean ENABLE_DEGRADATION = true;

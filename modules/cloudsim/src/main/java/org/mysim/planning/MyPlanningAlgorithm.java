@@ -349,9 +349,18 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     // schedule task
                     int VmType = Parameters.VM_TYPES_NUMBERS - 1;
                     if (appropriateVmsType.size() > 0){
+                        switch (Parameters.Packing_VM_SELECTION_TYPE){
+                            case BI_FACTOR:
+                                List<BiFactorRankVmType> vmTypesRankList = sortOnFactorForTaskVmTypes(appropriateVmsType, task, Parameters.BI_FACTOR);
+                                VmType = vmTypesRankList.get(0).vmType;
+                                break;
+                            case RANDOM:
+                            default:
+                                VmType = appropriateVmsType.get(rd.nextInt(appropriateVmsType.size()));
+                        }
                         // calculate Bi facotr for all types and deploy on the best one
-                        List<BiFactorRankVmType> vmTypesRankList = sortOnFactorForTaskVmTypes(appropriateVmsType, task, Parameters.BI_FACTOR);
-                        VmType = vmTypesRankList.get(0).vmType;
+//                        List<BiFactorRankVmType> vmTypesRankList = sortOnFactorForTaskVmTypes(appropriateVmsType, task, Parameters.BI_FACTOR);
+//                        VmType = vmTypesRankList.get(0).vmType;
 //                         radome choose  success
 //                        VmType = appropriateVmsType.get(rd.nextInt(appropriateVmsType.size()));
                     }else{

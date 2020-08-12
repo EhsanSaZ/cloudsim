@@ -62,7 +62,7 @@ public class WassExample {
             double overUtilizationThreshold = 0.80;
             double underUtilizationThreshold = 0.70;
             hostList = new ArrayList<ContainerHost>();
-            hostList = createHostList(20);
+            hostList = createHostList(Parameters.HOST_NUMBERS);
 
             ContainerVmAllocationPolicy vmAllocationPolicy = new ContainerVmAllocationPolicySimple(hostList);
 
