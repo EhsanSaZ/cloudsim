@@ -21,6 +21,8 @@ import org.mysim.planning.PlanningAlgorithmStrategy;
 import org.mysim.utils.Parameters;
 import org.mysim.utils.ReplicaCatalog;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -39,6 +41,14 @@ public class WassExample {
     public static void main(String[] args) {
         try {
 //            Log.disable();
+//            FileOutputStream fos = null;
+//            File file;
+//            file = new File("E:\\term12\\Dataset\\log.txt");
+//            fos = new FileOutputStream(file);
+//            if (!file.exists()) {
+//                file.createNewFile();
+//            }
+//            Log.setOutput(fos);
             int num_user = 1;
             Calendar calendar = Calendar.getInstance();
             boolean trace_flag = false;
@@ -97,58 +107,9 @@ public class WassExample {
             broker.bindSchedulerDatacenter(datacenter.getId());
 
             CloudSim.startSimulation();
-
             // get all data that  we need from engine and broker...
-//            System.out.println(workflowEngine.getWorkflowList().size());
-//            Workflow w = workflowEngine.getWorkflowList().get(0);
-//            System.out.println(w.getBudget());
-//            System.out.println(w.getDeadline());
-//            System.out.println(w.getTotalCost());
+            printStatus(workflowEngine, broker);
 
-//            for (Task task: workflowEngine.getWorkflowList().get(0).getExecutedTaskList()){
-//                Log.printLine(task.getCloudletLength()+ "   "   + task.getExecStartTime()+ "     " + task.getFinishTime());
-//            }
-            int success =0;
-            int success2 =0;
-            for (Workflow workflow: workflowEngine.getWorkflowList()) {
-                Log.printLine("--------------"+ workflow.getName()+ "-------------------");
-                Log.printLine("Deadline:" + workflow.getDeadline());
-                Log.printLine("Make Span:" + workflow.getCurrentMakeSpan());
-                Log.printLine("");
-                Log.printLine("Budget:" + workflow.getBudget());
-                Log.printLine("Cost:" + workflow.getTotalCost());
-                if (workflow.getCurrentMakeSpan() <= workflow.getDeadline() && workflow.getTotalCost() <= workflow.getBudget()){
-                    success++;
-                }
-                if (workflow.getCurrentMakeSpan() <= workflow.getDeadline()){
-                    success2++;
-                }
-            }
-            Log.printLine("\n PSR");
-            Log.printLine((double)success / workflowEngine.getWorkflowList().size() + "\n");
-
-            Log.printLine("\n deadline success");
-            Log.printLine((double)success2 / workflowEngine.getWorkflowList().size() + "\n");
-
-            Log.printConcatLine("TOTAL VM NUMBERS: ", broker.getVmsDestroyedList().size() + broker.getVmsCreatedList().size());
-            Log.printConcatLine("TOTAL  Destroyed VM NUMBERS: ", broker.getVmsDestroyedList().size());
-            Log.printConcatLine("TOTAL Created VM NUMBERS: ", broker.getVmsCreatedList().size());
-
-//            Log.printConcatLine(" Destroyed VM Info");
-//            for(ContainerVm vm : broker.getVmsDestroyedList()){
-//                Log.printLine("-------------- #"+ vm.getId()+ " -------------------");
-//                Log.printConcatLine("vm Type: " , vm.getNumberOfPes());
-//                Log.printConcatLine("Lease Time    Release Time");
-//                Log.printLine( ((CondorVM) vm).getLeaseTime() + "   " + ((CondorVM)vm).getReleaseTime());
-//            }
-//            Log.printConcatLine("\n");
-//            Log.printConcatLine(" Created VM Info");
-//            for(ContainerVm vm : broker.getVmsCreatedList()){
-//                Log.printLine("-------------- #"+ vm.getId()+ " -------------------");
-//                Log.printConcatLine("vm Type: " , vm.getNumberOfPes());
-//                Log.printConcatLine("Lease Time    Release Time");
-//                Log.printLine( ((CondorVM) vm).getLeaseTime() + "   " + ((CondorVM)vm).getReleaseTime());
-//            }
             CloudSim.stopSimulation();
             // print informations
             Log.printLine("\n");
@@ -157,6 +118,61 @@ public class WassExample {
         Log.printLine("The simulation has been terminated due to an unexpected error");
         e.printStackTrace();
         }
+    }
+
+    private static void printStatus(WorkflowEngine workflowEngine, WorkflowDatacenterBroker broker){
+        int PSR = 0;
+        int DeadlineSuccess = 0;
+        double accumulatedWorkflowCost = 0;
+        double accumulatedWorkflowBudget = 0;
+        double accumulatedCostToBudget = 0;
+        double accumulatedMakeSpanToDeadline = 0;
+        int totalVmNumbers = broker.getVmsDestroyedList().size() + broker.getVmsCreatedList().size();
+        double totalVmCost = 0;
+        int totalWorkflowNumber = workflowEngine.getWorkflowList().size();
+
+        for (Workflow workflow: workflowEngine.getWorkflowList()) {
+            Log.printLine("--------------"+ workflow.getName()+ "-------------------");
+            double makeSpan =  workflow.getCurrentMakeSpan();
+            Log.printConcatLine("Deadline:", workflow.getDeadline(), "\nMake Span:", makeSpan + "\n");
+            Log.printConcatLine("Budget:", workflow.getBudget(), "\nCost:", workflow.getTotalCost() + "\n");
+            accumulatedWorkflowCost +=  workflow.getTotalCost();
+            accumulatedWorkflowBudget += workflow.getBudget();
+            accumulatedCostToBudget += workflow.getTotalCost() / workflow.getBudget();
+            accumulatedMakeSpanToDeadline += makeSpan / workflow.getDeadline();
+
+            if (workflow.getCurrentMakeSpan() <= workflow.getDeadline() && workflow.getTotalCost() <= workflow.getBudget()){
+                PSR++;
+            }
+            if (workflow.getCurrentMakeSpan() <= workflow.getDeadline()){
+                DeadlineSuccess++;
+            }
+
+        }
+
+        Log.printConcatLine("\nPSR: ", (double)PSR *100 / totalWorkflowNumber, "%");
+        Log.printConcatLine("Deadline success:  ", (double)DeadlineSuccess  * 100 / totalWorkflowNumber , "%");
+        Log.printConcatLine("Accumulated Workflow Cost: ", accumulatedWorkflowCost);
+        Log.printConcatLine("Average Workflow Cost: ", accumulatedWorkflowCost / totalWorkflowNumber);
+        Log.printConcatLine("Accumulated Workflow Budget: ", accumulatedWorkflowBudget);
+        Log.printConcatLine("Average Workflow Budget: ", accumulatedWorkflowBudget / totalWorkflowNumber);
+        Log.printConcatLine("Average Cost to Budget:    ", (accumulatedCostToBudget / totalWorkflowNumber));
+        Log.printConcatLine("Average MakeSpan to Deadline:  ", (accumulatedMakeSpanToDeadline / totalWorkflowNumber));
+        Log.printConcatLine("TOTAL VM NUMBERS:  ", totalVmNumbers);
+        Log.printConcatLine("TOTAL  Destroyed VM NUMBERS: ", broker.getVmsDestroyedList().size());
+        Log.printConcatLine("TOTAL Created VM NUMBERS: ", broker.getVmsCreatedList().size());
+
+//        for(ContainerVm vm : broker.getVmsDestroyedList()){
+//            CondorVM castedVm = (CondorVM) vm;
+//            double time = castedVm.getReleaseTime() - castedVm.getLeaseTime();
+//            totalVmCost +=  castedVm.getCost() * Math.ceil( time / Parameters.BILLING_PERIOD);
+//        }
+//        for(ContainerVm vm : broker.getVmsCreatedList()){
+//            CondorVM castedVm = (CondorVM) vm;
+//            double time = castedVm.getReleaseTime() - castedVm.getLeaseTime();
+//            totalVmCost +=  castedVm.getCost() * Math.ceil( time / Parameters.BILLING_PERIOD);
+//        }
+//        Log.printConcatLine("TOTAL VM Cost: ", totalVmCost);
     }
 
     private static WorkflowDatacenterBroker createBroker(int overBookingFactor, int workflowEngineId) {

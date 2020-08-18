@@ -21,6 +21,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
     protected Map<Integer,List<Integer>> vmToDatacenterRequestedIdsList;
     private int workflowEngineId;
     protected List<? extends ContainerVm> vmsDestroyedList;
+    protected double destroyedVmTotalCost;
 
     public WorkflowDatacenterBroker(String name, double overBookingfactor, int workflowEngineId) throws Exception {
         super(name, overBookingfactor);
@@ -28,6 +29,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
         setWorkflowEngineId(workflowEngineId);
         setVmsAcks(0);
         setVmsDestroyedList(new ArrayList<>());
+        setDestroyedVmTotalCost(0.0);
     }
 
     @Override
@@ -391,7 +393,12 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
             getVmsToDatacentersMap().remove(vm.getId());
             getVmsCreatedList().remove(vm);
             getVmList().remove(vm);
-            getVmsDestroyedList().add(vm);
+//            getVmsDestroyedList().add(vm);
+            // TODO it is better to do cost calculation on the ack received from data center. but for now it is ok
+            CondorVM castedVm = (CondorVM) vm;
+            setDestroyedVmTotalCost(getDestroyedVmTotalCost() +
+                    castedVm.getCost() * Math.ceil( (CloudSim.clock() + Parameters.VM_DESTROY_DELAY - castedVm.getLeaseTime()) / Parameters.BILLING_PERIOD));
+
             setVmsDestroyed(getVmsDestroyed() +1);
 
             Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Destroy VM #" +vm.getId() +
@@ -431,5 +438,13 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 
     protected <T extends ContainerVm> void setVmsDestroyedList(List<T> vmsDestroyedList) {
         this.vmsDestroyedList = vmsDestroyedList;
+    }
+
+    public double getDestroyedVmTotalCost() {
+        return destroyedVmTotalCost;
+    }
+
+    public void setDestroyedVmTotalCost(double destroyedVmTotalCost) {
+        this.destroyedVmTotalCost = destroyedVmTotalCost;
     }
 }
