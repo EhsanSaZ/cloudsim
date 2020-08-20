@@ -255,7 +255,7 @@ public class WorkflowEngine extends SimEntity {
     }
     public void processVmCreate(SimEvent ev) {
         // submit all new containers on new vms...
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Vm creation Ack received");
+//        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Vm creation Ack received");
         int[] data = (int[]) ev.getData();
         int datacenterId = data[0];
         int vmId = data[1];
@@ -284,7 +284,7 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void processContainerCreate(SimEvent ev) {
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Container creation Ack received");
+//        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Container creation Ack received");
         int[] data = (int[]) ev.getData();
         int vmId = data[0];
         int containerId = data[1];
@@ -403,7 +403,7 @@ public class WorkflowEngine extends SimEntity {
     public void collectReadyTaskList() {
         // get all ready tasks among all workflows.. tasks with all parents executed
         // start planning them
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Collecting all ready tasks from all workflows");
+//        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Collecting all ready tasks from all workflows");
         for (Workflow w : getWorkflowList()) {
             collectReadyTaskList(w);
         }
@@ -454,7 +454,7 @@ public class WorkflowEngine extends SimEntity {
         if (isRunning){
 //            Log.printConcatLine(getReadyTaskList().size());
             if ( getReadyTaskList().size() > 0){
-                Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Start scheduling Ready Task Queue");
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Start planning Ready Task Queue");
                 MyPlanningAlgorithm planning_algorithm = (MyPlanningAlgorithm) getPlanner();
                 planning_algorithm.ScheduleTasks( broker, getReadyTaskList(), getScheduledTaskList(),
                         getNewRequiredContainers(), getNewRequiredVms(), getNewRequiredContainersOnNewVms());

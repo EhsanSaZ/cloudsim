@@ -31,8 +31,8 @@ public class QOSGenerator {
         uniformDistribution = new UniformRealDistribution();
     }
     public void run(){
-        Log.printConcatLine(CloudSim.clock(), ": QOSGenerator: starting calculation for workflow #",
-                workflow.getWorkflowId());
+//        Log.printConcatLine(CloudSim.clock(), ": QOSGenerator: starting calculation for workflow #",
+//                workflow.getWorkflowId());
         calculateTasksRunningTimes();
 
         workflow.setDeadline(generateDeadline());
@@ -139,8 +139,7 @@ public class QOSGenerator {
     }
 
     public void finish() {
-        Log.printConcatLine(CloudSim.clock(), ": QOSGenerator: finish Calculation for workflow #", workflow.getWorkflowId());
-
+//        Log.printConcatLine(CloudSim.clock(), ": QOSGenerator: finish Calculation for workflow #", workflow.getWorkflowId());
         taskMINExecutionTimes.clear();
         taskMAXExecutionTimes.clear();
         taskTransferTimes.clear();

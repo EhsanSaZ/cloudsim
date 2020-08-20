@@ -213,7 +213,7 @@ public class DeadlineDistributionSimpleUpwardRank extends DeadlineDistributionSt
         }
     }
     private void finishDistribution() {
-        Log.printConcatLine(CloudSim.clock(), ": DeadlineDistributor: Deadline distribution for workflow ", wf.getName(), " finished");
+//        Log.printConcatLine(CloudSim.clock(), ": DeadlineDistributor: Deadline distribution for workflow ", wf.getName(), " finished");
         averageBandwidth = -1;
         taskExecutionTimes.clear();
         taskTransferTimes.clear();

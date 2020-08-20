@@ -92,7 +92,8 @@ public class Parameters {
     public static final float[] VM_RAM = new float[]{(float) 1024, (float) 2048, (float) 4096, (float) 8192};//**MB*
     public static final int VM_BW = 500; //100000;// Mb/s...
     // T ODO EHSAN: FIX COST
-    public static final double COST[] = new double[]{1, 1.9, 3.7, 7.3 };
+//    public static final double COST[] = new double[]{1, 1.9, 3.7, 7.3 };
+    public static final double COST[] = new double[]{1, 1.9, 3.8, 7.5 };
     public static final double COST_PER_MEM[] = new double[]{1, 2, 3, 4};
     public static final double COST_PER_STORAGE[] = new double[]{1, 2, 3, 4};
     public static final double COST_PER_BW[] = new double[]{1, 2, 3, 4};
@@ -110,7 +111,7 @@ public class Parameters {
     public static final int CONTAINER_SIZE = 600; //600;// MB
 
     //---------------------------------  HOST
-    public static final int HOST_NUMBERS = 50;
+    public static final int HOST_NUMBERS = 10;
     public static final int HOST_TYPES = 1;
     // T ODO EHSAN: FIX MIPS
 //    public static final int[] HOST_MIPS = new int[]{37274};
@@ -119,8 +120,8 @@ public class Parameters {
 //    public static final int HOST_BW = 100000000;
 //    public static final long HOST_STORAGE = 1000000;
     public static final int[] HOST_MIPS = new int[]{99999};
-    public static final int[] HOST_PES = new int[]{128};
-    public static final int[] HOST_RAM = new int[]{524288};
+    public static final int[] HOST_PES = new int[]{1024};
+    public static final int[] HOST_RAM = new int[]{9999999};
     public static final int HOST_BW = Integer.MAX_VALUE;
     public static final long HOST_STORAGE = Integer.MAX_VALUE;
 

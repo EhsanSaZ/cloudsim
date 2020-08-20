@@ -48,7 +48,7 @@ public class BudgetDistributionStrategySpareBudget extends BudgetDistributionStr
             }
         }
         finish();
-        Log.printConcatLine(CloudSim.clock(), ": BudgetDistributor: Budget distribution for workflow ", wf.getName(), " finished");
+//        Log.printConcatLine(CloudSim.clock(), ": BudgetDistributor: Budget distribution for workflow ", wf.getName(), " finished");
     }
 
     @Override

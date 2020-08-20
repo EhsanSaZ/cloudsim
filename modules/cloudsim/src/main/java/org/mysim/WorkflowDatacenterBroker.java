@@ -189,8 +189,8 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
     @Override
     protected void processCloudletReturn(SimEvent ev) {
         ContainerCloudlet cloudlet = (ContainerCloudlet) ev.getData();
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Cloudlet ", cloudlet.getCloudletId(),
-                " returned");
+//        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Cloudlet ", cloudlet.getCloudletId(),
+//                " returned");
 
 //        CondorVM vm =  (CondorVM) ContainerVmList.getById(getVmsCreatedList(), cloudlet.getVmId());
         //vm.setState(WorkflowSimTags.VM_STATUS_IDLE);
