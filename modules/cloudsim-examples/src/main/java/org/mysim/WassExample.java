@@ -127,22 +127,21 @@ public class WassExample {
         double accumulatedMakeSpanToDeadline = 0;
         int totalVmNumbers = broker.getVmDestroyedNumber() + broker.getVmsCreatedList().size();
         double totalVmCost = 0;
-        int totalWorkflowNumber = workflowEngine.getWorkflowList().size();
+        int totalWorkflowNumber = workflowEngine.getExecutedWorkflowList().size();
 
-        for (Workflow workflow: workflowEngine.getWorkflowList()) {
+        for (Workflow workflow: workflowEngine.getExecutedWorkflowList()) {
             Log.printLine("--------------"+ workflow.getName()+ "-------------------");
-            double makeSpan =  workflow.getCurrentMakeSpan();
-            Log.printConcatLine("Deadline:", workflow.getDeadline(), "\nMake Span:", makeSpan + "\n");
+            Log.printConcatLine("Deadline:", workflow.getDeadline(), "\nMake Span:", workflow.getFinalMakeSpan() + "\n");
             Log.printConcatLine("Budget:", workflow.getBudget(), "\nCost:", workflow.getTotalCost() + "\n");
             accumulatedWorkflowCost +=  workflow.getTotalCost();
             accumulatedWorkflowBudget += workflow.getBudget();
             accumulatedCostToBudget += workflow.getTotalCost() / workflow.getBudget();
-            accumulatedMakeSpanToDeadline += makeSpan / workflow.getDeadline();
+            accumulatedMakeSpanToDeadline += workflow.getFinalMakeSpan() / workflow.getDeadline();
 
-            if (workflow.getCurrentMakeSpan() <= workflow.getDeadline() && workflow.getTotalCost() <= workflow.getBudget()){
+            if (workflow.getFinalMakeSpan() <= workflow.getDeadline() && workflow.getTotalCost() <= workflow.getBudget()){
                 PSR++;
             }
-            if (workflow.getCurrentMakeSpan() <= workflow.getDeadline()){
+            if (workflow.getFinalMakeSpan() <= workflow.getDeadline()){
                 DeadlineSuccess++;
             }
 
