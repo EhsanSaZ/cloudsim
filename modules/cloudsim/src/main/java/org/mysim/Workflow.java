@@ -18,7 +18,7 @@ public class Workflow {
 
     private double budget;
 
-    private double finishTime;
+    private double finalMakeSpan;
 
     private double totalCost;
 
@@ -32,7 +32,7 @@ public class Workflow {
             setExecutedTaskList(new ArrayList<>());
             setDeadline(deadline);
             setBudget(budget);
-            setFinishTime(-1);
+            setFinalMakeSpan(-1);
             setTotalCost(0);
             setTaskNumbers(-1);
     }
@@ -50,6 +50,9 @@ public class Workflow {
                 }
             }
             return maxFinishTime - minStartTime;
+        }
+        if (getFinalMakeSpan() > 0){
+            return getFinalMakeSpan();
         }
         return 0.0;
     }
@@ -95,12 +98,12 @@ public class Workflow {
         this.budget = budget;
     }
 
-    public double getFinishTime() {
-        return finishTime;
+    public double getFinalMakeSpan() {
+        return finalMakeSpan;
     }
 
-    public void setFinishTime(double finishTime) {
-        this.finishTime = finishTime;
+    public void setFinalMakeSpan(double finalMakeSpan) {
+        this.finalMakeSpan = finalMakeSpan;
     }
 
     public double getTotalCost() {

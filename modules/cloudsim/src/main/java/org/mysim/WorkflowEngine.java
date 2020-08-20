@@ -36,6 +36,8 @@ public class WorkflowEngine extends SimEntity {
     private QOSGenerator qosGenerator;
 
     private List<Workflow> workflowList;
+    private List<Workflow> executedWorkflowList;
+
     protected List<Task> readyTaskList;
     protected List<Task> scheduledTaskList;
 
@@ -58,6 +60,7 @@ public class WorkflowEngine extends SimEntity {
         setQosGenerator(new QOSGenerator());
 
         setWorkflowList(new ArrayList<>());
+        setExecutedWorkflowList(new ArrayList<>());
         setReadyTaskList(new ArrayList<>());
         setScheduledTaskList(new ArrayList<>());
 
@@ -232,14 +235,15 @@ public class WorkflowEngine extends SimEntity {
     }
     public void processFinishedStatus(SimEvent ev){
 //        Log.printConcatLine(CloudSim.clock(), ": ", getName(), "Check finished status");
-        boolean flag = true;
-        for (Workflow w : getWorkflowList()){
-            if(w.getExecutedTaskList().size() != w.getTaskNumbers()){// T ODO FIX: condition is not right
-                flag = false;
-                break;
-            }
-        }
-        if (flag){
+//        boolean flag = true;
+//        // T ODO checl finish status with total number of executed workflows and initial number of workflows in parser
+//        for (Workflow w : getWorkflowList()){
+//            if(w.getExecutedTaskList().size() != w.getTaskNumbers()){// T ODO FIX: condition is not right
+//                flag = false;
+//                break;
+//            }
+//        }
+        if (getWorkflowParser().getTotalWorkflowNumbers() == getExecutedWorkflowList().size()){
 //            Log.printConcatLine(CloudSim.clock(), ": ", getName(), " All workflows are executed completely");
             schedule(this.getId(), 0,CloudSimTags.END_OF_SIMULATION, null );
             // T ODO EHSAN: do any extra needed action here..like signal to other entities...
@@ -326,6 +330,7 @@ public class WorkflowEngine extends SimEntity {
         }
         getScheduledTaskList().removeAll(list);
         broker.submitTaskListDynamic(list);
+        list.clear();
     }
     public void processCloudletSubmitAck(SimEvent ev) {
         // not implemented yet
@@ -345,9 +350,9 @@ public class WorkflowEngine extends SimEntity {
         Workflow w = WorkflowList.getById(getWorkflowList(), task.getWorkflowID());
         Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Task #", task.getCloudletId(), " is Returned");
         if (w != null) {
+            w.getSubmittedTaskList().remove(task);
             w.getExecutedTaskList().add(task);
             w.setTotalCost(w.getTotalCost() + task.getTaskExecutionCost());
-            w.getSubmittedTaskList().remove(task);
             if (w.getTaskList().size() > 0){
                 deadlineDistributor.setWorkflow(w);
                 deadlineDistributor.updateSubDeadlines();
@@ -358,13 +363,12 @@ public class WorkflowEngine extends SimEntity {
                 collectReadyTaskList(w);
             } else if (w.getExecutedTaskList().size() == w.getTaskNumbers()) { //T ODO FIX: condtion is bug
                 Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Execution of workflow #", w.getWorkflowId(), " is finished.",
-                        " Deleting related files in replica catalog.");
-
-                // this w is done..
+                        " Deleting related files in replica catalog, clear task list.");
+                // execution of this workflow is finished..
                 // delete all files from replica catalog
                 List<FileItem> allFileList = new ArrayList<>();
-                for (Task t : w.getExecutedTaskList()){
-                    for (FileItem file : t.getFileList()){
+                for (Task eTask : w.getExecutedTaskList()){
+                    for (FileItem file : eTask.getFileList()){
                         ReplicaCatalog.deleteFile(file.getName());
                         ReplicaCatalog.removeFileStorage(file.getName());
 //                        if (file.getType() == Parameters.FileType.INPUT && !allFileList.contains(file)) {
@@ -381,6 +385,16 @@ public class WorkflowEngine extends SimEntity {
 //                        ReplicaCatalog.removeFileStorage(file.getName());
 ////                    }
 //                }
+                // T ODO 1- if wf is finished  calculate last make span and update final makeSpan...
+                //  2- set task list to new Array list
+                //  3- remove wf from workflow list add it to executed workflows list
+                w.setFinalMakeSpan(w.getCurrentMakeSpan());
+//                for (Task eTask: w.getExecutedTaskList()){
+//                    eTask = null;
+//                }
+                w.setExecutedTaskList(new ArrayList<>());
+                getWorkflowList().remove(w);
+                getExecutedWorkflowList().add(w);
             }
 
         }
@@ -530,6 +544,10 @@ public class WorkflowEngine extends SimEntity {
     public List<Workflow> getWorkflowList() { return workflowList; }
 
     public void setWorkflowList(List<Workflow> workflowList) { this.workflowList = workflowList; }
+
+    public List<Workflow> getExecutedWorkflowList() { return executedWorkflowList; }
+
+    public void setExecutedWorkflowList(List<Workflow> executedWorkflowList) { this.executedWorkflowList = executedWorkflowList; }
 
     public List<Task> getReadyTaskList() { return readyTaskList; }
 
