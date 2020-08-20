@@ -4,10 +4,17 @@ import org.cloudbus.cloudsim.Cloudlet;
 import org.cloudbus.cloudsim.Consts;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Storage;
+import org.cloudbus.cloudsim.container.containerVmProvisioners.ContainerVmBwProvisionerSimple;
+import org.cloudbus.cloudsim.container.containerVmProvisioners.ContainerVmPe;
+import org.cloudbus.cloudsim.container.containerVmProvisioners.ContainerVmPeProvisionerSimple;
+import org.cloudbus.cloudsim.container.containerVmProvisioners.ContainerVmRamProvisionerSimple;
 import org.cloudbus.cloudsim.container.core.*;
 import org.cloudbus.cloudsim.container.resourceAllocators.ContainerAllocationPolicy;
 import org.cloudbus.cloudsim.container.resourceAllocators.ContainerVmAllocationPolicy;
+import org.cloudbus.cloudsim.container.resourceAllocators.ContainerVmAllocationPolicySimple;
 import org.cloudbus.cloudsim.container.schedulers.ContainerCloudletScheduler;
+import org.cloudbus.cloudsim.container.schedulers.ContainerVmSchedulerTimeSharedOverSubscription;
+import org.cloudbus.cloudsim.container.utils.IDs;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.core.CloudSimTags;
 import org.cloudbus.cloudsim.core.SimEvent;
@@ -18,6 +25,7 @@ import org.mysim.utils.Parameters;
 import org.mysim.utils.ReplicaCatalog;
 
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -499,11 +507,48 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
         return time;
     }
 
+    private List<ContainerHost> createNewHost(){
+        ArrayList<ContainerHost> hostList = new ArrayList<ContainerHost>();
+        for (int i = 0; i < Parameters.NEW_HOST_NUMBERS; ++i) {
+            int hostType = 0;
+            ArrayList<ContainerVmPe> peList = new ArrayList<ContainerVmPe>();
+            for (int j = 0; j < Parameters.HOST_PES[hostType]; ++j) {
+                peList.add(new ContainerVmPe(j, new ContainerVmPeProvisionerSimple((double) Parameters.HOST_MIPS[hostType])));
+            }
+            hostList.add(new ContainerHost(IDs.pollId(ContainerHost.class),
+                new ContainerVmRamProvisionerSimple(Parameters.HOST_RAM[hostType]),
+                new ContainerVmBwProvisionerSimple(Parameters.HOST_BW),
+                Parameters.HOST_STORAGE, peList,
+                new ContainerVmSchedulerTimeSharedOverSubscription(peList)));
+        }
+        return hostList;
+    }
+
     @Override
     protected void processVmCreate(SimEvent ev, boolean ack) {
         CondorVM containerVm = (CondorVM) ev.getData();
 
         boolean result = getVmAllocationPolicy().allocateHostForVm(containerVm);
+        // T ODO if result is false
+        //  because we imagine vm creation will always be true in single datacenter,
+        //  here we need to add new host and signal itself to try to create vm again
+        //  but this is prone to non stop trying...
+        // 0- check result if false create new host check
+        // 1- add new method to create new host check
+        // 2- add host to characteristic check
+        // 3- add host to allocation check
+        if (!result){
+            Log.printConcatLine("Allocation of vm#", containerVm.getId(), " failed on all hosts.");
+            Log.printConcatLine("Adding ", Parameters.NEW_HOST_NUMBERS," more new host to DataCenter");
+            List<ContainerHost> newHostList = createNewHost();
+            getCharacteristics().getHostList().addAll(newHostList);
+            getVmAllocationPolicy().getContainerHostList().addAll(newHostList);
+            for (ContainerHost newHost : newHostList) {
+                ((ContainerVmAllocationPolicySimple) getVmAllocationPolicy()).getFreePes().add(newHost.getNumberOfPes());
+            }
+            sendNow(getId(), CloudSimTags.VM_CREATE_ACK, ev.getData());
+            return;
+        }
 
         if (ack) {
             int[] data = new int[3];

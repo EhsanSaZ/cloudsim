@@ -111,7 +111,8 @@ public class Parameters {
     public static final int CONTAINER_SIZE = 600; //600;// MB
 
     //---------------------------------  HOST
-    public static final int HOST_NUMBERS = 10;
+    public static final int HOST_NUMBERS = 50;
+    public static final int NEW_HOST_NUMBERS = 50;
     public static final int HOST_TYPES = 1;
     // T ODO EHSAN: FIX MIPS
 //    public static final int[] HOST_MIPS = new int[]{37274};
@@ -121,7 +122,7 @@ public class Parameters {
 //    public static final long HOST_STORAGE = 1000000;
     public static final int[] HOST_MIPS = new int[]{99999};
     public static final int[] HOST_PES = new int[]{1024};
-    public static final int[] HOST_RAM = new int[]{9999999};
+    public static final int[] HOST_RAM = new int[]{524288};
     public static final int HOST_BW = Integer.MAX_VALUE;
     public static final long HOST_STORAGE = Integer.MAX_VALUE;
 

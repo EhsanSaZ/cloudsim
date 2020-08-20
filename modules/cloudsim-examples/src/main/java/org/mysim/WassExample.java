@@ -228,7 +228,7 @@ public class WassExample {
 
             hostList.add(new ContainerHost(IDs.pollId(ContainerHost.class),
                     new ContainerVmRamProvisionerSimple(Parameters.HOST_RAM[hostType]),
-                    new ContainerVmBwProvisionerSimple(1000000L),
+                    new ContainerVmBwProvisionerSimple(Parameters.HOST_BW),
                     Parameters.HOST_STORAGE, peList,
                     new ContainerVmSchedulerTimeSharedOverSubscription(peList)));
         }
