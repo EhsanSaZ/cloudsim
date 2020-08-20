@@ -447,4 +447,5 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
     public void setDestroyedVmTotalCost(double destroyedVmTotalCost) {
         this.destroyedVmTotalCost = destroyedVmTotalCost;
     }
+    public int getVmDestroyedNumber(){ return getVmsDestroyed(); }
 }

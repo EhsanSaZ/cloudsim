@@ -111,8 +111,6 @@ public class WassExample {
             printStatus(workflowEngine, broker);
 
             CloudSim.stopSimulation();
-            // print informations
-            Log.printLine("\n");
             Log.printLine("Wass Example finished!");
         } catch (Exception e) {
         Log.printLine("The simulation has been terminated due to an unexpected error");
@@ -127,7 +125,7 @@ public class WassExample {
         double accumulatedWorkflowBudget = 0;
         double accumulatedCostToBudget = 0;
         double accumulatedMakeSpanToDeadline = 0;
-        int totalVmNumbers = broker.getVmsDestroyedList().size() + broker.getVmsCreatedList().size();
+        int totalVmNumbers = broker.getVmDestroyedNumber() + broker.getVmsCreatedList().size();
         double totalVmCost = 0;
         int totalWorkflowNumber = workflowEngine.getWorkflowList().size();
 
@@ -149,8 +147,10 @@ public class WassExample {
             }
 
         }
-
-        Log.printConcatLine("\nPSR: ", (double)PSR *100 / totalWorkflowNumber, "%");
+        Log.enable();
+        Log.printConcatLine("------------------------ Simulation Results ------------------------\n");
+        Log.printConcatLine("Total workflows: ", workflowEngine.getWorkflowParser().getTotalWorkflowNumbers());
+        Log.printConcatLine("PSR: ", (double)PSR *100 / totalWorkflowNumber, "%");
         Log.printConcatLine("Deadline success:  ", (double)DeadlineSuccess  * 100 / totalWorkflowNumber , "%");
         Log.printConcatLine("Accumulated Workflow Cost: ", accumulatedWorkflowCost);
         Log.printConcatLine("Average Workflow Cost: ", accumulatedWorkflowCost / totalWorkflowNumber);
@@ -159,20 +159,26 @@ public class WassExample {
         Log.printConcatLine("Average Cost to Budget:    ", (accumulatedCostToBudget / totalWorkflowNumber));
         Log.printConcatLine("Average MakeSpan to Deadline:  ", (accumulatedMakeSpanToDeadline / totalWorkflowNumber));
         Log.printConcatLine("TOTAL VM NUMBERS:  ", totalVmNumbers);
-        Log.printConcatLine("TOTAL  Destroyed VM NUMBERS: ", broker.getVmsDestroyedList().size());
-        Log.printConcatLine("TOTAL Created VM NUMBERS: ", broker.getVmsCreatedList().size());
+        Log.printConcatLine("TOTAL Destroyed VM NUMBERS: ", broker.getVmDestroyedNumber());
+        Log.printConcatLine("TOTAL Created VM NUMBERS: ", broker.getVmsCreatedList().size(),"\n");
 
-//        for(ContainerVm vm : broker.getVmsDestroyedList()){
-//            CondorVM castedVm = (CondorVM) vm;
-//            double time = castedVm.getReleaseTime() - castedVm.getLeaseTime();
-//            totalVmCost +=  castedVm.getCost() * Math.ceil( time / Parameters.BILLING_PERIOD);
-//        }
-//        for(ContainerVm vm : broker.getVmsCreatedList()){
-//            CondorVM castedVm = (CondorVM) vm;
-//            double time = castedVm.getReleaseTime() - castedVm.getLeaseTime();
-//            totalVmCost +=  castedVm.getCost() * Math.ceil( time / Parameters.BILLING_PERIOD);
-//        }
-//        Log.printConcatLine("TOTAL VM Cost: ", totalVmCost);
+        Log.printConcatLine("------------------------ Static Experiment Parameters ------------------------\n");
+        Log.printConcatLine("Packing_VM_SELECTION_TYPE: ", Parameters.Packing_VM_SELECTION_TYPE);
+        Log.printConcatLine("R_T_Q_SCHEDULING_INTERVAL: ", Parameters.R_T_Q_SCHEDULING_INTERVAL);
+        Log.printConcatLine("MONITORING_INTERVAL: ", Parameters.MONITORING_INTERVAL);
+        Log.printConcatLine("VM_THRESH_HOLD_FOR_SHUTDOWN: ", Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN);
+        Log.printConcatLine("CHECK_FINISHED_STATUS_DELAY: ", Parameters.CHECK_FINISHED_STATUS_DELAY, "\n");
+        Log.printConcatLine("VM_PROVISIONING_DELAY: ", Parameters.VM_PROVISIONING_DELAY);
+        Log.printConcatLine("VM_DESTROY_DELAY: ", Parameters.VM_DESTROY_DELAY);
+        Log.printConcatLine("CONTAINER_PROVISIONING_DELAY: ", Parameters.CONTAINER_PROVISIONING_DELAY);
+        Log.printConcatLine("CONTAINER_DESTROY_DELAY: ", Parameters.CONTAINER_DESTROY_DELAY, "\n");
+        Log.printConcatLine("CPU_DEGRADATION: ", "MEAN: ", Parameters.CPU_DEGRADATION.getMean(), ", SD: ", Parameters.CPU_DEGRADATION.getStandardDeviation());
+        Log.printConcatLine("BW_DEGRADATION: ", "MEAN: ", Parameters.BW_DEGRADATION.getMean(), ", SD: ", Parameters.BW_DEGRADATION.getStandardDeviation());
+        Log.printConcatLine("BILLING_PERIOD: ", Parameters.BILLING_PERIOD);
+        Log.printConcatLine("ALPHA_DEADLINE_FACTOR: ", Parameters.ALPHA_DEADLINE_FACTOR);
+        Log.printConcatLine("BETA_BUDGET_FACTOR: ", Parameters.BETA_BUDGET_FACTOR);
+        Log.printConcatLine("ARRIVAL_RATE: ", Parameters.ARRIVAL_RATE);
+        Log.printConcatLine("-------------------------------------------------------------------\n");
     }
 
     private static WorkflowDatacenterBroker createBroker(int overBookingFactor, int workflowEngineId) {
