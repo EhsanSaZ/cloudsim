@@ -213,7 +213,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
     protected void processCloudletSubmitDynamic(SimEvent ev) { }
 
     protected void processCloudletUpdate(SimEvent ev) {
-        // TODO IMPLEMENT THIS...
+        // T ODO IMPLEMENT THIS...
     }
 
     protected void finishExecution() {
@@ -247,7 +247,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
                 && cloudlet.getVmId() == getContainersToVmsMap().get(cloudlet.getContainerId())){
                 if(getContainersToVmsMap().get(cloudlet.getContainerId()) != null
                     && getVmsToDatacentersMap().get(cloudlet.getVmId()) != null){
-                    //TODO EHSAN: Add delay feature in version 2
+                    //T ODO EHSAN: Add delay feature in version 2
 //                    int vmId = cloudlet.getVmId();
 //                    if (ContainerParameters.getOverheadParams().getQueueDelay() != null) {
 //                        delay = ContainerParameters.getOverheadParams().getQueueDelay(cloudlet);
