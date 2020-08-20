@@ -34,6 +34,7 @@ public class WorkflowParser {
 
     protected Map<String, Task> mName2Task;
 
+    private int totalWorkflowNumbers;
 
     public WorkflowParser(int userId) {
         this.userId = userId;
@@ -44,6 +45,7 @@ public class WorkflowParser {
         this.workflowIdStartsFrom = 0;
 //        setWorkflowList(new ArrayList<>());
         setWorkflowPathList(new ArrayList<>());
+        this.totalWorkflowNumbers = 0;
         this.workflowsDirectory = Parameters.getWorkflowsDirectory();
         populateWorkflowPathList();
     }
@@ -102,7 +104,8 @@ public class WorkflowParser {
                 getWorkflowPathList().add(file.getAbsolutePath());
             }
         }
-
+        // T ODO add total number of workflows as an attributes
+        setTotalWorkflowNumbers(getWorkflowPathList().size());
     }
 
     private void setDepth(Task task, int depth) {
@@ -321,5 +324,11 @@ public class WorkflowParser {
         return null;
     }
 
+    public int getTotalWorkflowNumbers() {
+        return totalWorkflowNumbers;
+    }
 
+    public void setTotalWorkflowNumbers(int totalWorkflowNumbers) {
+        this.totalWorkflowNumbers = totalWorkflowNumbers;
+    }
 }
