@@ -239,7 +239,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 
     public void submitTaskListDynamic(List<? extends ContainerCloudlet> taskList){
         // T ODO EHSAN: double check logic
-        getCloudletList().addAll(taskList);
+//        getCloudletList().addAll(taskList);
 
         for (ContainerCloudlet cloudlet: taskList){
             if(cloudlet.getContainerId() > 0
