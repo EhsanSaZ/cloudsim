@@ -111,8 +111,8 @@ public class Parameters {
     public static final int CONTAINER_SIZE = 600; //600;// MB
 
     //---------------------------------  HOST
-    public static final int HOST_NUMBERS = 50;
-    public static final int NEW_HOST_NUMBERS = 50;
+    public static final int HOST_NUMBERS = 5000;
+    public static final int NEW_HOST_NUMBERS = 2000;
     public static final int HOST_TYPES = 1;
     // T ODO EHSAN: FIX MIPS
 //    public static final int[] HOST_MIPS = new int[]{37274};
@@ -122,7 +122,7 @@ public class Parameters {
 //    public static final long HOST_STORAGE = 1000000;
     public static final int[] HOST_MIPS = new int[]{99999};
     public static final int[] HOST_PES = new int[]{1024};
-    public static final int[] HOST_RAM = new int[]{524288};
+    public static final int[] HOST_RAM = new int[]{Integer.MAX_VALUE};
     public static final int HOST_BW = Integer.MAX_VALUE;
     public static final long HOST_STORAGE = Integer.MAX_VALUE;
 
@@ -147,7 +147,7 @@ public class Parameters {
 
     public static final int BILLING_PERIOD =60;
     public static final double CPU_COST_FACTOR = 0.5;
-    public static final double ALPHA_DEADLINE_FACTOR = 0.5;
+    public static final double ALPHA_DEADLINE_FACTOR = 0.7;
     public static final double BETA_BUDGET_FACTOR = 0.5;
     public static final double ARRIVAL_RATE = 4;// workflow per minute
 }

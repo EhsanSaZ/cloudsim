@@ -668,6 +668,10 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             }else {
                 result = false;
             }
+            if (!getContainerVmList().contains(container.getVm())){
+                throw new RuntimeException(getName() + ": Container #" + container.getId() +"is scheduled on VM #"+ container.getVm().getId() +
+                        ". but vm is not in broker vm created list. Maybe it is Deleted during monitoring");
+            }
             if (ack) {
                 int[] data = new int[3];
                 data[1] = container.getId();

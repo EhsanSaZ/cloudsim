@@ -274,6 +274,10 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
 
         //successfullySubmitted.addAll(containerList);
         for(Container c: containerList){
+            if (!getVmsCreatedList().contains(c.getVm())){
+                throw new RuntimeException(getName() + ": Container #" + c.getId() +"is scheduled on VM #"+ c.getVm().getId() +
+                        ". but vm is not in broker vm created list. Maybe it is Deleted during monitoring");
+            }
             if (!getContainersToVmsMap().containsKey(c.getId())){
                 successfullySubmitted.add(c);
                 Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Create Container #" + c.getId()

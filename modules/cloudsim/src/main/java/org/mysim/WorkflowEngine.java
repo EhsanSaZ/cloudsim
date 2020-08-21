@@ -245,6 +245,7 @@ public class WorkflowEngine extends SimEntity {
 //        }
         if (getWorkflowParser().getTotalWorkflowNumbers() == getExecutedWorkflowList().size()){
 //            Log.printConcatLine(CloudSim.clock(), ": ", getName(), " All workflows are executed completely");
+            this.isRunning = false;
             schedule(this.getId(), 0,CloudSimTags.END_OF_SIMULATION, null );
             // T ODO EHSAN: do any extra needed action here..like signal to other entities...
         }else {
@@ -362,7 +363,7 @@ public class WorkflowEngine extends SimEntity {
 //                collectReadyTaskList(task, w);
                 collectReadyTaskList(w);
             } else if (w.getExecutedTaskList().size() == w.getTaskNumbers()) { //T ODO FIX: condtion is bug
-                Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Execution of workflow #", w.getWorkflowId(), " is finished.",
+                Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Execution of workflow ", w.getName() , " workflow #", w.getWorkflowId(), " is finished.",
                         " Deleting related files in replica catalog, clear task list.");
                 // execution of this workflow is finished..
                 // delete all files from replica catalog
