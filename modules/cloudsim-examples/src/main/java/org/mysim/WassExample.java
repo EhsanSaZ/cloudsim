@@ -23,10 +23,9 @@ import org.mysim.utils.ReplicaCatalog;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class WassExample {
 
@@ -41,23 +40,27 @@ public class WassExample {
     public static void main(String[] args) {
         try {
 //            Log.disable();
-//            FileOutputStream fos = null;
-//            File file;
-//            file = new File("E:\\term12\\Dataset\\log.txt");
-//            fos = new FileOutputStream(file);
-//            if (!file.exists()) {
-//                file.createNewFile();
-//            }
-//            Log.setOutput(fos);
             int num_user = 1;
             Calendar calendar = Calendar.getInstance();
             boolean trace_flag = false;
+            Date simulationStartDate = new Date() ;
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
             CloudSim.init(num_user, calendar, trace_flag);
 
             ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.SHARED;
             ReplicaCatalog.init(file_system);
 
-            Parameters.init("E:\\term12\\Dataset\\test workload");
+            Parameters.init("E:\\term12\\Dataset\\test workload\\small workload2");
+            FileOutputStream logFileStream = null;
+            if (!new File(Parameters.getWorkflowsDirectory().concat("\\logs")).exists()){
+                new File(Parameters.getWorkflowsDirectory().concat("\\logs")).mkdirs();
+            }
+            File file = new File(String.format(Parameters.getWorkflowsDirectory().concat("\\logs\\%s.txt"),dateFormat.format(simulationStartDate)));
+            logFileStream = new FileOutputStream(file);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            Log.setOutput(logFileStream);
 
             // create all allocations and distributions strategy
             DeadlineDistributionSimpleUpwardRank ddDistribution = new DeadlineDistributionSimpleUpwardRank();
@@ -109,7 +112,10 @@ public class WassExample {
             CloudSim.startSimulation();
             // get all data that  we need from engine and broker...
             printStatus(workflowEngine, broker);
-
+            Date simulationEndDate = new Date() ;
+            SimpleDateFormat logDateFormat = new SimpleDateFormat("HH:mm:ss yyyy-MM-dd") ;
+            Log.printConcatLine("Simulation Starts at: ", logDateFormat.format(simulationStartDate));
+            Log.printConcatLine("Simulation Ended at: ", logDateFormat.format(simulationEndDate));
             CloudSim.stopSimulation();
             Log.printLine("Wass Example finished!");
         } catch (Exception e) {
