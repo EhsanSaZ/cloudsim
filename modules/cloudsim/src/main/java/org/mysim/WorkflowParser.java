@@ -106,6 +106,7 @@ public class WorkflowParser {
         }
         // T ODO add total number of workflows as an attributes
         setTotalWorkflowNumbers(getWorkflowPathList().size());
+        Log.printLine(String.format("TotalWorkflowNumbers is %s", workflowsDirectory));
     }
 
     private void setDepth(Task task, int depth) {

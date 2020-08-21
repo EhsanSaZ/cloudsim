@@ -258,18 +258,16 @@ public class learn {
 //        ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.SHARED;
 //        ReplicaCatalog.init(file_system);
 //
-//        Parameters.init("E:\\term12\\Dataset\\test workload");
+//        Parameters.init("E:\\term12\\Dataset\\test workload\\large workload2");
 //
 //        WorkflowParser wp = new WorkflowParser(1);
 //        WorkflowEngine we = new WorkflowEngine("workflow_engine");
 //        we.setWorkflowParser(wp);
 //        QOSGenerator qosGenerator = new QOSGenerator();
-//
 //        if(wp.hasNextWorkflow()){
 //            Workflow wf = wp.get_next_workflow();
 //            qosGenerator.setWorkflow(wf);
 //            qosGenerator.run();
-//            qosGenerator.finish();
 //            DeadlineDistributionSimpleUpwardRank deadline_strategy = new DeadlineDistributionSimpleUpwardRank();
 //            deadline_strategy.setWorkflow(wf);
 //            deadline_strategy.run();
