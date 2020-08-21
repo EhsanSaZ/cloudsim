@@ -44,6 +44,9 @@ public class Log {
 		if (!isDisabled()) {
 			try {
 				getOutput().write(message.getBytes());
+				if(getOutput() != System.out){
+					System.out.write(message.getBytes());
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
