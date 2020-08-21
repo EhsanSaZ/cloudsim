@@ -56,7 +56,7 @@ public class QOSGenerator {
         }
     }
     public double generateDeadline(){
-        Log.printConcatLine(CloudSim.clock(), ": QOS: Generating Deadline for workflow #", workflow.getWorkflowId());
+//        Log.printConcatLine(CloudSim.clock(), ": QOS: Generating Deadline for workflow #", workflow.getWorkflowId());
         double minMakeSpan = estimateMinMakeSpan();
         double maxMakeSpan = estimateMaxMakeSpan();
 
@@ -64,7 +64,7 @@ public class QOSGenerator {
         return minMakeSpan + (maxMakeSpan - minMakeSpan) * Parameters.ALPHA_DEADLINE_FACTOR;
     }
     public double generateBudget(){
-        Log.printConcatLine(CloudSim.clock(), ": QOS: Generating Budget for workflow #", workflow.getWorkflowId());
+//        Log.printConcatLine(CloudSim.clock(), ": QOS: Generating Budget for workflow #", workflow.getWorkflowId());
         double minCost = estimateMinCost();
         double maxCost = estimateMaxCost();
 //        return minCost + (maxCost - minCost) * uniformDistribution.sample();
