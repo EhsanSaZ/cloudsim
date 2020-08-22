@@ -455,7 +455,7 @@ public class WorkflowEngine extends SimEntity {
                 }
             }
         }
-        Log.printConcatLine(CloudSim.clock(), ": ", getName()," ", counter, " of workflow #", w.getWorkflowId(), " are added to ready queue ");
+        Log.printConcatLine(CloudSim.clock(), ": ", getName()," ", counter, " tasks of workflow #", w.getWorkflowId(), " are added to ready queue ");
 //        processPlanningReadyTaskList();
     }
 
