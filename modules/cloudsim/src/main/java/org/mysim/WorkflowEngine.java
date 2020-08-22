@@ -152,9 +152,13 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void processMonitoringVms(SimEvent ev){
-        if (isRunning){
+        if (false){
             Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Start monitoring and search for Idle Vms.");
             List <ContainerVm> vmToDestroyList = new ArrayList<>();
+//            for (Workflow w: getWorkflowList()){
+//                Log.printConcatLine("Workflow #", w.getWorkflowId(), " with ", w.getTaskList().size(), "tasks and ",
+//                        w.getSubmittedTaskList().size(), " submitted tasks is remaining");
+//            }
             // T ODO EHSAN: calculate the list according to vm state history from broker crated vm list..
             for (ContainerVm vm : broker.getVmsCreatedList()){
                 CondorVM castedVm = (CondorVM) vm;
