@@ -140,7 +140,7 @@ public class WorkflowEngine extends SimEntity {
         budgetDistributor.calculateSubBudgetWholeWorkflow(wf);
 
         getWorkflowList().add(wf);
-        collectReadyTaskList();
+//        collectReadyTaskList();
 
         if (workflowParser.hasNextWorkflow()) {
             // T ODO EHSAN: use a delay with a poisson distribution
@@ -152,7 +152,7 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void processMonitoringVms(SimEvent ev){
-        if (false){
+        if (isRunning){
             Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Start monitoring and search for Idle Vms.");
             List <ContainerVm> vmToDestroyList = new ArrayList<>();
 //            for (Workflow w: getWorkflowList()){
@@ -247,6 +247,7 @@ public class WorkflowEngine extends SimEntity {
 //                break;
 //            }
 //        }
+        Log.printConcatLine(CloudSim.clock(), ": ", getName(), " Checking simulation finish condition");
         if (getWorkflowParser().getTotalWorkflowNumbers() == getExecutedWorkflowList().size()){
 //            Log.printConcatLine(CloudSim.clock(), ": ", getName(), " All workflows are executed completely");
             this.isRunning = false;
@@ -365,7 +366,7 @@ public class WorkflowEngine extends SimEntity {
                 budgetDistributor.calculateSubBudgetWholeWorkflow(w);
 
 //                collectReadyTaskList(task, w);
-                collectReadyTaskList(w);
+//                collectReadyTaskList(w);
             } else if (w.getExecutedTaskList().size() == w.getTaskNumbers()) { //T ODO FIX: condtion is bug
                 Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Execution of workflow ", w.getName() , " workflow #", w.getWorkflowId(), " is finished.",
                         " Deleting related files in replica catalog, clear task list.");
@@ -458,6 +459,8 @@ public class WorkflowEngine extends SimEntity {
     public void processPlanningReadyTaskList() {
         if (isRunning){
 //            Log.printConcatLine(getReadyTaskList().size());
+            Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Collecting Ready tasks from all workflows");
+            collectReadyTaskList();
             if ( getReadyTaskList().size() > 0){
                 Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Start planning Ready Task Queue");
                 MyPlanningAlgorithm planning_algorithm = (MyPlanningAlgorithm) getPlanner();
