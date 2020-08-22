@@ -432,6 +432,7 @@ public class WorkflowEngine extends SimEntity {
                 "collecting tasks from workflow #", w.getWorkflowId());
         List<Task> list = w.getTaskList();
         int num = list.size();
+        int counter = 0;
         for (int i = 0; i < num; i++) {
             Task task = list.get(i);
             //Dont use job.isFinished() it is not right
@@ -446,6 +447,7 @@ public class WorkflowEngine extends SimEntity {
                 }
                 if (flag) {
                     getReadyTaskList().add(task);
+                    counter ++;
                     // ready task should be removed now. removing  later on return  may cause to multiple submissions
                     list.remove(task);
                     i--;
@@ -453,6 +455,7 @@ public class WorkflowEngine extends SimEntity {
                 }
             }
         }
+        Log.printConcatLine(CloudSim.clock(), ": ", getName()," ", counter, " of workflow #", w.getWorkflowId(), " are added to ready queue ");
 //        processPlanningReadyTaskList();
     }
 
