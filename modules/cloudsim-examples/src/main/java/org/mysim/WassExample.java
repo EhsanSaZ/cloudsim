@@ -1,5 +1,10 @@
 package org.mysim;
 
+import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.impl.Arguments;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import net.sourceforge.argparse4j.inf.Namespace;
 import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.Storage;
 import org.cloudbus.cloudsim.container.containerVmProvisioners.ContainerVmBwProvisionerSimple;
@@ -38,7 +43,41 @@ public class WassExample {
     private static List<ContainerHost> hostList;
 
     public static void main(String[] args) {
+        ArgumentParser parser = ArgumentParsers.newFor("WassSim").build();
+        parser.addArgument("-p")
+                .type(String.class)
+//                .required(true)
+                .help("Workflow Directory Path.");
+        parser.addArgument("-d")
+                .type(Double.class)
+                .setDefault(0.5)
+                .help("Deadline Factor min value 0. Default is 0.5.");
+        parser.addArgument("-b")
+                .type(Double.class)
+                .setDefault(0.5)
+                .help("Budget Factor min value 0. Default is 0.5.");
+        parser.addArgument("-a")
+                .type(Double.class)
+                .setDefault(4.0)
+                .help("Arrival Rate number of workflows per minute. Default is 4.0");
+        parser.addArgument("-s")
+                .type(Integer.class)
+                .setDefault(100)
+                .help("Scheduling Interval in Secs. Default is 100");
+        parser.addArgument("-m")
+                .type(Integer.class)
+                .setDefault(50)
+                .help("Monitoring Interval in Secs. Default is 50");
+        parser.addArgument("-t")
+                .type(Double.class)
+                .setDefault(60.0)
+                .help("Monitoring threshold to delete vm. Default is 60.0");
+        parser.addArgument("-e")
+                .type(Boolean.class)
+                .setDefault(true)
+                .help("Enable Cpu and Network bandwidth degradation. Default is true");
         try {
+            Namespace res = parser.parseArgs(args);
 //            Log.disable();
             int num_user = 1;
             Calendar calendar = Calendar.getInstance();
@@ -49,8 +88,9 @@ public class WassExample {
 
             ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.SHARED;
             ReplicaCatalog.init(file_system);
-
-            Parameters.init("E:\\term12\\Dataset\\test workload\\small workload2");
+            String path = "E:\\\\term12\\\\Dataset\\\\test workload\\\\small workload2";
+//            Parameters.init( res.get("p"), res.get("d"), res.get("b"),res.get("a"), res.get("s"), res.get("m"), res.get("t"), res.get("e"));
+            Parameters.init(path, res.get("d"), res.get("b"),res.get("a"), res.get("s"), res.get("m"), res.get("t"), res.get("e"));
             FileOutputStream logFileStream = null;
             if (!new File(Parameters.getWorkflowsDirectory().concat("\\logs")).exists()){
                 new File(Parameters.getWorkflowsDirectory().concat("\\logs")).mkdirs();
@@ -118,7 +158,10 @@ public class WassExample {
             Log.printConcatLine("Simulation Ended at: ", logDateFormat.format(simulationEndDate));
             CloudSim.stopSimulation();
             Log.printLine("Wass Example finished!");
-        } catch (Exception e) {
+        }catch (ArgumentParserException e){
+            parser.handleError(e);
+        }
+        catch (Exception e) {
         Log.printLine("The simulation has been terminated due to an unexpected error");
         e.printStackTrace();
         }

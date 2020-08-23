@@ -55,11 +55,6 @@ public class Parameters {
     public static int BI_FACTOR = 1;
     public static int C_FACTOR = 2;
 
-    public static void init(String workflowsPath) {
-        workflowsDirectory = workflowsPath;
-
-    }
-
     public static String getWorkflowsDirectory() {
         return workflowsDirectory;
     }
@@ -129,9 +124,9 @@ public class Parameters {
     //------------------------------------ Experiment Parameters
     public static VM_SELECTION_TYPE Packing_VM_SELECTION_TYPE = VM_SELECTION_TYPE.RANDOM;
 //    public static VM_SELECTION_TYPE Packing_VM_SELECTION_TYPE = VM_SELECTION_TYPE.BI_FACTOR;
-    public static final int R_T_Q_SCHEDULING_INTERVAL = 100;
-    public static final int MONITORING_INTERVAL = 50;
-    public static final double VM_THRESH_HOLD_FOR_SHUTDOWN = 60;
+    public static int R_T_Q_SCHEDULING_INTERVAL = 100;
+    public static int MONITORING_INTERVAL = 50;
+    public static double VM_THRESH_HOLD_FOR_SHUTDOWN = 60;
     public static final int CHECK_FINISHED_STATUS_DELAY = 200;
 
 
@@ -143,11 +138,26 @@ public class Parameters {
     // degradation does not have any effect because many tasks are very small even with degradation still smaller than a power of a single core...
     public static final NormalDistribution CPU_DEGRADATION = new NormalDistribution(12,10);
     public static final NormalDistribution BW_DEGRADATION = new NormalDistribution(9.5,5);
-    public static final boolean ENABLE_DEGRADATION = true;
+    public static boolean ENABLE_DEGRADATION = true;
 
     public static final int BILLING_PERIOD =60;
     public static final double CPU_COST_FACTOR = 0.5;
-    public static final double ALPHA_DEADLINE_FACTOR = 0.7;
-    public static final double BETA_BUDGET_FACTOR = 0.5;
-    public static final double ARRIVAL_RATE = 4;// workflow per minute
+    public static double ALPHA_DEADLINE_FACTOR = 0.5;
+    public static double BETA_BUDGET_FACTOR = 0.5;
+    public static double ARRIVAL_RATE = 6;// workflow per minute
+
+    public static void init(String workflowsPath) {
+        workflowsDirectory = workflowsPath;
+    }
+    public static void init(String workflowsPath, double dFactor, double bFactor, double arrivalRate,
+                            int schedulingInterval, int monitoringInterval, double vmShutdown, Boolean degradationEnable) {
+        workflowsDirectory = workflowsPath;
+        ALPHA_DEADLINE_FACTOR = dFactor;
+        BETA_BUDGET_FACTOR = bFactor;
+        ARRIVAL_RATE = arrivalRate;
+        R_T_Q_SCHEDULING_INTERVAL = schedulingInterval;
+        MONITORING_INTERVAL = monitoringInterval;
+        VM_THRESH_HOLD_FOR_SHUTDOWN = vmShutdown;
+        ENABLE_DEGRADATION = degradationEnable;
+    }
 }
