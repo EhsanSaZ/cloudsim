@@ -246,6 +246,9 @@ public class Task extends ContainerCloudlet {
     //T ODO Ehsan: change and calculate new cost...
     @Override
     public double getProcessingCost() {
+        if (getDepth() == 0){
+            return  0.0;
+        }
         // cloudlet cost: execution cost...
         double actualCPUTime = getActualCPUTime();
         double costpersecond = getCostPerSec();
