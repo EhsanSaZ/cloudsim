@@ -561,7 +561,7 @@ public class MyPlanningAlgorithm extends PlanningAlgorithmStrategy{
 
     public int calculateMinRequiredPesNumber(Task task){
         double time = task.getSubDeadline() - task.getTransferTime(Parameters.VM_BW);
-        if (time < 0){
+        if (time <= 0){
             // just transfer time is more than deadline so use max number of cores
             return Parameters.VM_PES[Parameters.VM_TYPES_NUMBERS-1];
         }
