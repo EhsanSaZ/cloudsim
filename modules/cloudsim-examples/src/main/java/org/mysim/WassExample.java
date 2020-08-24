@@ -62,7 +62,7 @@ public class WassExample {
                 .help("Arrival Rate number of workflows per minute. Default is 4.0");
         parser.addArgument("-s")
                 .type(Integer.class)
-                .setDefault(100)
+                .setDefault(1)
                 .help("Scheduling Interval in Secs. Default is 100");
         parser.addArgument("-m")
                 .type(Integer.class)
@@ -88,7 +88,7 @@ public class WassExample {
 
             ReplicaCatalog.FileSystem file_system = ReplicaCatalog.FileSystem.SHARED;
             ReplicaCatalog.init(file_system);
-            String path = "E:\\\\term12\\\\Dataset\\\\test workload\\\\small workload2";
+            String path = "E:\\term12\\Dataset\\test workload";
 //            Parameters.init( res.get("p"), res.get("d"), res.get("b"),res.get("a"), res.get("s"), res.get("m"), res.get("t"), res.get("e"));
             Parameters.init(path, res.get("d"), res.get("b"),res.get("a"), res.get("s"), res.get("m"), res.get("t"), res.get("e"));
             FileOutputStream logFileStream = null;
@@ -304,7 +304,7 @@ public class WassExample {
                 ContainerDatacenterCharacteristics(arch, os, vmm, hostList, time_zone, cost, costPerMem, costPerStorage,
                 costPerBw);
         WorkflowContainerDatacenter datacenter = new WorkflowContainerDatacenter(name, characteristics, vmAllocationPolicy,
-                containerAllocationPolicy, new LinkedList<Storage>(), schedulingInterval, experimentName, logAddress);
+                containerAllocationPolicy, new LinkedList<Storage>(), 50, experimentName, logAddress);
 
         return datacenter;
     }
