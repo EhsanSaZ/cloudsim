@@ -462,6 +462,7 @@ public class WorkflowEngine extends SimEntity {
     public void processPlanningReadyTaskList() {
         if (isRunning){
 //            Log.printConcatLine(getReadyTaskList().size());
+            Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Ready Queue has already ", getReadyTaskList().size()," tasks from before");
             Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Collecting Ready tasks from all workflows");
             collectReadyTaskList();
             if ( getReadyTaskList().size() > 0){

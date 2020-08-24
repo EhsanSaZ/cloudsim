@@ -293,7 +293,7 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             ContainerCloudletScheduler scheduler = container.getContainerCloudletScheduler();
 
             // increase task size to simulate cpu degradation..
-            if (Parameters.ENABLE_DEGRADATION && task.getClassType() == Parameters.ClassType.COMPUTE.value){
+            if (Parameters.ENABLE_DEGRADATION){
                 double cpuDegradation =  Parameters.CPU_DEGRADATION.sample();
                 if (cpuDegradation > 0 && cpuDegradation < 24 ){
                     task.setCloudletLength((long) (task.getCloudletLength() * 100 / (100- cpuDegradation)));
