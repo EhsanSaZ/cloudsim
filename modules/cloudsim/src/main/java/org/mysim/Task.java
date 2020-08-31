@@ -270,9 +270,11 @@ public class Task extends ContainerCloudlet {
 
     public double getTransferTime(int bw){
         double transferTime = 0.0;
-        for (FileItem file: getFileList()){
-            if (file.isRealInputFile(getFileList()) || file.isRealOutputFile(getFileList())){
-                transferTime += file.getSize()  * 8 / (double) Consts.MILLION / bw;
+        if (getClassType() == Parameters.ClassType.COMPUTE.value){
+            for (FileItem file: getFileList()){
+                if (file.isRealInputFile(getFileList()) || file.isRealOutputFile(getFileList())){
+                    transferTime += file.getSize()  * 8 / (double) Consts.MILLION / bw;
+                }
             }
         }
         return transferTime;
