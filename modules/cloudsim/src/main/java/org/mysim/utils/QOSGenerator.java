@@ -46,13 +46,7 @@ public class QOSGenerator {
                     t.getTaskTotalLength() / (Parameters.VM_MIPS[0] * Parameters.VM_PES[0]) );
             taskMINExecutionTimes.put(t,
                     t.getTaskTotalLength() / (Parameters.VM_MIPS[Parameters.VM_TYPES_NUMBERS-1] * Parameters.VM_PES[Parameters.VM_TYPES_NUMBERS-1]));
-            double transferTime = 0.0;
-            for (FileItem file: t.getFileList()){
-                if (file.isRealInputFile(t.getFileList()) || file.isRealOutputFile(t.getFileList())){
-                    transferTime += file.getSize()  * 8 / (double) Consts.MILLION / averageBandwidth;
-                }
-            }
-            taskTransferTimes.put(t, transferTime);
+            taskTransferTimes.put(t, t.getTransferTime(Parameters.VM_BW));
         }
     }
     public double generateDeadline(){
@@ -103,8 +97,10 @@ public class QOSGenerator {
         // T ODO EHSAN: or do it in a simple way
         // T ODO EHSAN: use newcostmodel...
         for(Task task: taskMINExecutionTimes.keySet()){
-            maxCost +=Parameters.COST[Parameters.VM_TYPES_NUMBERS-1] *
-                    Math.ceil((taskMINExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+            double c1 = Parameters.COST[0] * Math.ceil((taskMAXExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+            double c2 = Parameters.COST[Parameters.VM_TYPES_NUMBERS-1] * Math.ceil((taskMINExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+//            maxCost += Math.max(c1,c2);
+            maxCost +=Parameters.COST[Parameters.VM_TYPES_NUMBERS-1] * Math.ceil((taskMINExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
         }
         return maxCost;
     }
@@ -125,6 +121,9 @@ public class QOSGenerator {
         // T ODO EHSAN: or do it in a simple way
         // T ODO EHSAN: use newcostmodel...
         for(Task task: taskMAXExecutionTimes.keySet()){
+            double c1 = Parameters.COST[0] * Math.ceil((taskMAXExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+            double c2 = Parameters.COST[Parameters.VM_TYPES_NUMBERS-1] * Math.ceil((taskMINExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+//            minCost += Math.min(c1,c2);
             minCost +=Parameters.COST[0] * Math.ceil((taskMAXExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
         }
         return minCost;
