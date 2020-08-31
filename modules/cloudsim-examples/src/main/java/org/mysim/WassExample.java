@@ -61,8 +61,8 @@ public class WassExample {
                 .setDefault(4.0)
                 .help("Arrival Rate number of workflows per minute. Default is 4.0");
         parser.addArgument("-s")
-                .type(Integer.class)
-                .setDefault(1)
+                .type(Double.class)
+                .setDefault(1.0)
                 .help("Scheduling Interval in Secs. Default is 100");
         parser.addArgument("-m")
                 .type(Integer.class)
