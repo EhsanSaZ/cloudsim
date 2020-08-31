@@ -16,6 +16,7 @@ import org.cloudbus.cloudsim.core.SimEvent;
 import org.mysim.budgetdistribution.BudgetDistributionStrategy;
 import org.mysim.deadlinedistribution.DeadlineDistributionStrategy;
 import org.mysim.planning.MyPlanningAlgorithm;
+import org.mysim.planning.MySecondPlanningAlgorithm;
 import org.mysim.planning.PlanningAlgorithmStrategy;
 import org.mysim.utils.*;
 
@@ -467,7 +468,8 @@ public class WorkflowEngine extends SimEntity {
             collectReadyTaskList();
             if ( getReadyTaskList().size() > 0){
                 Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Start planning Ready Task Queue");
-                MyPlanningAlgorithm planning_algorithm = (MyPlanningAlgorithm) getPlanner();
+//                MyPlanningAlgorithm planning_algorithm = (MyPlanningAlgorithm) getPlanner();
+                MySecondPlanningAlgorithm planning_algorithm = (MySecondPlanningAlgorithm) getPlanner();
                 planning_algorithm.ScheduleTasks( broker, getReadyTaskList(), getScheduledTaskList(),
                         getNewRequiredContainers(), getNewRequiredVms(), getNewRequiredContainersOnNewVms());
                 // submit new containers on already running vms and submit new required vms..

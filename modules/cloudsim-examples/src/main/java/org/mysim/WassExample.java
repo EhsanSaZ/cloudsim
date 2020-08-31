@@ -22,6 +22,7 @@ import org.cloudbus.cloudsim.examples.container.ConstantsExamples;
 import org.mysim.budgetdistribution.BudgetDistributionStrategySpareBudget;
 import org.mysim.deadlinedistribution.DeadlineDistributionSimpleUpwardRank;
 import org.mysim.planning.MyPlanningAlgorithm;
+import org.mysim.planning.MySecondPlanningAlgorithm;
 import org.mysim.planning.PlanningAlgorithmStrategy;
 import org.mysim.utils.Parameters;
 import org.mysim.utils.ReplicaCatalog;
@@ -133,7 +134,8 @@ public class WassExample {
             workflowEngine.setDeadlineDistributor(ddDistribution);
             workflowEngine.setBudgetDistributor(bDistribution);
 
-            PlanningAlgorithmStrategy myPlanner= new MyPlanningAlgorithm();
+//            PlanningAlgorithmStrategy myPlanner= new MyPlanningAlgorithm();
+            PlanningAlgorithmStrategy myPlanner= new MySecondPlanningAlgorithm();
 
             workflowEngine.setPlanner(myPlanner);
 
