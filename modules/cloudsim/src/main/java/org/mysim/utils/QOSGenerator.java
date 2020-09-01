@@ -94,14 +94,32 @@ public class QOSGenerator {
 
     private double estimateMaxCost(){
         double maxCost = 0.0;
-        // T ODO EHSAN: or do it in a simple way
-        // T ODO EHSAN: use newcostmodel...
-        for(Task task: taskMINExecutionTimes.keySet()){
-            double c1 = Parameters.COST[0] * Math.ceil((taskMAXExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
-            double c2 = Parameters.COST[Parameters.VM_TYPES_NUMBERS-1] * Math.ceil((taskMINExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
-//            maxCost += Math.max(c1,c2);
-            maxCost +=Parameters.COST[Parameters.VM_TYPES_NUMBERS-1] * Math.ceil((taskMINExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+        double taskMaxCost;
+        // 1- because cost is a function of execution time and billing period, and execution time for different types is not same
+        // in different billing periods maximum task cost may be on largest vm.. smallest vm or some thing in middle
+        // so we loop over all types and use the max
+        // 2- another approach would be to use max between first and the last vm type
+        // 3- the third one would be to use the largest type cost an it is used in achieving min make span
+        // here we use first approach
+        for (Task task : workflow.getTaskList()) {
+            taskMaxCost = -1;
+            for (int type = 0; type < Parameters.VM_TYPES_NUMBERS; type++){
+                double executionTime = task.getTaskTotalLength() / (Parameters.VM_MIPS[type] * Parameters.VM_PES[type]);
+                taskMaxCost = Math.max(taskMaxCost, Parameters.COST[type] * Math.ceil((executionTime + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD));
+            }
+            maxCost += taskMaxCost;
         }
+        // second
+//        for(Task task: taskMINExecutionTimes.keySet()){
+//            double c1 = Parameters.COST[0] * Math.ceil((taskMAXExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+//            double c2 = Parameters.COST[Parameters.VM_TYPES_NUMBERS-1] * Math.ceil((taskMINExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+//            maxCost += Math.max(c1,c2);
+//        }
+
+        // third
+//        for(Task task: taskMINExecutionTimes.keySet()){
+//            maxCost +=Parameters.COST[Parameters.VM_TYPES_NUMBERS-1] * Math.ceil((taskMINExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+//        }
         return maxCost;
     }
 
@@ -118,14 +136,29 @@ public class QOSGenerator {
 
     private double estimateMinCost(){
         double minCost = 0.0;
-        // T ODO EHSAN: or do it in a simple way
-        // T ODO EHSAN: use newcostmodel...
-        for(Task task: taskMAXExecutionTimes.keySet()){
-            double c1 = Parameters.COST[0] * Math.ceil((taskMAXExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
-            double c2 = Parameters.COST[Parameters.VM_TYPES_NUMBERS-1] * Math.ceil((taskMINExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
-//            minCost += Math.min(c1,c2);
-            minCost +=Parameters.COST[0] * Math.ceil((taskMAXExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+        double taskMinCost;
+        // description is like max cost calculation
+        for (Task task : workflow.getTaskList()) {
+            taskMinCost = Double.MAX_VALUE;
+            for (int type = 0; type < Parameters.VM_TYPES_NUMBERS; type++){
+                double executionTime = task.getTaskTotalLength() / (Parameters.VM_MIPS[type] * Parameters.VM_PES[type]);
+                taskMinCost = Math.min(taskMinCost, Parameters.COST[type] * Math.ceil((executionTime + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD));
+            }
+            minCost += taskMinCost;
         }
+        // TODO here we can compare min cost to the cost of max make-span scenario and return min
+
+        // second
+//        for(Task task: taskMAXExecutionTimes.keySet()){
+//            double c1 = Parameters.COST[0] * Math.ceil((taskMAXExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+//            double c2 = Parameters.COST[Parameters.VM_TYPES_NUMBERS-1] * Math.ceil((taskMINExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+//            minCost += Math.min(c1,c2);
+//        }
+
+        // third
+//        for(Task task: taskMAXExecutionTimes.keySet()){
+//            minCost +=Parameters.COST[0] * Math.ceil((taskMAXExecutionTimes.get(task) + taskTransferTimes.get(task)) / Parameters.BILLING_PERIOD);
+//        }
         return minCost;
     }
     //---------setter and getter
