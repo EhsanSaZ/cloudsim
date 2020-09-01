@@ -340,7 +340,8 @@ public class MySecondPlanningAlgorithm extends PlanningAlgorithmStrategy{
                     //by default : if there is no vm type that have at least minimum number of task demand resources
                     // run task on fastest vm
 
-                    int requiredFuturePEs = minRequiredPesNumber * (tasksList.size() - i);
+//                    int requiredFuturePEs = minRequiredPesNumber * (tasksList.size() - i);
+                    int requiredFuturePEs = task.getNumberOfPes() * (tasksList.size() - i);
                     appropriateVmsType.sort(Collections.reverseOrder());
                     for (int type: appropriateVmsType){
                         requiredTypeToNumber.put(type, requiredFuturePEs / Parameters.VM_PES[type]);
