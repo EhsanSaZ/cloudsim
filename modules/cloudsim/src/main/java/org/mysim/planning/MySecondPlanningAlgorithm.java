@@ -330,6 +330,12 @@ public class MySecondPlanningAlgorithm extends PlanningAlgorithmStrategy{
                             appropriateVmsType.add(j);
                         }
                     }
+                    if(appropriateVmsType.size() == 0){
+                        appropriateVmsType.add(Parameters.VM_TYPES_NUMBERS -1);
+                        task.setNumberOfPes(Math.min(task.getNumberOfPes(), Parameters.VM_PES[Parameters.VM_TYPES_NUMBERS -1]));
+                        task.updateCoudletLength(task.getNumberOfPes());
+                        task.setMemory(Math.min(minRequiredMemory, Parameters.VM_RAM[Parameters.VM_TYPES_NUMBERS -1]));
+                    }
                     // we imagine that all the tasks in this list are at same depth and same WF so they have sub-deadline and sub-budget near to each other..
                     //by default : if there is no vm type that have at least minimum number of task demand resources
                     // run task on fastest vm
