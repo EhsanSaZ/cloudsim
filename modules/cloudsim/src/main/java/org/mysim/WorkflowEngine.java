@@ -469,7 +469,8 @@ public class WorkflowEngine extends SimEntity {
             if ( getReadyTaskList().size() > 0){
                 Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Start planning Ready Task Queue");
 //                MyPlanningAlgorithm planning_algorithm = (MyPlanningAlgorithm) getPlanner();
-                MySecondPlanningAlgorithm planning_algorithm = (MySecondPlanningAlgorithm) getPlanner();
+//                MySecondPlanningAlgorithm planning_algorithm = (MySecondPlanningAlgorithm) getPlanner();
+                PlanningAlgorithmStrategy planning_algorithm = getPlanner();
                 planning_algorithm.ScheduleTasks( broker, getReadyTaskList(), getScheduledTaskList(),
                         getNewRequiredContainers(), getNewRequiredVms(), getNewRequiredContainersOnNewVms());
                 // submit new containers on already running vms and submit new required vms..
