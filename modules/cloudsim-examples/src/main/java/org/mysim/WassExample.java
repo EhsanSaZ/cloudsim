@@ -135,7 +135,7 @@ public class WassExample {
             workflowEngine.setBudgetDistributor(bDistribution);
 
 //            PlanningAlgorithmStrategy myPlanner= new MyPlanningAlgorithm();
-            PlanningAlgorithmStrategy myPlanner= new MySecondPlanningAlgorithm();
+            PlanningAlgorithmStrategy myPlanner = new MySecondPlanningAlgorithm();
 
             workflowEngine.setPlanner(myPlanner);
 

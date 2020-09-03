@@ -19,10 +19,7 @@ import org.mysim.utils.Parameters;
 import org.mysim.utils.QOSGenerator;
 import org.mysim.utils.ReplicaCatalog;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class learn {
     public static void main(String[] args) {
@@ -281,27 +278,45 @@ public class learn {
 //        }
 
 
-        int VmType = 0;
-        ArrayList<ContainerPe> peList = new ArrayList<ContainerPe>();
-        for (int j = 0; j < Parameters.VM_PES[VmType]; ++j){
-            peList.add(new ContainerPe(j, new CotainerPeProvisionerSimple((double) Parameters.VM_MIPS[VmType])));
+//        int VmType = 0;
+//        ArrayList<ContainerPe> peList = new ArrayList<ContainerPe>();
+//        for (int j = 0; j < Parameters.VM_PES[VmType]; ++j){
+//            peList.add(new ContainerPe(j, new CotainerPeProvisionerSimple((double) Parameters.VM_MIPS[VmType])));
+//        }
+//
+//        CondorVM newVm = new CondorVM(IDs.pollId(ContainerVm.class), 121212, Parameters.VM_MIPS[VmType],
+//                Parameters.VM_RAM[VmType], Parameters.VM_BW, Parameters.VM_SIZE, "Xen",
+//                new ContainerSchedulerTimeSharedOverSubscription(peList),
+//                new ContainerRamProvisionerSimple(Parameters.VM_RAM[VmType]),
+//                new ContainerBwProvisionerSimple(Parameters.VM_BW),
+//                peList, Parameters.CONTAINER_VM_SCHEDULING_INTERVAL,
+//                Parameters.COST[VmType], Parameters.COST_PER_MEM[VmType],
+//                Parameters.COST_PER_STORAGE[VmType], Parameters.COST_PER_BW[VmType]);
+//
+//        List<ContainerVm> vmlist = new ArrayList<>();
+//        vmlist.add(newVm);
+//
+//        ContainerVm vm = vmlist.get(0);
+//
+//        CondorVM castedVm = (CondorVM) vm;
+//        System.out.println("BYE");
+
+        List <Integer> appropriateVmsType = new ArrayList<>();
+        appropriateVmsType.add(4);
+        appropriateVmsType.add(16);
+        appropriateVmsType.add(8);
+        appropriateVmsType.sort(Collections.reverseOrder());
+        Map <Integer, Integer> requiredTypeToNumber = new HashMap<>();
+        int requiredFuturePEs = 29;
+        for (int type: appropriateVmsType){
+            requiredTypeToNumber.put(type, requiredFuturePEs / type);
+            requiredFuturePEs %= type;
         }
-
-        CondorVM newVm = new CondorVM(IDs.pollId(ContainerVm.class), 121212, Parameters.VM_MIPS[VmType],
-                Parameters.VM_RAM[VmType], Parameters.VM_BW, Parameters.VM_SIZE, "Xen",
-                new ContainerSchedulerTimeSharedOverSubscription(peList),
-                new ContainerRamProvisionerSimple(Parameters.VM_RAM[VmType]),
-                new ContainerBwProvisionerSimple(Parameters.VM_BW),
-                peList, Parameters.CONTAINER_VM_SCHEDULING_INTERVAL,
-                Parameters.COST[VmType], Parameters.COST_PER_MEM[VmType],
-                Parameters.COST_PER_STORAGE[VmType], Parameters.COST_PER_BW[VmType]);
-
-        List<ContainerVm> vmlist = new ArrayList<>();
-        vmlist.add(newVm);
-
-        ContainerVm vm = vmlist.get(0);
-
-        CondorVM castedVm = (CondorVM) vm;
-        System.out.println("BYE");
+        System.out.println(requiredFuturePEs);
+        if (requiredFuturePEs != 0){
+            int smallestType = appropriateVmsType.get(appropriateVmsType.size() - 1);
+            requiredTypeToNumber.put(smallestType, requiredTypeToNumber.get(smallestType) + 1);
+        }
+        System.out.println(requiredFuturePEs);
     }
 }
