@@ -54,6 +54,10 @@ public class Task extends ContainerCloudlet {
 
     private long taskTotalLength;
 
+    private int startingPeriod;
+    private int finishPeriod;
+    private int gratisPesNumber;
+
     public Task(final int taskId, int workflowId, final long taskLength, double peak_memory) {
         /**
          * We do not use cloudletFileSize and cloudletOutputSize here. We have
@@ -78,6 +82,8 @@ public class Task extends ContainerCloudlet {
         this.allocatedContainerTotalMips = -1;
         this.allocatedContainerRam = -1;
         this.taskTotalLength = taskLength;
+        this.startingPeriod = -1;
+        this.gratisPesNumber = 0;
 
     }
     public Task(final int taskId,int workflowId, final long taskLength, double peak_memory, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
@@ -98,6 +104,8 @@ public class Task extends ContainerCloudlet {
         this.allocatedContainerTotalMips = -1;
         this.allocatedContainerRam = -1;
         this.taskTotalLength = taskLength;
+        this.startingPeriod = -1;
+        this.gratisPesNumber = 0;
     }
 
     public Task(final int taskId,int workflowId, final long taskLength, double peak_memory, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
@@ -119,6 +127,8 @@ public class Task extends ContainerCloudlet {
         this.allocatedContainerTotalMips = -1;
         this.allocatedContainerRam = -1;
         this.taskTotalLength = taskLength;
+        this.startingPeriod = -1;
+        this.gratisPesNumber = 0;
     }
 
     public Task(final int taskId, int workflowId, final long taskLength, double peak_memory, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
@@ -140,6 +150,8 @@ public class Task extends ContainerCloudlet {
         this.allocatedContainerTotalMips = -1;
         this.allocatedContainerRam = -1;
         this.taskTotalLength = taskLength;
+        this.startingPeriod = -1;
+        this.gratisPesNumber = 0;
     }
 
     public Task(final int taskId,int workflowId, final long taskLength, double peak_memory, int pesNumber, long cloudletFileSize, long cloudletOutputSize,
@@ -161,6 +173,8 @@ public class Task extends ContainerCloudlet {
         this.allocatedContainerTotalMips = -1;
         this.allocatedContainerRam = -1;
         this.taskTotalLength = taskLength;
+        this.startingPeriod = -1;
+        this.gratisPesNumber = 0;
     }
 
 
@@ -267,7 +281,48 @@ public class Task extends ContainerCloudlet {
 //        cost += costPerBw * fileSize;
         return cost;
     }
-
+    
+    public double getProcessingCost(ContainerVm vm) {
+        if (getDepth() == 0){
+            return  0.0;
+        }
+        double cost = 0.0;
+        CondorVM castedVm = (CondorVM) vm;
+        if (getFinishPeriod() == getStartingPeriod()){
+            if (getFinishPeriod() == castedVm.getLastPaidPeriod()){
+                if(getNumberOfPes() > getGratisPesNumber()){
+                    double relativeCostRate = castedVm.getCost() * ( (getNumberOfPes() - getGratisPesNumber()) / (double) castedVm.getNumberOfPes());
+                    cost = relativeCostRate * Math.ceil( getActualCPUTime() / Parameters.BILLING_PERIOD);
+                }
+            } else if(getFinishPeriod() > castedVm.getLastPaidPeriod()){
+                if(getNumberOfPes() > getGratisPesNumber()){
+                    double relativeCostRate = castedVm.getCost() * ( (getNumberOfPes() - getGratisPesNumber()) / (double) castedVm.getNumberOfPes());
+                    cost = relativeCostRate * Math.ceil( getActualCPUTime() / Parameters.BILLING_PERIOD);
+                }
+            }
+        }else if( getFinishPeriod() > getStartingPeriod()){
+            if (getFinishPeriod() == castedVm.getLastPaidPeriod()){
+                double firstPartTime = castedVm.getLeaseTime() + (getStartingPeriod() * Parameters.BILLING_PERIOD) - getExecStartTime();
+                double secondPartTime = getActualCPUTime() - firstPartTime;
+                if(getNumberOfPes() > getGratisPesNumber()){
+                    double relativeCostRateFirstPart = castedVm.getCost() * ( (getNumberOfPes() - getGratisPesNumber()) / (double) castedVm.getNumberOfPes());
+                    cost += relativeCostRateFirstPart * Math.ceil( firstPartTime / Parameters.BILLING_PERIOD);
+                }
+                double relativeCostRateSecondPart = castedVm.getCost() * ( getNumberOfPes() / (double) castedVm.getNumberOfPes());
+                cost += relativeCostRateSecondPart *  Math.ceil( secondPartTime / Parameters.BILLING_PERIOD);
+            }else if(getFinishPeriod() > castedVm.getLastPaidPeriod()){
+                double firstPartTime = castedVm.getLeaseTime() + (getStartingPeriod() * Parameters.BILLING_PERIOD) - getExecStartTime();
+                double secondPartTime = getActualCPUTime() - firstPartTime;
+                if(getNumberOfPes() > getGratisPesNumber()){
+                    double relativeCostRateFirstPart = castedVm.getCost() * ( (getNumberOfPes() - getGratisPesNumber()) / (double) castedVm.getNumberOfPes());
+                    cost += relativeCostRateFirstPart * Math.ceil( firstPartTime / Parameters.BILLING_PERIOD);
+                }
+                double relativeCostRateSecondPart = castedVm.getCost() * ( getNumberOfPes() / (double) castedVm.getNumberOfPes());
+                cost += relativeCostRateSecondPart *  Math.ceil( secondPartTime / Parameters.BILLING_PERIOD);
+            }
+        }
+        return cost;
+    }
     public double getTransferTime(int bw){
         double transferTime = 0.0;
         if (getClassType() == Parameters.ClassType.COMPUTE.value){
@@ -340,53 +395,29 @@ public class Task extends ContainerCloudlet {
     }
 
     //-------------------------------------- setter and getter ----------------------------------
-    public double getSubDeadline() {
-        return subDeadline;
-    }
+    public double getSubDeadline() { return subDeadline; }
 
-    public void setSubDeadline(double subDeadline) {
-        this.subDeadline = subDeadline;
-    }
+    public void setSubDeadline(double subDeadline) { this.subDeadline = subDeadline; }
 
-    public double getSubBudget() {
-        return subBudget;
-    }
+    public double getSubBudget() { return subBudget; }
 
-    public void setSubBudget(double subBudget) {
-        this.subBudget = subBudget;
-    }
+    public void setSubBudget(double subBudget) { this.subBudget = subBudget; }
 
-    public double getTaskExecutionTime() {
-        return taskExecutionTime;
-    }
+    public double getTaskExecutionTime() { return taskExecutionTime; }
 
-    public void setTaskExecutionTime(double taskExecutionTime) {
-        this.taskExecutionTime = taskExecutionTime;
-    }
+    public void setTaskExecutionTime(double taskExecutionTime) { this.taskExecutionTime = taskExecutionTime; }
 
-    public double getTaskExecutionCost() {
-        return taskExecutionCost;
-    }
+    public double getTaskExecutionCost() { return taskExecutionCost; }
 
-    public void setTaskExecutionCost(double taskExecutionCost) {
-        this.taskExecutionCost = taskExecutionCost;
-    }
+    public void setTaskExecutionCost(double taskExecutionCost) { this.taskExecutionCost = taskExecutionCost; }
 
-    public int getWorkflowID() {
-        return workflowID;
-    }
+    public int getWorkflowID() { return workflowID; }
 
-    public void setWorkflowID(int workflowID) {
-        this.workflowID = workflowID;
-    }
+    public void setWorkflowID(int workflowID) { this.workflowID = workflowID; }
 
-    public double getRank() {
-        return rank;
-    }
+    public double getRank() { return rank; }
 
-    public void setRank(double rank) {
-        this.rank = rank;
-    }
+    public void setRank(double rank) { this.rank = rank; }
 
     public double getAllocatedVmTotalMips() { return allocatedVmTotalMips; }
 
@@ -404,11 +435,19 @@ public class Task extends ContainerCloudlet {
 
     public void setAllocatedContainerRam(double allocatedContainerRam) { this.allocatedContainerRam = allocatedContainerRam; }
 
-    public long getTaskTotalLength() {
-        return taskTotalLength;
-    }
+    public long getTaskTotalLength() { return taskTotalLength; }
 
-    public void setTaskTotalLength(long taskTotalLength) {
-        this.taskTotalLength = taskTotalLength;
-    }
+    public void setTaskTotalLength(long taskTotalLength) { this.taskTotalLength = taskTotalLength; }
+
+    public int getStartingPeriod() { return startingPeriod; }
+
+    public void setStartingPeriod(int startingPeriod) { this.startingPeriod = startingPeriod; }
+
+    public int getFinishPeriod() { return finishPeriod; }
+
+    public void setFinishPeriod(int finishPeriod) { this.finishPeriod = finishPeriod; }
+
+    public int getGratisPesNumber() { return gratisPesNumber; }
+
+    public void setGratisPesNumber(int gratisPesNumber) { this.gratisPesNumber = gratisPesNumber; }
 }
