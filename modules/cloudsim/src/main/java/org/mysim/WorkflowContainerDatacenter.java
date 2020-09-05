@@ -314,6 +314,22 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
 //            double estimatedFinishTime = scheduler.cloudletSubmit(task, totalTransterTime);
             // because transfer time is added to cloudlet size as an extra size in cloudlet scheduler so total time must be divided by total task pe numbers
             double estimatedFinishTime = scheduler.cloudletSubmit(task, totalTransterTime/task.getNumberOfPes());
+
+            task.setStartingPeriod((int) Math.ceil((task.getExecStartTime() - vm.getLeaseTime()) / Parameters.BILLING_PERIOD));
+            if (task.getStartingPeriod() > vm.getLastPaidPeriod()){
+                task.setGratisPesNumber(0);
+//                vm.setFreePesNumber(0);
+//                vm.setUsedFreePesNumber(0);
+            }else{
+                int availableFreePEs = vm.getGratisPesNumber() - vm.getUsedGratisPesNumber();
+                if(availableFreePEs > 0){
+                    task.setGratisPesNumber(Math.min(task.getNumberOfPes(), availableFreePEs));
+                    vm.setUsedGratisPesNumber(vm.getUsedGratisPesNumber() + Math.min(task.getNumberOfPes(), availableFreePEs));
+                }else{
+                    task.setGratisPesNumber(0);
+                }
+            }
+
 //            updateTaskExecTime(job, container);
             // T ODO EHSAN: this finish time is wrong... but this is not used..
 //            task.setTaskFinishTime(task.getExecStartTime() + task.getCloudletLength() / container.getMips());
