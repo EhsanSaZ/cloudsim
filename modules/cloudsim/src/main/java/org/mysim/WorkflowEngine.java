@@ -352,8 +352,8 @@ public class WorkflowEngine extends SimEntity {
 
         ContainerCloudlet cloudlet = (ContainerCloudlet) ev.getData();
         Task task = (Task) cloudlet;
-        task.setTaskExecutionCost(task.getProcessingCost());
-        task.setTaskExecutionTime(task.getActualCPUTime());
+//        task.setTaskExecutionCost(task.getProcessingCost());
+//        task.setTaskExecutionTime(task.getActualCPUTime());
         Workflow w = WorkflowList.getById(getWorkflowList(), task.getWorkflowID());
         Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Task #", task.getCloudletId(), " is Returned");
         if (w != null) {
@@ -429,8 +429,8 @@ public class WorkflowEngine extends SimEntity {
     }
 
     public void collectReadyTaskList(Workflow w) {
-        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Updating ready task queue. ",
-                "collecting tasks from workflow #", w.getWorkflowId());
+//        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Updating ready task queue. ",
+//                "collecting tasks from workflow #", w.getWorkflowId());
         List<Task> list = w.getTaskList();
         int num = list.size();
         int counter = 0;
@@ -456,7 +456,7 @@ public class WorkflowEngine extends SimEntity {
                 }
             }
         }
-        Log.printConcatLine(CloudSim.clock(), ": ", getName()," ", counter, " tasks of workflow #", w.getWorkflowId(), " are added to ready queue ");
+//        Log.printConcatLine(CloudSim.clock(), ": ", getName()," ", counter, " tasks of workflow #", w.getWorkflowId(), " are added to ready queue ");
 //        processPlanningReadyTaskList();
     }
 

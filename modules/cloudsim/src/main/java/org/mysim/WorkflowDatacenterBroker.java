@@ -199,6 +199,14 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
         Container container = (Container) ContainerList.getById(getContainersCreatedList(), cloudlet.getContainerId());
         container.setWorkloadMips(0);
 
+        CondorVM castedVm = (CondorVM) ContainerVmList.getById(getVmsCreatedList(), cloudlet.getVmId());
+        assert castedVm != null;
+
+        Task task = (Task) cloudlet;
+        task.setFinishPeriod((int) Math.ceil((task.getFinishTime() - castedVm.getLeaseTime()) / Parameters.BILLING_PERIOD));
+        task.setTaskExecutionTime(task.getActualCPUTime());
+        task.setTaskExecutionCost(task.getProcessingCost());
+
 
 //        double delay = 0.0;
 //        if (ContainerParameters.getOverheadParams().getPostDelay() != null) {
