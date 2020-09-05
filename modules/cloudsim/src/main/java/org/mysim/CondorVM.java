@@ -1,6 +1,5 @@
 package org.mysim;
 
-import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerBwProvisioner;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerPe;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerRamProvisioner;
@@ -8,7 +7,6 @@ import org.cloudbus.cloudsim.container.core.PowerContainerVm;
 import org.cloudbus.cloudsim.container.schedulers.ContainerScheduler;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.mysim.utils.MySimTags;
-import org.mysim.utils.Parameters;
 import org.mysim.utils.VmStateEntry;
 //import org.workflowsim.WorkflowSimTags;
 
@@ -38,6 +36,10 @@ public class CondorVM extends PowerContainerVm {
 
     private  double memPerCore;
 
+    private int lastPaidPeriod;
+    private int gratisPesNumber;
+    private  int usedGratisPesNumber;
+
     public CondorVM(final int id, final int userId, final double mips, final float ram, final long bw, final long size, final String vmm,
                     final ContainerScheduler containerScheduler, final ContainerRamProvisioner containerRamProvisioner, final ContainerBwProvisioner containerBwProvisioner,
                     List<? extends ContainerPe> peList, final double schedulingInterval) {
@@ -48,6 +50,9 @@ public class CondorVM extends PowerContainerVm {
         setAvailableRamForSchedule(ram);
         setAvailableSizeForSchedule(size);
         setMemPerCore(ram/peList.size());
+        setLastPaidPeriod(-1);
+        setGratisPesNumber(0);
+        setUsedGratisPesNumber(0);
     }
 
     public CondorVM(final int id, final int userId, final double mips, final float ram, final long bw, final long size, final String vmm,
@@ -65,7 +70,11 @@ public class CondorVM extends PowerContainerVm {
         setAvailableRamForSchedule(ram);
         setAvailableSizeForSchedule(size);
         setMemPerCore(ram/peList.size());
+        setLastPaidPeriod(-1);
+        setGratisPesNumber(0);
+        setUsedGratisPesNumber(0);
     }
+
     @Override
     public double updateVmProcessing(final double currentTime, final List<Double> mipsShare) {
         double time = super.updateVmProcessing(currentTime, mipsShare);
@@ -206,4 +215,16 @@ public class CondorVM extends PowerContainerVm {
     public double getMemPerCore() { return memPerCore; }
 
     public void setMemPerCore(double memPerCore) { this.memPerCore = memPerCore; }
+
+    public int getLastPaidPeriod() { return lastPaidPeriod; }
+
+    public void setLastPaidPeriod(int lastPaidPeriod) { this.lastPaidPeriod = lastPaidPeriod; }
+
+    public int getGratisPesNumber() { return gratisPesNumber; }
+
+    public void setGratisPesNumber(int gratisPesNumber) { this.gratisPesNumber = gratisPesNumber; }
+
+    public int getUsedGratisPesNumber() { return usedGratisPesNumber; }
+
+    public void setUsedGratisPesNumber(int usedGratisPesNumber) { this.usedGratisPesNumber = usedGratisPesNumber; }
 }
