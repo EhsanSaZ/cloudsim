@@ -88,8 +88,8 @@ public class Parameters {
     public static final int VM_BW = 500; //100000;// Mb/s...
     // T ODO EHSAN: FIX COST
 //    public static final double COST[] = new double[]{1, 1.9, 3.7, 7.3 };
-    public static final double COST[] = new double[]{1, 1.9, 3.6, 6.96 };
-//    public static final double COST[] = new double[]{0.016, 0.031, 0.060, 0.116 };
+//    public static final double COST[] = new double[]{1, 1.9, 3.6, 6.96 };
+    public static final double COST[] = new double[]{0.016, 0.031, 0.060, 0.116 };
     public static final double COST_PER_MEM[] = new double[]{1, 2, 3, 4};
     public static final double COST_PER_STORAGE[] = new double[]{1, 2, 3, 4};
     public static final double COST_PER_BW[] = new double[]{1, 2, 3, 4};
@@ -141,7 +141,7 @@ public class Parameters {
     public static final NormalDistribution BW_DEGRADATION = new NormalDistribution(9.5,5);
     public static boolean ENABLE_DEGRADATION = true;
 
-    public static final int BILLING_PERIOD =60;
+    public static final int BILLING_PERIOD =3600;
     public static final double CPU_COST_FACTOR = 0.5;
     public static double ALPHA_DEADLINE_FACTOR = 0.5;
     public static double BETA_BUDGET_FACTOR = 0.5;

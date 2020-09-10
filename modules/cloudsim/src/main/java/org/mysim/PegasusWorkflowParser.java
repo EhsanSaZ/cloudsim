@@ -3,12 +3,12 @@ package org.mysim;
 
 import org.cloudbus.cloudsim.Consts;
 import org.cloudbus.cloudsim.Log;
-import org.cloudbus.cloudsim.core.CloudSim;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.mysim.utils.Parameters;
+import org.mysim.utils.WorkflowParser;
 import org.mysim.utils.ReplicaCatalog;
 
 import java.io.File;
@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class WorkflowParser {
+public class PegasusWorkflowParser extends WorkflowParser {
 
     private final String workflowsDirectory;
 
@@ -36,7 +36,7 @@ public class WorkflowParser {
 
     private int totalWorkflowNumbers;
 
-    public WorkflowParser(int userId) {
+    public PegasusWorkflowParser(int userId) {
         this.userId = userId;
         this.mName2Task = new HashMap<>();
 //        this.daxPath = Parameters.getDaxPath();
@@ -90,7 +90,7 @@ public class WorkflowParser {
         if (getWorkflowPathList().size() > 0){
             String path  = getWorkflowPathList().get(0);
             getWorkflowPathList().remove(0);
-            return parseXmlFile(path);
+            return parseFile(path);
         }
         return null;
     }
@@ -118,7 +118,7 @@ public class WorkflowParser {
         }
     }
 
-    private Workflow parseXmlFile(String path) {
+    private Workflow parseFile(String path) {
         try {
             SAXBuilder builder = new SAXBuilder();
             //parse using builder to get DOM representation of the XML file

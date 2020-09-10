@@ -15,8 +15,6 @@ import org.cloudbus.cloudsim.core.SimEntity;
 import org.cloudbus.cloudsim.core.SimEvent;
 import org.mysim.budgetdistribution.BudgetDistributionStrategy;
 import org.mysim.deadlinedistribution.DeadlineDistributionStrategy;
-import org.mysim.planning.MyPlanningAlgorithm;
-import org.mysim.planning.MySecondPlanningAlgorithm;
 import org.mysim.planning.PlanningAlgorithmStrategy;
 import org.mysim.utils.*;
 

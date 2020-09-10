@@ -1,7 +1,6 @@
 package org.mysim;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -18,19 +17,17 @@ import org.cloudbus.cloudsim.container.utils.IDs;
 //import org.containerWorkflowsimDemo.ConstantsExamples;
 //import org.containerWorkflowsimDemo.ContainerWorkflowDatacenter;
 import org.cloudbus.cloudsim.core.CloudSim;
-import org.cloudbus.cloudsim.examples.container.ConstantsExamples;
 import org.mysim.budgetdistribution.BudgetDistributionStrategySpareBudget;
 import org.mysim.deadlinedistribution.DeadlineDistributionSimpleUpwardRank;
-import org.mysim.planning.MyPlanningAlgorithm;
 import org.mysim.planning.MySecondPlanningAlgorithm;
 import org.mysim.planning.PlanningAlgorithmStrategy;
 import org.mysim.utils.Parameters;
 import org.mysim.utils.ReplicaCatalog;
+import org.mysim.utils.WorkflowParser;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.*;
 
 public class WassExample {
@@ -67,11 +64,11 @@ public class WassExample {
                 .help("Scheduling Interval in Secs. Default is 100");
         parser.addArgument("-m")
                 .type(Integer.class)
-                .setDefault(50)
+                .setDefault(3000)
                 .help("Monitoring Interval in Secs. Default is 50");
         parser.addArgument("-t")
                 .type(Double.class)
-                .setDefault(60.0)
+                .setDefault(3600.0)
                 .help("Monitoring threshold to delete vm. Default is 60.0");
         parser.addArgument("-e")
                 .type(Boolean.class)
@@ -127,7 +124,8 @@ public class WassExample {
             WorkflowDatacenterBroker broker = createBroker(overBookingFactor, workflowEngine.getId());
             int brokerId = broker.getId();
 
-            WorkflowParser workflowParser = new WorkflowParser(brokerId);
+            WorkflowParser workflowParser = new PegasusWorkflowParser(brokerId);
+//            WorkflowParser workflowParser = new WorkflowHubWorkflowParser(brokerId);
 
             workflowEngine.setWorkflowParser(workflowParser);
             workflowEngine.setBroker(broker);
