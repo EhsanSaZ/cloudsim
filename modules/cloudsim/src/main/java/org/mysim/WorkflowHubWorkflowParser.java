@@ -206,7 +206,7 @@ public class WorkflowHubWorkflowParser extends WorkflowParser {
                      * Note that CloudSim use size as MB,
                      * WorkflowHub generates in KB so we need to convert it to Bytes..
                      */
-                    size *= 1000;
+                    size *= 100;
 
                     FileItem tFile;
                     if (type == Parameters.FileType.OUTPUT) {
