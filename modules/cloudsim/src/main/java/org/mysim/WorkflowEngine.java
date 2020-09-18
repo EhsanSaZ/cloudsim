@@ -162,15 +162,27 @@ public class WorkflowEngine extends SimEntity {
             for (ContainerVm vm : broker.getVmsCreatedList()){
                 CondorVM castedVm = (CondorVM) vm;
                 if(castedVm.getAvailablePeNumbersForSchedule()==castedVm.getPeList().size()){
-                    List<VmStateEntry> busyStateHistory =  castedVm.getBusyStateHistory();
-                    double oldestIdleTime = Double.MAX_VALUE;
-                    for (VmStateEntry stateEntry: busyStateHistory){
-                        if (stateEntry.getState() == MySimTags.VM_STATUS_BUSY){
-                            break;
-                        }
-                        oldestIdleTime = stateEntry.getTime();
-                    }
-                    if ((CloudSim.clock() - oldestIdleTime) > Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN){
+                    // DECIDE TO DELETE A VM base on history
+//                    List<VmStateEntry> busyStateHistory =  castedVm.getBusyStateHistory();
+//                    double oldestIdleTime = Double.MAX_VALUE;
+//                    for (VmStateEntry stateEntry: busyStateHistory){
+//                        if (stateEntry.getState() == MySimTags.VM_STATUS_BUSY){
+//                            break;
+//                        }
+//                        oldestIdleTime = stateEntry.getTime();
+//                    }
+                    // for this approach the threshold must be close to a billing period
+                    // ie if the vm is near to its next belling period
+//                    if ((CloudSim.clock() - oldestIdleTime) > Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN){
+//                        vmToDestroyList.add(vm);
+//                        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Select Vm #", vm.getId() , " to destroy");
+//                    }
+
+                    // DECIDE TO DELETE A VM base on remaining time to next billing period
+                    double remainingTimeToNextPeriod = (Parameters.BILLING_PERIOD * Math.ceil((CloudSim.clock() - castedVm.getLeaseTime()) / Parameters.BILLING_PERIOD))
+                            - CloudSim.clock();
+                    if (remainingTimeToNextPeriod - Parameters.VM_DESTROY_DELAY > 0 &&
+                            remainingTimeToNextPeriod - Parameters.VM_DESTROY_DELAY <= Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN){
                         vmToDestroyList.add(vm);
                         Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Select Vm #", vm.getId() , " to destroy");
                     }
