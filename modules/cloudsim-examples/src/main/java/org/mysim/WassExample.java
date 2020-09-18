@@ -61,15 +61,15 @@ public class WassExample {
         parser.addArgument("-s")
                 .type(Double.class)
                 .setDefault(1.0)
-                .help("Scheduling Interval in Secs. Default is 100");
+                .help("Scheduling Interval in Secs. Default is 1");
         parser.addArgument("-m")
                 .type(Integer.class)
-                .setDefault(3000)
-                .help("Monitoring Interval in Secs. Default is 50");
+                .setDefault(60)
+                .help("Monitoring Interval in Secs. Default is 60");
         parser.addArgument("-t")
                 .type(Double.class)
-                .setDefault(3600.0)
-                .help("Monitoring threshold to delete vm. Default is 60.0");
+                .setDefault(300.0)
+                .help("Monitoring VM_THRESH_HOLD_FOR_SHUTDOWN to delete vm. Default is 300.0");
         parser.addArgument("-e")
                 .type(Boolean.class)
                 .setDefault(true)
@@ -224,7 +224,7 @@ public class WassExample {
         Log.printConcatLine("R_T_Q_SCHEDULING_INTERVAL: ", Parameters.R_T_Q_SCHEDULING_INTERVAL);
         Log.printConcatLine("MONITORING_INTERVAL: ", Parameters.MONITORING_INTERVAL);
         Log.printConcatLine("CONTAINER_VM_SCHEDULING_INTERVAL: ", Parameters.CONTAINER_VM_SCHEDULING_INTERVAL);
-        Log.printConcatLine("VM_THRESH_HOLD_FOR_SHUTDOWN: ", Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN);
+        Log.printConcatLine("VM_THRESHOLD_FOR_SHUTDOWN: ", Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN);
         Log.printConcatLine("CHECK_FINISHED_STATUS_DELAY: ", Parameters.CHECK_FINISHED_STATUS_DELAY, "\n");
         Log.printConcatLine("VM_PROVISIONING_DELAY: ", Parameters.VM_PROVISIONING_DELAY);
         Log.printConcatLine("VM_DESTROY_DELAY: ", Parameters.VM_DESTROY_DELAY);

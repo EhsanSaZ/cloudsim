@@ -125,8 +125,8 @@ public class Parameters {
     //------------------------------------ Experiment Parameters
     public static VM_SELECTION_TYPE Packing_VM_SELECTION_TYPE = VM_SELECTION_TYPE.RANDOM;
 //    public static VM_SELECTION_TYPE Packing_VM_SELECTION_TYPE = VM_SELECTION_TYPE.BI_FACTOR;
-    public static double R_T_Q_SCHEDULING_INTERVAL = 100;
-    public static int MONITORING_INTERVAL = 50;
+    public static double R_T_Q_SCHEDULING_INTERVAL = 1;
+    public static int MONITORING_INTERVAL = 60;
     public static double VM_THRESH_HOLD_FOR_SHUTDOWN = 300;
     public static final int CHECK_FINISHED_STATUS_DELAY = 200;
 
