@@ -22,6 +22,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
     private int workflowEngineId;
     protected List<? extends ContainerVm> vmsDestroyedList;
     protected double destroyedVmTotalCost;
+    protected double destroyedVmAverageUtilization;
 
     public WorkflowDatacenterBroker(String name, double overBookingfactor, int workflowEngineId) throws Exception {
         super(name, overBookingfactor);
@@ -30,6 +31,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
         setVmsAcks(0);
         setVmsDestroyedList(new ArrayList<>());
         setDestroyedVmTotalCost(0.0);
+        setDestroyedVmAverageUtilization(0.0);
     }
 
     @Override
@@ -439,6 +441,7 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
             setDestroyedVmTotalCost(getDestroyedVmTotalCost() +
                     castedVm.getCost() * Math.ceil( (CloudSim.clock() + Parameters.VM_DESTROY_DELAY - castedVm.getLeaseTime()) / Parameters.BILLING_PERIOD));
 
+            setDestroyedVmAverageUtilization((getVmsDestroyed() * getDestroyedVmAverageUtilization() + castedVm.getAverageCpuUtilization()) / (getVmsDestroyed() + 1));
             setVmsDestroyed(getVmsDestroyed() +1);
 
             Log.printLine(CloudSim.clock() + ": " + getName() + ": Trying to Destroy VM #" +vm.getId() +
@@ -488,4 +491,8 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
         this.destroyedVmTotalCost = destroyedVmTotalCost;
     }
     public int getVmDestroyedNumber(){ return getVmsDestroyed(); }
+
+    public double getDestroyedVmAverageUtilization() { return destroyedVmAverageUtilization; }
+
+    public void setDestroyedVmAverageUtilization(double destroyedVmAverageUtilization) { this.destroyedVmAverageUtilization = destroyedVmAverageUtilization; }
 }

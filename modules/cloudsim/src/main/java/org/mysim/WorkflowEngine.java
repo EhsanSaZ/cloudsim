@@ -171,8 +171,8 @@ public class WorkflowEngine extends SimEntity {
 //                        }
 //                        oldestIdleTime = stateEntry.getTime();
 //                    }
-                    // for this approach the threshold must be close to a billing period
-                    // ie if the vm is near to its next belling period
+////                     for this approach the threshold must be close to a billing period
+////                     ie if the vm is near to its next belling period
 //                    if ((CloudSim.clock() - oldestIdleTime) > Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN){
 //                        vmToDestroyList.add(vm);
 //                        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Select Vm #", vm.getId() , " to destroy");

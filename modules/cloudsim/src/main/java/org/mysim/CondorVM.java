@@ -3,6 +3,7 @@ package org.mysim;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerBwProvisioner;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerPe;
 import org.cloudbus.cloudsim.container.containerProvisioners.ContainerRamProvisioner;
+import org.cloudbus.cloudsim.container.core.Container;
 import org.cloudbus.cloudsim.container.core.PowerContainerVm;
 import org.cloudbus.cloudsim.container.schedulers.ContainerScheduler;
 import org.cloudbus.cloudsim.core.CloudSim;
@@ -40,6 +41,9 @@ public class CondorVM extends PowerContainerVm {
     private int gratisPesNumber;
     private  int usedGratisPesNumber;
 
+    private long intervalIndex;
+    private double averageCpuUtilization;
+
     public CondorVM(final int id, final int userId, final double mips, final float ram, final long bw, final long size, final String vmm,
                     final ContainerScheduler containerScheduler, final ContainerRamProvisioner containerRamProvisioner, final ContainerBwProvisioner containerBwProvisioner,
                     List<? extends ContainerPe> peList, final double schedulingInterval) {
@@ -53,6 +57,8 @@ public class CondorVM extends PowerContainerVm {
         setLastPaidPeriod(-1);
         setGratisPesNumber(0);
         setUsedGratisPesNumber(0);
+        setAverageCpuUtilization(0);
+        setIntervalIndex(0);
     }
 
     public CondorVM(final int id, final int userId, final double mips, final float ram, final long bw, final long size, final String vmm,
@@ -73,6 +79,8 @@ public class CondorVM extends PowerContainerVm {
         setLastPaidPeriod(-1);
         setGratisPesNumber(0);
         setUsedGratisPesNumber(0);
+        setAverageCpuUtilization(0);
+        setIntervalIndex(0);
     }
 
     @Override
@@ -89,6 +97,20 @@ public class CondorVM extends PowerContainerVm {
 //                setState(MySimTags.VM_STATUS_IDLE);
             }
             setPreviousBusyStateCheckTime(currentTime);
+
+            // calculate average utilization
+            double busyPEsNumber = 0;
+            for (Container container : getContainerList()) {
+                if(!getContainersMigratingIn().contains(container)) {
+                    time = container.getContainerCloudletScheduler().getPreviousTime();
+                    //container.getTotalUtilizationOfCpu(time) is always 1 for each cloudlet running on this container
+                    // because it is set to full utilization model on task creation.
+                    busyPEsNumber += container.getTotalUtilizationOfCpu(time) * container.getNumberOfPes();
+                }
+            }
+            setAverageCpuUtilization( ( (getAverageCpuUtilization() * getIntervalIndex()) + (busyPEsNumber / getNumberOfPes()) ) / (getIntervalIndex() + 1));
+            setIntervalIndex( getIntervalIndex() + 1);
+
         }
 
         return time;
@@ -227,4 +249,12 @@ public class CondorVM extends PowerContainerVm {
     public int getUsedGratisPesNumber() { return usedGratisPesNumber; }
 
     public void setUsedGratisPesNumber(int usedGratisPesNumber) { this.usedGratisPesNumber = usedGratisPesNumber; }
+
+    public long getIntervalIndex() { return intervalIndex; }
+
+    public void setIntervalIndex(long intervalIndex) { this.intervalIndex = intervalIndex; }
+
+    public double getAverageCpuUtilization() { return averageCpuUtilization; }
+
+    public void setAverageCpuUtilization(double averageCpuUtilization) { this.averageCpuUtilization = averageCpuUtilization; }
 }

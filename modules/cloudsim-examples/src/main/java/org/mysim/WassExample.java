@@ -176,6 +176,9 @@ public class WassExample {
         double accumulatedMakeSpanToDeadline = 0;
         int totalVmNumbers = broker.getVmDestroyedNumber() + broker.getVmsCreatedList().size();
         double totalVmCost = 0;
+        double createdVmsAverageCpuUtilization = 0.0;
+        double allVmsAverageCpuUtilization = 0.0;
+
         int totalWorkflowNumber = workflowEngine.getExecutedWorkflowList().size();
 
         for (Workflow workflow: workflowEngine.getExecutedWorkflowList()) {
@@ -195,6 +198,12 @@ public class WassExample {
             }
 
         }
+        for (ContainerVm vm : broker.getVmsCreatedList()){
+            CondorVM castedVm = (CondorVM) vm;
+            createdVmsAverageCpuUtilization += castedVm.getAverageCpuUtilization();
+        }
+        allVmsAverageCpuUtilization = (broker.getDestroyedVmAverageUtilization() * broker.getVmDestroyedNumber() + createdVmsAverageCpuUtilization) / totalVmNumbers;
+
         Log.enable();
         Log.printConcatLine("------------------------ Simulation Results ------------------------\n");
         Log.printConcatLine("Total workflows: ", workflowEngine.getWorkflowParser().getTotalWorkflowNumbers());
@@ -209,11 +218,12 @@ public class WassExample {
         Log.printConcatLine("TOTAL VM NUMBERS:  ", totalVmNumbers);
         Log.printConcatLine("TOTAL Destroyed VM NUMBERS: ", broker.getVmDestroyedNumber());
         Log.printConcatLine("TOTAL Created VM NUMBERS: ", broker.getVmsCreatedList().size(),"\n");
-
+        Log.printConcatLine("ALl VMs Average Utilization: ", allVmsAverageCpuUtilization * 100,"%\n");
         Log.printConcatLine("------------------------ Static Experiment Parameters ------------------------\n");
         Log.printConcatLine("Packing_VM_SELECTION_TYPE: ", Parameters.Packing_VM_SELECTION_TYPE);
         Log.printConcatLine("R_T_Q_SCHEDULING_INTERVAL: ", Parameters.R_T_Q_SCHEDULING_INTERVAL);
         Log.printConcatLine("MONITORING_INTERVAL: ", Parameters.MONITORING_INTERVAL);
+        Log.printConcatLine("CONTAINER_VM_SCHEDULING_INTERVAL: ", Parameters.CONTAINER_VM_SCHEDULING_INTERVAL);
         Log.printConcatLine("VM_THRESH_HOLD_FOR_SHUTDOWN: ", Parameters.VM_THRESH_HOLD_FOR_SHUTDOWN);
         Log.printConcatLine("CHECK_FINISHED_STATUS_DELAY: ", Parameters.CHECK_FINISHED_STATUS_DELAY, "\n");
         Log.printConcatLine("VM_PROVISIONING_DELAY: ", Parameters.VM_PROVISIONING_DELAY);
