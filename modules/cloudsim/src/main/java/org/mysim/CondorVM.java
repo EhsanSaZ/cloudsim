@@ -99,16 +99,18 @@ public class CondorVM extends PowerContainerVm {
             setPreviousBusyStateCheckTime(currentTime);
 
             // calculate average utilization
-            double busyPEsNumber = 0;
-            for (Container container : getContainerList()) {
-                if(!getContainersMigratingIn().contains(container)) {
-                    time = container.getContainerCloudletScheduler().getPreviousTime();
-                    //container.getTotalUtilizationOfCpu(time) is always 1 for each cloudlet running on this container
-                    // because it is set to full utilization model on task creation.
-                    busyPEsNumber += container.getTotalUtilizationOfCpu(time) * container.getNumberOfPes();
-                }
-            }
-            setAverageCpuUtilization( ( (getAverageCpuUtilization() * getIntervalIndex()) + (busyPEsNumber / getNumberOfPes()) ) / (getIntervalIndex() + 1));
+//            double busyPEsNumber = 0;
+//            for (Container container : getContainerList()) {
+//                if(!getContainersMigratingIn().contains(container)) {
+//                    time = container.getContainerCloudletScheduler().getPreviousTime();
+//                    //container.getTotalUtilizationOfCpu(time) is always 1 for each cloudlet running on this container
+//                    // because it is set to full utilization model on task creation.
+//                    busyPEsNumber += container.getTotalUtilizationOfCpu(time) * container.getNumberOfPes();
+//                }
+//            }
+            double currentUtilization = ((double)getNumberOfPes() - getAvailablePeNumbersForSchedule()) / getNumberOfPes() ;
+
+            setAverageCpuUtilization( ( ( getIntervalIndex() * getAverageCpuUtilization() ) + currentUtilization ) / (getIntervalIndex() + 1));
             setIntervalIndex( getIntervalIndex() + 1);
 
         }
