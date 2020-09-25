@@ -125,9 +125,9 @@ public class Parameters {
     //------------------------------------ Experiment Parameters
     public static VM_SELECTION_TYPE Packing_VM_SELECTION_TYPE = VM_SELECTION_TYPE.RANDOM;
 //    public static VM_SELECTION_TYPE Packing_VM_SELECTION_TYPE = VM_SELECTION_TYPE.BI_FACTOR;
-    public static double R_T_Q_SCHEDULING_INTERVAL = 1;
-    public static int MONITORING_INTERVAL = 60;
-    public static double VM_THRESH_HOLD_FOR_SHUTDOWN = 300;
+    public static double R_T_Q_SCHEDULING_INTERVAL;
+    public static int MONITORING_INTERVAL;
+    public static double VM_THRESH_HOLD_FOR_SHUTDOWN;
     public static final int CHECK_FINISHED_STATUS_DELAY = 200;
 
 
@@ -139,13 +139,13 @@ public class Parameters {
     // degradation does not have any effect because many tasks are very small even with degradation still smaller than a power of a single core...
     public static final NormalDistribution CPU_DEGRADATION = new NormalDistribution(12,10);
     public static final NormalDistribution BW_DEGRADATION = new NormalDistribution(9.5,5);
-    public static boolean ENABLE_DEGRADATION = true;
+    public static boolean ENABLE_DEGRADATION;
 
     public static final int BILLING_PERIOD =3600;
     public static final double CPU_COST_FACTOR = 0.5;
-    public static double ALPHA_DEADLINE_FACTOR = 0.5;
-    public static double BETA_BUDGET_FACTOR = 0.5;
-    public static double ARRIVAL_RATE = 4;// workflow per minute
+    public static double ALPHA_DEADLINE_FACTOR ;
+    public static double BETA_BUDGET_FACTOR;
+    public static double ARRIVAL_RATE;// workflow per minute
 
     public static void init(String workflowsPath) {
         workflowsDirectory = workflowsPath;
