@@ -371,10 +371,12 @@ public class WorkflowEngine extends SimEntity {
             w.getExecutedTaskList().add(task);
             w.setTotalCost(w.getTotalCost() + task.getTaskExecutionCost());
             if (w.getTaskList().size() > 0){
-                deadlineDistributor.setWorkflow(w);
-                deadlineDistributor.updateSubDeadlines();
+//                deadlineDistributor.setWorkflow(w);
+//                deadlineDistributor.updateSubDeadlines();
 
                 budgetDistributor.calculateSubBudgetWholeWorkflow(w);
+                // T ODO update pool, collect read tasks and call planning algorithms
+                processPlanningReadyTaskList();
 
 //                collectReadyTaskList(task, w);
 //                collectReadyTaskList(w);
@@ -441,9 +443,11 @@ public class WorkflowEngine extends SimEntity {
     public void collectReadyTaskList(Workflow w) {
 //        Log.printConcatLine(CloudSim.clock(), ": ", getName(), ": Updating ready task queue. ",
 //                "collecting tasks from workflow #", w.getWorkflowId());
+        // T ODO collect exactly one task from each workflow
         List<Task> list = w.getTaskList();
         int num = list.size();
         int counter = 0;
+        int chosenReadyTaskIndex = -1;
         for (int i = 0; i < num; i++) {
             Task task = list.get(i);
             //Dont use job.isFinished() it is not right
@@ -457,14 +461,24 @@ public class WorkflowEngine extends SimEntity {
                     }
                 }
                 if (flag) {
-                    getReadyTaskList().add(task);
-                    counter ++;
-                    // ready task should be removed now. removing  later on return  may cause to multiple submissions
-                    list.remove(task);
-                    i--;
-                    num--;
+                    if(chosenReadyTaskIndex==-1){
+                        chosenReadyTaskIndex = i;
+                    }else if(task.getRank() > list.get(chosenReadyTaskIndex).getRank()){
+                        chosenReadyTaskIndex = i;
+                    }
+//                    getReadyTaskList().add(task);
+//                    counter ++;
+//                    // ready task should be removed now. removing  later on return  may cause to multiple submissions
+//                    list.remove(task);
+//                    i--;
+//                    num--;
                 }
             }
+        }
+        if(chosenReadyTaskIndex != -1){
+//            counter ++;
+            getReadyTaskList().add(list.get(chosenReadyTaskIndex));
+            list.remove(list.get(chosenReadyTaskIndex));
         }
 //        Log.printConcatLine(CloudSim.clock(), ": ", getName()," ", counter, " tasks of workflow #", w.getWorkflowId(), " are added to ready queue ");
 //        processPlanningReadyTaskList();
