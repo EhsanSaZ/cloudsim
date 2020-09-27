@@ -376,7 +376,7 @@ public class MHHBDCS_WorkflowEngine extends SimEntity {
 
                 budgetDistributor.calculateSubBudgetWholeWorkflow(w);
                 // T ODO update pool, collect read tasks and call planning algorithms
-                processPlanningReadyTaskList();
+//                processPlanningReadyTaskList();
 
 //                collectReadyTaskList(task, w);
 //                collectReadyTaskList(w);
