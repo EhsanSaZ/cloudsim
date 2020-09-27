@@ -209,34 +209,37 @@ public class WorkflowDatacenterBroker extends ContainerDatacenterBroker {
         task.setTaskExecutionTime(task.getActualCPUTime());
 //        task.setTaskExecutionCost(task.getProcessingCost());
         task.setTaskExecutionCost(task.getProcessingCost(castedVm));
-        if (task.getFinishPeriod() == task.getStartingPeriod()){
-            if (task.getFinishPeriod() == castedVm.getLastPaidPeriod()){
-                int temp = 0;
-                if(task.getNumberOfPes() > task.getGratisPesNumber()){
-                    temp = task.getNumberOfPes() - task.getGratisPesNumber();
-                }
-                castedVm.setGratisPesNumber(castedVm.getGratisPesNumber() + temp);
-                castedVm.setUsedGratisPesNumber(castedVm.getUsedGratisPesNumber() - task.getGratisPesNumber());
-            } else if(task.getFinishPeriod() > castedVm.getLastPaidPeriod()){
-                // here task.getGratisPesNumber() must be 0 so temp calculation is redundant
-                int temp = 0;
-                if(task.getNumberOfPes() > task.getGratisPesNumber()){
-                    temp = task.getNumberOfPes() - task.getGratisPesNumber();
-                }
+        if (task.getDepth()!=0){
+            if (task.getFinishPeriod() == task.getStartingPeriod()){
+                if (task.getFinishPeriod() == castedVm.getLastPaidPeriod()){
+                    int temp = 0;
+                    if(task.getNumberOfPes() > task.getGratisPesNumber()){
+                        temp = task.getNumberOfPes() - task.getGratisPesNumber();
+                    }
+                    castedVm.setGratisPesNumber(castedVm.getGratisPesNumber() + temp);
+                    castedVm.setUsedGratisPesNumber(castedVm.getUsedGratisPesNumber() - task.getGratisPesNumber());
+                } else if(task.getFinishPeriod() > castedVm.getLastPaidPeriod()){
+                    // here task.getGratisPesNumber() must be 0 so temp calculation is redundant
+                    int temp = 0;
+                    if(task.getNumberOfPes() > task.getGratisPesNumber()){
+                        temp = task.getNumberOfPes() - task.getGratisPesNumber();
+                    }
 //                castedVm.setGratisPesNumber(temp);
-                castedVm.setGratisPesNumber(task.getNumberOfPes());
-                castedVm.setUsedGratisPesNumber(0);
-                castedVm.setLastPaidPeriod(task.getFinishPeriod());
-            }
-        }else if( task.getFinishPeriod() > task.getStartingPeriod()){
-            if (task.getFinishPeriod() == castedVm.getLastPaidPeriod()){
-                castedVm.setGratisPesNumber(castedVm.getGratisPesNumber() + task.getNumberOfPes());
-            }else if(task.getFinishPeriod() > castedVm.getLastPaidPeriod()){
-                castedVm.setGratisPesNumber(task.getNumberOfPes());
-                castedVm.setUsedGratisPesNumber(0);
-                castedVm.setLastPaidPeriod(task.getFinishPeriod());
+                    castedVm.setGratisPesNumber(task.getNumberOfPes());
+                    castedVm.setUsedGratisPesNumber(0);
+                    castedVm.setLastPaidPeriod(task.getFinishPeriod());
+                }
+            }else if( task.getFinishPeriod() > task.getStartingPeriod()){
+                if (task.getFinishPeriod() == castedVm.getLastPaidPeriod()){
+                    castedVm.setGratisPesNumber(castedVm.getGratisPesNumber() + task.getNumberOfPes());
+                }else if(task.getFinishPeriod() > castedVm.getLastPaidPeriod()){
+                    castedVm.setGratisPesNumber(task.getNumberOfPes());
+                    castedVm.setUsedGratisPesNumber(0);
+                    castedVm.setLastPaidPeriod(task.getFinishPeriod());
+                }
             }
         }
+
 
 //        double delay = 0.0;
 //        if (ContainerParameters.getOverheadParams().getPostDelay() != null) {
