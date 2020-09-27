@@ -20,6 +20,7 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.mysim.budgetdistribution.BudgetDistributionStrategySpareBudget;
 import org.mysim.deadlinedistribution.DeadlineDistributionSimpleUpwardRank;
 import org.mysim.deadlinedistribution.RankAndDeadlineDistributionMWHBDCSAlgorithm;
+import org.mysim.planning.MWHBDCS_PlanningAlgorithm;
 import org.mysim.planning.MySecondPlanningAlgorithm;
 import org.mysim.planning.PlanningAlgorithmStrategy;
 import org.mysim.utils.Parameters;
@@ -101,10 +102,12 @@ public class WassExample {
             }
             Log.setOutput(logFileStream);
 
+            // DIFFERENT ALGORITHMS
             // create all allocations and distributions strategy
 //            DeadlineDistributionSimpleUpwardRank ddDistribution = new DeadlineDistributionSimpleUpwardRank();
             RankAndDeadlineDistributionMWHBDCSAlgorithm ddDistribution = new RankAndDeadlineDistributionMWHBDCSAlgorithm();
 
+            // DIFFERENT ALGORITHMS
             BudgetDistributionStrategySpareBudget bDistribution = new BudgetDistributionStrategySpareBudget();
 
 //            ContainerAllocationPolicy containerAllocationPolicy = new ContainerAllocationPolicyRS();
@@ -119,7 +122,7 @@ public class WassExample {
 
             ContainerVmAllocationPolicy vmAllocationPolicy = new ContainerVmAllocationPolicySimple(hostList);
 
-
+            // DIFFERENT ALGORITHMS
 //            WorkflowEngine workflowEngine = new WorkflowEngine("workflow_engine");
             MHHBDCS_WorkflowEngine workflowEngine = new MHHBDCS_WorkflowEngine("workflow_engine");
 
@@ -136,7 +139,8 @@ public class WassExample {
             workflowEngine.setBudgetDistributor(bDistribution);
 
 //            PlanningAlgorithmStrategy myPlanner= new MyPlanningAlgorithm();
-            PlanningAlgorithmStrategy myPlanner = new MySecondPlanningAlgorithm();
+//            PlanningAlgorithmStrategy myPlanner = new MySecondPlanningAlgorithm();
+            PlanningAlgorithmStrategy myPlanner = new MWHBDCS_PlanningAlgorithm();
 
             workflowEngine.setPlanner(myPlanner);
 
