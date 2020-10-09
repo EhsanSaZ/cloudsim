@@ -67,39 +67,24 @@ public class EPSMPlanningAlgorithm extends PlanningAlgorithmStrategy{
             }
         }
         for (Task task: readyTasks){
-            List <ContainerVm> allIdleVm= new ArrayList<>(VMToIdleContainerMap.keySet());
-            for (ContainerVm vm:broker.getVmsCreatedList()){
-                CondorVM castedVm = (CondorVM) vm;
-                assert castedVm != null;
-                if (castedVm.getAvailablePeNumbersForSchedule() == castedVm.getNumberOfPes() && castedVm.getAvailableRamForSchedule() == castedVm.getRam()){
-                    allIdleVm.add(vm);
-                }
-            }
-
-            List <ContainerVm> idleVmWithInput = getVmsWithInputData(allIdleVm, task);
-            if (idleVmWithInput.size() > 0){
+            List <ContainerVm> idleVmWithInput = new ArrayList<>();
+            List <ContainerVm> idleVmNoInputWithContainer = new ArrayList<>();
+            List <ContainerVm> idleVmNoInputNoContainer = new ArrayList<>();
+            categorizeVMs(broker.getVmsCreatedList(), VMToIdleContainerMap , task , idleVmWithInput, idleVmNoInputWithContainer, idleVmNoInputNoContainer);
+            if (idleVmWithInput.size() + idleVmNoInputWithContainer.size() + idleVmNoInputNoContainer.size() > 0){
                 ContainerVm provisionedVm = null;
                 boolean scheduledOnNewVm = false;
                 provisionedVm = searchForAppropriateVm(idleVmWithInput, VMToIdleContainerMap, task);
                 if (provisionedVm == null){
-                    allIdleVm.removeAll(idleVmWithInput);
-                    List <ContainerVm> idleWithContainer = new ArrayList<>();
-                    for(ContainerVm vm :allIdleVm){
-                        if(VMToIdleContainerMap.containsKey(vm)){
-                            idleWithContainer.add(vm);
-                        }
-                    }
-                    provisionedVm = searchForAppropriateVm(idleWithContainer, VMToIdleContainerMap, task);
+                    provisionedVm = searchForAppropriateVm(idleVmNoInputWithContainer, VMToIdleContainerMap, task);
                     if (provisionedVm==null){
-                        allIdleVm.removeAll(idleWithContainer);
-                        provisionedVm = searchForAppropriateVm(allIdleVm, VMToIdleContainerMap, task);
+                        provisionedVm = searchForAppropriateVm(idleVmNoInputNoContainer, VMToIdleContainerMap, task);
                         if (provisionedVm == null){
                             boolean delayIsPossible = checkDelayPossibility(task);
                             if(!delayIsPossible){
                                 scheduledOnNewVm = true;
                                 provisionedVm = provisionNewVmForTask(task, broker.getId());
-                            }
-                            else {
+                            } else {
                                 Log.printConcatLine(CloudSim.clock(), ": PlanningAlgorithm: Task# ", task.getCloudletId() , " is delayed");
                                 double remainingTimeToDeadline = task.getSubDeadline() - (CloudSim.clock() + Parameters.R_T_Q_SCHEDULING_INTERVAL);
                                 task.setSubDeadline(remainingTimeToDeadline);
@@ -123,7 +108,6 @@ public class EPSMPlanningAlgorithm extends PlanningAlgorithmStrategy{
                         }else{
                             newRequiredContainers.add(newContainer);
                         }
-
                         castedVm.setAvailablePeNumbersForSchedule(castedVm.getAvailablePeNumbersForSchedule() - newContainer.getNumberOfPes());
                         castedVm.setAvailableRamForSchedule(castedVm.getAvailableRamForSchedule() - newContainer.getRam());
                         castedVm.setAvailableSizeForSchedule(castedVm.getAvailableSizeForSchedule() - Parameters.CONTAINER_SIZE);
@@ -192,7 +176,36 @@ public class EPSMPlanningAlgorithm extends PlanningAlgorithmStrategy{
         // remove all scheduled tasks from ready task list
         readyTasks.removeAll(toRemove);
     }
+    public void categorizeVMs(List<ContainerVm> vmList, Map <ContainerVm, Container> VM2IdleContainer, Task task,
+                              List<ContainerVm> idleWithInput, List <ContainerVm> idleWithContainer, List <ContainerVm> idle ){
 
+        for( ContainerVm vm: vmList){
+            CondorVM castedVm = (CondorVM) vm;
+            assert castedVm != null;
+            if (VM2IdleContainer.containsKey(vm) ||
+                    (castedVm.getAvailablePeNumbersForSchedule() == castedVm.getNumberOfPes() &&
+                            castedVm.getAvailableRamForSchedule() == castedVm.getRam()))
+            {
+                boolean addedToIdleWithInput = false;
+                for (FileItem file:task.getFileList()){
+                    if (file.isRealInputFile(task.getFileList())){
+                        List <String> storage = ReplicaCatalog.getStorageList(file.getName());
+                        if(storage.contains(Integer.toString(vm.getId()))){
+                            idleWithInput.add(vm);
+                            addedToIdleWithInput = true;
+                            break;
+                        }
+                    }
+                }
+                if(!addedToIdleWithInput && VM2IdleContainer.containsKey(vm)){
+                    idleWithContainer.add(vm);
+                }else if(!addedToIdleWithInput){
+                    idle.add(vm);
+                }
+            }
+
+        }
+    }
     public boolean checkDelayPossibility(Task task){
         double cheapestCost = Double.MAX_VALUE;
         int cheapestType = 0;
@@ -261,21 +274,6 @@ public class EPSMPlanningAlgorithm extends PlanningAlgorithmStrategy{
             }
         }
         return chosenVM;
-    }
-    public List<ContainerVm> getVmsWithInputData( List<ContainerVm> vmList, Task task){
-        List<ContainerVm> filteredVms = new ArrayList();
-        for( ContainerVm vm: vmList){
-            for (FileItem file:task.getFileList()){
-                if (file.isRealInputFile(task.getFileList())){
-                    List <String> storage = ReplicaCatalog.getStorageList(file.getName());
-                    if(storage.contains(Integer.toString(vm.getId()))){
-                        filteredVms.add(vm);
-                        break;
-                    }
-                }
-            }
-        }
-        return filteredVms;
     }
     private boolean isContainerAffordable(Task task, Container container){
         CondorVM castedVm = (CondorVM) container.getVm();

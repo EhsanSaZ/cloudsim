@@ -57,7 +57,7 @@ public class WassExample {
                 .help("Budget Factor min value 0. Default is 0.5.");
         parser.addArgument("-a")
                 .type(Double.class)
-                .setDefault(4.0)
+                .setDefault(6.0)
                 .help("Arrival Rate number of workflows per minute. Default is 4.0");
         parser.addArgument("-s")
                 .type(Double.class)
@@ -104,8 +104,8 @@ public class WassExample {
             // DIFFERENT ALGORITHMS
             // create all allocations and distributions strategy
 //            DeadlineDistributionSimpleUpwardRank ddDistribution = new DeadlineDistributionSimpleUpwardRank();
-            RankAndDeadlineDistributionMWHBDCSAlgorithm ddDistribution = new RankAndDeadlineDistributionMWHBDCSAlgorithm();
-//            EPSMDeadlineDistributionAlgorithm ddDistribution = new EPSMDeadlineDistributionAlgorithm();
+//            RankAndDeadlineDistributionMWHBDCSAlgorithm ddDistribution = new RankAndDeadlineDistributionMWHBDCSAlgorithm();
+            EPSMDeadlineDistributionAlgorithm ddDistribution = new EPSMDeadlineDistributionAlgorithm();
 
             // DIFFERENT ALGORITHMS
             BudgetDistributionStrategySpareBudget bDistribution = new BudgetDistributionStrategySpareBudget();
@@ -124,15 +124,15 @@ public class WassExample {
 
             // DIFFERENT ALGORITHMS
 //            Second_WorkflowEngine workflowEngine = new Second_WorkflowEngine("Second_workflow_engine");
-            MHHBDCS_WorkflowEngine workflowEngine = new MHHBDCS_WorkflowEngine("MHHBDCS_workflow_engine");
-//            WorkflowEngine workflowEngine = new WorkflowEngine("EPSM_workflow_engine");
+//            MHHBDCS_WorkflowEngine workflowEngine = new MHHBDCS_WorkflowEngine("MHHBDCS_workflow_engine");
+            WorkflowEngine workflowEngine = new WorkflowEngine("EPSM_workflow_engine");
 
 //            PlanningAlgorithmStrategy myPlanner= new MyPlanningAlgorithm();
 //            PlanningAlgorithmStrategy myPlanner = new MySecondPlanningAlgorithm();
 
 //            PlanningAlgorithmStrategy myPlanner = new MyThirdPlanningAlgorithm();
-            PlanningAlgorithmStrategy myPlanner = new MWHBDCS_PlanningAlgorithm();
-//            PlanningAlgorithmStrategy myPlanner = new EPSMPlanningAlgorithm();
+//            PlanningAlgorithmStrategy myPlanner = new MWHBDCS_PlanningAlgorithm();
+            PlanningAlgorithmStrategy myPlanner = new EPSMPlanningAlgorithm();
 
 
             int overBookingFactor = 80;
