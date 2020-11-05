@@ -295,18 +295,33 @@ public class WorkflowContainerDatacenter extends ContainerDatacenter {
             // increase task size to simulate cpu degradation..
             if (Parameters.ENABLE_DEGRADATION){
                 double cpuDegradation =  Parameters.CPU_DEGRADATION.sample();
-                if (cpuDegradation > 0 && cpuDegradation < 24 ){
-                    task.setCloudletLength((long) (task.getCloudletLength() * 100 / (100- cpuDegradation)));
-                } else if (cpuDegradation > 0){
-                    task.setCloudletLength((long) (task.getCloudletLength() * 1.32));// 100/76
-                }
-
-                // increase total transfer time to simulate BW degradation
                 long bwDegradation = (long) Parameters.BW_DEGRADATION.sample();
-                if (bwDegradation > 0 && bwDegradation < 19 ){
-                    totalTransterTime = totalTransterTime * 100 /(100 - bwDegradation) ;
-                } else if (bwDegradation > 19){
-                    totalTransterTime = totalTransterTime * 1.23 ; // 100/81
+                if (!Parameters.EXPERIMENT_DEGRADATION){
+                    if (cpuDegradation > 0 && cpuDegradation < 24 ){
+                        task.setCloudletLength((long) (task.getCloudletLength() * 100 / (100- cpuDegradation)));
+                    } else if (cpuDegradation > 0){
+                        task.setCloudletLength((long) (task.getCloudletLength() * 1.32));// 100/76
+                    }
+                    // increase total transfer time to simulate BW degradation
+
+                    if (bwDegradation > 0 && bwDegradation < 19 ){
+                        totalTransterTime = totalTransterTime * 100 /(100 - bwDegradation) ;
+                    } else if (bwDegradation > 19){
+                        totalTransterTime = totalTransterTime * 1.23 ; // 100/81
+                    }
+                }else{
+                    if (cpuDegradation > 0 && cpuDegradation < 99 ){
+                        task.setCloudletLength((long) (task.getCloudletLength() * 100 / (100- cpuDegradation)));
+                    } else if (cpuDegradation > 0){
+                        task.setCloudletLength((long) (task.getCloudletLength() * 100));// 100/1
+                    }
+
+                    // increase total transfer time to simulate BW degradation
+                    if (bwDegradation > 0 && bwDegradation < 99 ){
+                        totalTransterTime = totalTransterTime * 100 /(100 - bwDegradation) ;
+                    } else if (bwDegradation > 19){
+                        totalTransterTime = totalTransterTime * 100 ; // 100/1
+                    }
                 }
             }
             //  T ODO Ehsan: consider input output transfer time for task finish time.

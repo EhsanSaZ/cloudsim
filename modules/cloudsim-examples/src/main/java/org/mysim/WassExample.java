@@ -17,8 +17,10 @@ import org.cloudbus.cloudsim.container.utils.IDs;
 //import org.containerWorkflowsimDemo.ConstantsExamples;
 //import org.containerWorkflowsimDemo.ContainerWorkflowDatacenter;
 import org.cloudbus.cloudsim.core.CloudSim;
+import org.cloudbus.cloudsim.core.SimEntity;
 import org.mysim.budgetdistribution.BudgetDistributionStrategySpareBudget;
 import org.mysim.deadlinedistribution.DeadlineDistributionSimpleUpwardRank;
+import org.mysim.deadlinedistribution.DeadlineDistributionStrategy;
 import org.mysim.deadlinedistribution.EPSMDeadlineDistributionAlgorithm;
 import org.mysim.deadlinedistribution.RankAndDeadlineDistributionMWHBDCSAlgorithm;
 import org.mysim.planning.*;
@@ -75,6 +77,30 @@ public class WassExample {
                 .type(Boolean.class)
                 .setDefault(true)
                 .help("Enable Cpu and Network bandwidth degradation. Default is true");
+        parser.addArgument("-g")
+                .type(Integer.class)
+                .setDefault(0)
+                .help("The workflow parser to parse workflows from pegasus gen or workflowHub." +
+                        " Default 0 is for pegasus. 1 for workflowHub");
+        parser.addArgument("-v")
+                .type(Double.class)
+                .setDefault(12.0)
+                .help("The CPU performance variation mean." +
+                        " Default is 12.0%");
+        parser.addArgument("-w")
+                .type(Double.class)
+                .setDefault(9.5)
+                .help("The Bandwidth performance variation mean." +
+                        " Default is 9.5%");
+        parser.addArgument("-x")
+                .type(Double.class)
+                .setDefault(100.0)
+                .help("The VM Provisioning Delay." +
+                        " Default is 100s");
+        parser.addArgument("-y")
+                .type(Boolean.class)
+                .setDefault(false)
+                .help("Enable experiment mode for degradation. Default is false");
         try {
             Namespace res = parser.parseArgs(args);
 //            Log.disable();
@@ -89,7 +115,8 @@ public class WassExample {
             ReplicaCatalog.init(file_system);
             String path = "E:\\term12\\Dataset\\test workload";
 //            Parameters.init( res.get("p"), res.get("d"), res.get("b"),res.get("a"), res.get("s"), res.get("m"), res.get("t"), res.get("e"));
-            Parameters.init(path, res.get("d"), res.get("b"),res.get("a"), res.get("s"), res.get("m"), res.get("t"), res.get("e"));
+            Parameters.init(path, res.get("d"), res.get("b"),res.get("a"), res.get("s"), res.get("m"),
+                    res.get("t"), res.get("e"), res.get("v"), res.get("w"), res.get("x"), res.get("y"));
             FileOutputStream logFileStream = null;
             if (!new File(Parameters.getWorkflowsDirectory().concat("\\logs")).exists()){
                 new File(Parameters.getWorkflowsDirectory().concat("\\logs")).mkdirs();
@@ -139,9 +166,13 @@ public class WassExample {
             WorkflowDatacenterBroker broker = createBroker(overBookingFactor, workflowEngine.getId());
             int brokerId = broker.getId();
 
-            WorkflowParser workflowParser = new PegasusWorkflowParser(brokerId);
-//            WorkflowParser workflowParser = new WorkflowHubWorkflowParser(brokerId);
-
+            int parserType = res.get("g");
+            WorkflowParser workflowParser;
+            if (parserType == 0){
+                workflowParser = new PegasusWorkflowParser(brokerId);
+            }else {
+                workflowParser = new WorkflowHubWorkflowParser(brokerId);
+            }
             workflowEngine.setWorkflowParser(workflowParser);
             workflowEngine.setBroker(broker);
             workflowEngine.setDeadlineDistributor(ddDistribution);

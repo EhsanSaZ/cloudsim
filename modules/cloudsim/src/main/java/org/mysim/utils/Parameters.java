@@ -133,15 +133,16 @@ public class Parameters {
     public static final int CHECK_FINISHED_STATUS_DELAY = 200;
 
 
-    public static final double VM_PROVISIONING_DELAY = 100;
+    public static double VM_PROVISIONING_DELAY;
     public static final double CONTAINER_PROVISIONING_DELAY = 10;
     public static final double VM_DESTROY_DELAY = 0.01;
     public static final double CONTAINER_DESTROY_DELAY = 0.01;
 
     // degradation does not have any effect because many tasks are very small even with degradation still smaller than a power of a single core...
-    public static final NormalDistribution CPU_DEGRADATION = new NormalDistribution(12,10);
-    public static final NormalDistribution BW_DEGRADATION = new NormalDistribution(9.5,5);
+    public static NormalDistribution CPU_DEGRADATION;
+    public static NormalDistribution BW_DEGRADATION;
     public static boolean ENABLE_DEGRADATION;
+    public static boolean EXPERIMENT_DEGRADATION;
 
     public static final int BILLING_PERIOD =3600;
     public static final double CPU_COST_FACTOR = 0.5;
@@ -153,7 +154,9 @@ public class Parameters {
         workflowsDirectory = workflowsPath;
     }
     public static void init(String workflowsPath, double dFactor, double bFactor, double arrivalRate,
-                            double schedulingInterval, int monitoringInterval, double vmShutdown, Boolean degradationEnable) {
+                            double schedulingInterval, int monitoringInterval, double vmShutdown,
+                            Boolean degradationEnable, double cpuDegradationMean, double bwDegradationMean,
+                            double vmProvisioningDelay, Boolean degradationExperiment) {
         workflowsDirectory = workflowsPath;
         ALPHA_DEADLINE_FACTOR = dFactor;
         BETA_BUDGET_FACTOR = bFactor;
@@ -162,5 +165,9 @@ public class Parameters {
         MONITORING_INTERVAL = monitoringInterval;
         VM_THRESH_HOLD_FOR_SHUTDOWN = vmShutdown;
         ENABLE_DEGRADATION = degradationEnable;
+        EXPERIMENT_DEGRADATION = degradationExperiment;
+        CPU_DEGRADATION = new NormalDistribution(cpuDegradationMean,10);
+        BW_DEGRADATION = new NormalDistribution(bwDegradationMean,5);
+        VM_PROVISIONING_DELAY = vmProvisioningDelay;
     }
 }
